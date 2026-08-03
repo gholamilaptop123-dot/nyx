@@ -44,7 +44,11 @@ if [ -d "backend" ]; then
   cp -r ./* ${INSTALL_DIR}/ 2>/dev/null || true
 else
   rm -rf ${INSTALL_DIR}
-  git clone https://github.com/icynetx/Nyx.git ${INSTALL_DIR}
+  echo -e "${YELLOW}🔄 Cloning repository from GitHub / Anti-Block Mirror...${NC}"
+  git clone --depth 1 https://github.com/icynetx/Nyx.git ${INSTALL_DIR} 2>/dev/null || \
+  git clone --depth 1 https://ghproxy.net/https://github.com/icynetx/Nyx.git ${INSTALL_DIR} 2>/dev/null || \
+  git clone --depth 1 https://mirror.ghproxy.com/https://github.com/icynetx/Nyx.git ${INSTALL_DIR} 2>/dev/null || \
+  (curl -sSL https://ghproxy.net/https://github.com/icynetx/Nyx/archive/refs/heads/main.zip -o /tmp/nyx.zip && unzip -q /tmp/nyx.zip -d /tmp && mv /tmp/Nyx-main ${INSTALL_DIR})
 fi
 
 chmod +x ${INSTALL_DIR}/backend/bin/xray 2>/dev/null || true
