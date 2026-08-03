@@ -39,8 +39,14 @@ fi
 INSTALL_DIR="/opt/nyx"
 echo -e "${YELLOW}📂 Installing Nyx Panel to ${INSTALL_DIR}...${NC}"
 
-mkdir -p ${INSTALL_DIR}
-cp -r ./* ${INSTALL_DIR}/ 2>/dev/null || true
+if [ -d "backend" ]; then
+  mkdir -p ${INSTALL_DIR}
+  cp -r ./* ${INSTALL_DIR}/ 2>/dev/null || true
+else
+  rm -rf ${INSTALL_DIR}
+  git clone https://github.com/icynetx/Nyx.git ${INSTALL_DIR}
+fi
+
 chmod +x ${INSTALL_DIR}/backend/bin/xray 2>/dev/null || true
 cd ${INSTALL_DIR}
 
