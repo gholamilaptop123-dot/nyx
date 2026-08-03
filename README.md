@@ -23,7 +23,7 @@
 تنها با اجرای **یک دستور** در ترمینال سرور لینوکس خود (با دسترسی root)، پنل کاملاً نصب و آماده استفاده می‌شود:
 
 ```bash
-bash <(curl -s https://raw.githubusercontent.com/username/nyx-panel/main/install.sh)
+bash <(curl -s https://raw.githubusercontent.com/icynetx/Nyx/main/install.sh)
 ```
 
 یا اگر سورس‌کد را دانلود کرده‌اید:
