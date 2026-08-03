@@ -1,0 +1,19 @@
+# Node modules (Will be auto-installed by install.sh on the server)
+node_modules/
+**/node_modules/
+
+# Local databases & logs
+*.log
+*.sqlite
+backend/prisma/dev.db
+backend/prisma/dev.db-journal
+
+# Environment variables
+.env
+.env.local
+
+# Frontend / Backend build temp outputs
+frontend/dist/
+backend/dist/
+.DS_Store
+Thumbs.db

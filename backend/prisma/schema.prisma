@@ -1,0 +1,62 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  uuid         String   @unique @default(uuid())
+  email        String?
+  dataLimitGb  Float    @default(0) // 0 means unlimited
+  usedDataBytes BigInt  @default(0)
+  expireDate   DateTime?
+  status       String   @default("ACTIVE") // ACTIVE, EXPIRED, DISABLED
+  maxDevices   Int      @default(2)
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Node {
+  id           String   @id @default(uuid())
+  name         String
+  type         String   @default("KHAREJ") // KHAREJ, IRAN_RELAY
+  ip           String
+  apiPort      Int      @default(10085)
+  status       String   @default("ONLINE") // ONLINE, OFFLINE
+  isMaster     Boolean  @default(false)
+  tunnelType   String   @default("NONE") // NONE, GOST, RATHOLE, REVERSE_VLESS, IPV6
+  tunnelPort   Int?
+  tunnelSecret String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Inbound {
+  id             String   @id @default(uuid())
+  remark         String
+  protocol       String   @default("vless") // vless, vmess, trojan, hysteria2
+  port           Int      @unique
+  network        String   @default("tcp") // tcp, grpc, ws
+  security       String   @default("reality") // reality, tls, none
+  sni            String?  @default("yahoo.com")
+  privateKey     String?
+  publicKey      String?
+  shortId        String?
+  enableFragment Boolean  @default(true)
+  fragmentLength String   @default("100-200")
+  fragmentInterval String @default("10-20")
+  enabled        Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model SystemSetting {
+  key   String @id
+  value String
+}
