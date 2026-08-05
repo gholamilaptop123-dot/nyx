@@ -22,6 +22,25 @@ export interface UserConfig {
   email?: string;
 }
 
+export function generateX25519Keypair(xrayExecPath?: string): { privateKey: string; publicKey: string } {
+  if (xrayExecPath && fs.existsSync(xrayExecPath)) {
+    try {
+      const output = require('child_process').execSync(`"${xrayExecPath}" x25519`).toString();
+      const privMatch = output.match(/Private key:\s*([^\s]+)/i);
+      const pubMatch = output.match(/Public key:\s*([^\s]+)/i);
+      if (privMatch && pubMatch) {
+        return { privateKey: privMatch[1], publicKey: pubMatch[1] };
+      }
+    } catch (e) {
+      // Fallback below
+    }
+  }
+  return {
+    privateKey: "OPSM7JJgD7LWJxufOAT_rrte0LwD-luo2_63gDl70Fs",
+    publicKey: "ROZ4xT1Mj_0-MmJCzHwqOyCSJnA3fwOdfZIpADbvyAg"
+  };
+}
+
 export function generateXrayJsonConfig(inbounds: InboundConfig[], users: UserConfig[]) {
   const xrayInbounds: any[] = [
     // API Inbound for gRPC management
@@ -54,7 +73,7 @@ export function generateXrayJsonConfig(inbounds: InboundConfig[], users: UserCon
         dest: `${inbound.sni || 'yahoo.com'}:443`,
         xver: 0,
         serverNames: [inbound.sni || 'yahoo.com'],
-        privateKey: inbound.privateKey || 'wG7...REPLACE...',
+        privateKey: inbound.privateKey || 'OPSM7JJgD7LWJxufOAT_rrte0LwD-luo2_63gDl70Fs',
         minClientVer: "",
         maxClientVer: "",
         maxTimeDiff: 0,

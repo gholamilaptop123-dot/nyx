@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { PrismaClient } from '@prisma/client';
 import { ensureXrayBinary } from './xray/downloader';
-import { generateXrayJsonConfig, saveXrayConfig } from './xray/configGenerator';
+import { generateXrayJsonConfig, saveXrayConfig, generateX25519Keypair } from './xray/configGenerator';
 import { SubscriptionService } from './services/subscriptionService';
 import { TunnelManager } from './services/tunnelManager';
 import { initTelegramBot } from './services/telegramBot';
@@ -132,6 +132,7 @@ app.get('/api/inbounds', async (req, res) => {
 app.post('/api/inbounds', async (req, res) => {
   try {
     const { remark, protocol, port, network, security, sni, privateKey, publicKey, shortId, enableFragment } = req.body;
+    const generatedKeys = generateX25519Keypair(xrayBinaryPath);
 
     const newInbound = await prisma.inbound.create({
       data: {
@@ -141,8 +142,8 @@ app.post('/api/inbounds', async (req, res) => {
         network: network || 'tcp',
         security: security || 'reality',
         sni: sni || 'yahoo.com',
-        privateKey: privateKey || 'wG7...KEY...',
-        publicKey: publicKey || 'pbk...KEY...',
+        privateKey: privateKey || generatedKeys.privateKey,
+        publicKey: publicKey || generatedKeys.publicKey,
         shortId: shortId || '6ba7b810',
         enableFragment: enableFragment !== undefined ? Boolean(enableFragment) : true
       }
@@ -305,6 +306,7 @@ async function start() {
     const inboundCount = await prisma.inbound.count();
     if (inboundCount === 0) {
       console.log('[Nyx Server] Creating default VLESS-REALITY inbound on port 443...');
+      const keys = generateX25519Keypair(xrayBinaryPath);
       await prisma.inbound.create({
         data: {
           remark: 'VLESS-REALITY-Default',
@@ -313,8 +315,8 @@ async function start() {
           network: 'tcp',
           security: 'reality',
           sni: 'yahoo.com',
-          privateKey: 'wG7x...SamplePrivateKey...',
-          publicKey: 'pbk...SamplePublicKey...',
+          privateKey: keys.privateKey,
+          publicKey: keys.publicKey,
           shortId: '6ba7b810',
           enableFragment: true
         }
