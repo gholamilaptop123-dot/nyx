@@ -13,6 +13,9 @@ export async function ensureXrayBinary(): Promise<string> {
 
   // 1. Check if binary already exists locally
   if (fs.existsSync(XRAY_EXEC)) {
+    if (process.platform !== 'win32') {
+      try { fs.chmodSync(XRAY_EXEC, '755'); } catch (e) {}
+    }
     console.log(`[Xray Downloader] ✅ Using local Xray binary at: ${XRAY_EXEC}`);
     return XRAY_EXEC;
   }
