@@ -39,9 +39,10 @@ fi
 INSTALL_DIR="/opt/nyx"
 echo -e "${YELLOW}📂 Installing Nyx Panel to ${INSTALL_DIR}...${NC}"
 
-if [ -d "backend" ]; then
-  mkdir -p ${INSTALL_DIR}
-  cp -r ./* ${INSTALL_DIR}/ 2>/dev/null || true
+if [ -d "${INSTALL_DIR}/.git" ]; then
+  echo -e "${YELLOW}🔄 Updating existing Nyx installation from GitHub...${NC}"
+  git config --global --add safe.directory ${INSTALL_DIR} 2>/dev/null || true
+  cd ${INSTALL_DIR} && git fetch --all && git reset --hard origin/main || true
 else
   rm -rf ${INSTALL_DIR}
   echo -e "${YELLOW}🔄 Cloning repository from GitHub / Anti-Block Mirror...${NC}"

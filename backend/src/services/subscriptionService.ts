@@ -259,7 +259,10 @@ export class SubscriptionService {
       },
       outbounds,
       route: {
-        rules: [{ geosite: ["cn"], outbound: "direct" }],
+        rules: [
+          { geoip: ["ir"], outbound: "direct" },
+          { geosite: ["ir"], outbound: "direct" }
+        ],
         auto_detect_interface: true
       }
     };
