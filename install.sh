@@ -22,7 +22,30 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
-# 2. Update System & Install Dependencies
+# 2. Interactive Admin Credentials & Port Setup
+echo -e "${CYAN}----------------------------------------------------${NC}"
+echo -e "${YELLOW}🔑 تنظیم اطلاعات ورود به پنل مدیریتی (Admin Setup):${NC}"
+echo -e "${CYAN}----------------------------------------------------${NC}"
+
+# Read from TTY if piped via curl | bash
+exec 3<>&1
+if [ -t 0 ]; then
+  read -p "👤 نام کاربری ادمین (پیش‌فرض: admin): " INPUT_ADMIN_USER
+  read -sp "🔐 کلمه عبور ادمین (پیش‌فرض: nyx2026!): " INPUT_ADMIN_PASS
+  echo ""
+  read -p "🌐 پورت اجرای پنل (پیش‌فرض: 3000): " INPUT_PORT
+elif [ -e /dev/tty ]; then
+  read -p "👤 نام کاربری ادمین (پیش‌فرض: admin): " INPUT_ADMIN_USER < /dev/tty
+  read -sp "🔐 کلمه عبور ادمین (پیش‌فرض: nyx2026!): " INPUT_ADMIN_PASS < /dev/tty
+  echo "" < /dev/tty
+  read -p "🌐 پورت اجرای پنل (پیش‌فرض: 3000): " INPUT_PORT < /dev/tty
+fi
+
+ADMIN_USER=${INPUT_ADMIN_USER:-admin}
+ADMIN_PASS=${INPUT_ADMIN_PASS:-nyx2026!}
+PANEL_PORT=${INPUT_PORT:-3000}
+
+# 3. Update System & Install Dependencies
 echo -e "${YELLOW}📦 Updating system packages & installing dependencies...${NC}"
 if command -v apt-get &> /dev/null; then
   apt-get update -y
@@ -35,7 +58,7 @@ elif command -v dnf &> /dev/null; then
   dnf install -y curl wget git unzip gcc-c++ make nodejs npm iptables
 fi
 
-# 3. Setup Project Directory
+# 4. Setup Project Directory
 INSTALL_DIR="/opt/nyx"
 echo -e "${YELLOW}📂 Installing Nyx Panel to ${INSTALL_DIR}...${NC}"
 
@@ -55,20 +78,27 @@ fi
 chmod +x ${INSTALL_DIR}/backend/bin/xray 2>/dev/null || true
 cd ${INSTALL_DIR}
 
-# 4. Install Backend Dependencies & Database Setup
+# 5. Install Backend Dependencies & Database Setup
 echo -e "${YELLOW}⚙️ Building Backend Service & Database...${NC}"
 cd ${INSTALL_DIR}/backend
 npm install
 npx prisma db push
 npm run build
 
-# 5. Install & Build Frontend
+# Create .env file with chosen credentials
+cat <<EOF > ${INSTALL_DIR}/backend/.env
+PORT=${PANEL_PORT}
+ADMIN_USER=${ADMIN_USER}
+ADMIN_PASS=${ADMIN_PASS}
+EOF
+
+# 6. Install & Build Frontend
 echo -e "${YELLOW}🎨 Building Modern Frontend Dashboard...${NC}"
 cd ${INSTALL_DIR}/frontend
 npm install
 npm run build
 
-# 6. Create Systemd Service for Nyx
+# 7. Create Systemd Service for Nyx
 echo -e "${YELLOW}⚙️ Configuring Systemd Background Service...${NC}"
 cat <<EOF > /etc/systemd/system/nyx.service
 [Unit]
@@ -83,7 +113,9 @@ ExecStart=/usr/bin/npm start
 Restart=always
 RestartSec=5
 Environment=NODE_ENV=production
-Environment=PORT=3000
+Environment=PORT=${PANEL_PORT}
+Environment=ADMIN_USER=${ADMIN_USER}
+Environment=ADMIN_PASS=${ADMIN_PASS}
 
 [Install]
 WantedBy=multi-user.target
@@ -93,13 +125,15 @@ systemctl daemon-reload
 systemctl enable nyx
 systemctl restart nyx
 
-# 7. Get Public IP
+# 8. Get Public IP
 SERVER_IP=$(curl -s https://api.ipify.org || hostname -I | awk '{print $1}')
 
 echo -e "${GREEN}====================================================${NC}"
 echo -e "${GREEN}✅ Nyx Panel Successfully Installed & Started!${NC}"
 echo -e "${GREEN}====================================================${NC}"
-echo -e "${CYAN}🌐 Dashboard Web UI:${NC} http://${SERVER_IP}:3000"
+echo -e "${CYAN}🌐 Dashboard Web UI:${NC} http://${SERVER_IP}:${PANEL_PORT}"
+echo -e "${CYAN}👤 Admin Username:${NC}  ${YELLOW}${ADMIN_USER}${NC}"
+echo -e "${CYAN}🔐 Admin Password:${NC}  ${YELLOW}${ADMIN_PASS}${NC}"
 echo -e "${CYAN}🔒 Status:${NC} Active & Systemd Enabled (nyx.service)"
 echo -e "${CYAN}📌 Commands:${NC}"
 echo -e "   - Check Status: ${YELLOW}systemctl status nyx${NC}"
