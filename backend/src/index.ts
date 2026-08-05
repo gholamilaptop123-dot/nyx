@@ -9,6 +9,7 @@ import { SubscriptionService } from './services/subscriptionService';
 import { TunnelManager } from './services/tunnelManager';
 import { initTelegramBot } from './services/telegramBot';
 import { execFile, ChildProcess } from 'child_process';
+import tls from 'tls';
 
 dotenv.config();
 
@@ -230,6 +231,57 @@ app.delete('/api/inbounds/:id', async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete inbound' });
+  }
+});
+
+// Real SNI Connection Tester Endpoint
+app.get('/api/sni/test', async (req, res) => {
+  const domain = (req.query.domain as string || 'yahoo.com').trim().toLowerCase();
+  const startTime = Date.now();
+
+  try {
+    const socket = tls.connect({
+      host: domain,
+      port: 443,
+      servername: domain,
+      timeout: 4000,
+      rejectUnauthorized: false
+    }, () => {
+      const latency = Date.now() - startTime;
+      const cert = socket.getPeerCertificate();
+      socket.destroy();
+      return res.json({
+        success: true,
+        domain,
+        latencyMs: latency,
+        issuer: cert.issuer?.O || cert.issuer?.CN || 'معتبر',
+        message: `اتصال موفقیت‌آمیز (تأخیر: ${latency} میلی‌ثانیه)`
+      });
+    });
+
+    socket.on('error', (err) => {
+      socket.destroy();
+      res.json({
+        success: false,
+        domain,
+        latencyMs: Date.now() - startTime,
+        error: err.message,
+        message: 'خطا در دست‌تکانی TLS (احتمال مسدودی یا اختلال)'
+      });
+    });
+
+    socket.on('timeout', () => {
+      socket.destroy();
+      res.json({
+        success: false,
+        domain,
+        latencyMs: 4000,
+        error: 'Timeout',
+        message: 'زمان پاسخ‌دهی به پایان رسید (دریافت پکت تا ۴ ثانیه انجام نشد)'
+      });
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 

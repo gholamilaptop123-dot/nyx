@@ -3,15 +3,15 @@
     <!-- Header Action Bar -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div>
-        <h2 class="text-2xl font-bold text-white">مدیریت کاربران</h2>
-        <p class="text-sm text-gray-400">افزودن کاربر جدید، تنظیم حجم و دریافت لینک سابسکریپشن هوشمند</p>
+        <h2 class="text-2xl font-bold text-white">مدیریت کاربران و اشتراک‌ها</h2>
+        <p class="text-sm text-gray-400">تعریف کاربران جدید، مدیریت حجم مصرفی و دریافت لینک‌های اختصاصی</p>
       </div>
       <button 
         @click="showCreateModal = true"
         class="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-cyberViolet to-cyberPink text-white font-semibold text-sm shadow-lg shadow-cyberViolet/30 hover:opacity-90 transition-all"
       >
         <UserPlus class="w-4 h-4" />
-        افزودن کاربر جدید
+        ساخت کاربر جدید
       </button>
     </div>
 
@@ -22,28 +22,28 @@
           <thead>
             <tr class="bg-white/5 border-b border-white/10 text-xs text-gray-400 font-semibold">
               <th class="p-4">نام کاربر</th>
-              <th class="p-4">شناسه UUID</th>
-              <th class="p-4">حجم مصرفی</th>
-              <th class="p-4">تاریخ انقضا</th>
+              <th class="p-4">شناسه اختصاصی (UUID)</th>
+              <th class="p-4">مصرف / سقف حجم</th>
+              <th class="p-4">تاریخ پایان اعتبار</th>
               <th class="p-4">وضعیت</th>
-              <th class="p-4 text-center">عملیات & لینک ساب</th>
+              <th class="p-4 text-center">دریافت کانفیگ و اشتراک</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-white/5 text-sm">
             <tr v-for="user in users" :key="user.id" class="hover:bg-white/5 transition-colors">
               <td class="p-4 font-semibold text-white flex items-center gap-2">
-                <div class="w-8 h-8 rounded-full bg-cyberViolet/20 text-cyberViolet flex items-center justify-center font-bold text-xs">
+                <div class="w-8 h-8 rounded-full bg-cyberViolet/20 text-cyberViolet flex items-center justify-center font-bold text-xs font-mono">
                   {{ user.username.charAt(0).toUpperCase() }}
                 </div>
                 {{ user.username }}
               </td>
-              <td class="p-4 font-mono text-xs text-gray-400">{{ user.uuid }}</td>
+              <td class="p-4 font-mono text-xs text-gray-400" dir="ltr">{{ user.uuid }}</td>
               <td class="p-4">
-                <span class="text-white font-mono">{{ (Number(user.usedDataBytes) / (1024*1024*1024)).toFixed(2) }} GB</span>
+                <span class="text-white font-mono" dir="ltr">{{ (Number(user.usedDataBytes) / (1024*1024*1024)).toFixed(2) }} GB</span>
                 <span class="text-gray-500 text-xs mr-1">/ {{ user.dataLimitGb > 0 ? user.dataLimitGb + ' GB' : 'نامحدود' }}</span>
               </td>
               <td class="p-4 text-xs text-gray-300">
-                {{ user.expireDate ? new Date(user.expireDate).toLocaleDateString('fa-IR') : 'نامحدود' }}
+                {{ user.expireDate ? new Date(user.expireDate).toLocaleDateString('fa-IR') : 'بدون انقضا' }}
               </td>
               <td class="p-4">
                 <span :class="[
@@ -56,7 +56,7 @@
               <td class="p-4 flex items-center justify-center gap-2">
                 <button @click="openConfigModal(user)" class="px-3 py-1.5 rounded-xl bg-cyberViolet/20 text-cyberViolet hover:bg-cyberViolet/30 text-xs font-semibold flex items-center gap-1 transition-all">
                   <Download class="w-3.5 h-3.5" />
-                  کانفیگ VPN
+                  دریافت کانفیگ
                 </button>
                 <button @click="openSubModal(user)" class="px-3 py-1.5 rounded-xl bg-cyberCyan/20 text-cyberCyan hover:bg-cyberCyan/30 text-xs font-semibold flex items-center gap-1 transition-all">
                   <QrCode class="w-3.5 h-3.5" />
@@ -74,7 +74,7 @@
 
             <tr v-if="users.length === 0">
               <td colspan="6" class="p-8 text-center text-gray-400 text-sm">
-                هیچ کاربری ثبت نشده است. با زدن دکمه «افزودن کاربر جدید» اولین کاربر را بسازید.
+                هیچ کاربری ثبت نشده است. با زدن دکمه «ساخت کاربر جدید» اولین کاربر را تعریف کنید.
               </td>
             </tr>
           </tbody>
@@ -94,7 +94,8 @@
               v-model="newUser.username"
               type="text" 
               placeholder="مثال: ali_user"
-              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:border-cyberViolet outline-none"
+              dir="ltr"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberViolet outline-none"
             />
           </div>
 
@@ -105,7 +106,8 @@
                 v-model="newUser.dataLimitGb"
                 type="number" 
                 placeholder="0 برای نامحدود"
-                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:border-cyberViolet outline-none"
+                dir="ltr"
+                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberViolet outline-none"
               />
             </div>
             <div>
@@ -114,7 +116,8 @@
                 v-model="newUser.expireDays"
                 type="number" 
                 placeholder="30"
-                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:border-cyberViolet outline-none"
+                dir="ltr"
+                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberViolet outline-none"
               />
             </div>
           </div>
@@ -131,7 +134,7 @@
             @click="createUser"
             class="px-5 py-2 rounded-xl bg-cyberViolet text-white text-xs font-semibold shadow-lg shadow-cyberViolet/40 hover:opacity-90"
           >
-            ذخیره و ساخت کانفیگ
+            ذخیره و ساخت اتصال
           </button>
         </div>
       </div>
@@ -141,13 +144,13 @@
     <div v-if="selectedUserForConfig" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
       <div class="glass-panel max-w-2xl w-full rounded-3xl p-6 border border-white/10 space-y-4 max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between">
-          <h3 class="text-lg font-bold text-white">🔑 کانفیگ‌های VPN: {{ selectedUserForConfig.username }}</h3>
+          <h3 class="text-lg font-bold text-white">🔑 کانفیگ‌های خروجی: {{ selectedUserForConfig.username }}</h3>
           <button @click="selectedUserForConfig = null" class="text-gray-400 hover:text-white text-xl">✕</button>
         </div>
 
         <!-- ISP Selector -->
         <div class="flex flex-wrap items-center gap-2 p-3 bg-white/5 rounded-2xl">
-          <span class="text-xs text-gray-400">اپراتور / حالت:</span>
+          <span class="text-xs text-gray-400">تنظیم هوشمند برای اپراتور:</span>
           <button v-for="isp in ispOptions" :key="isp.id" @click="selectedConfigIsp = isp.id; loadConfigs()" :class="['px-3 py-1.5 rounded-xl text-xs font-medium transition-all', selectedConfigIsp === isp.id ? isp.activeClass : 'bg-white/5 text-gray-400 hover:text-white']">
             {{ isp.label }}
           </button>
@@ -155,7 +158,7 @@
 
         <div v-if="configLoading" class="flex items-center justify-center py-8">
           <div class="w-6 h-6 border-2 border-cyberViolet border-t-transparent rounded-full animate-spin"></div>
-          <span class="mr-3 text-gray-400 text-sm">در حال دریافت کانفیگ‌ها…</span>
+          <span class="mr-3 text-gray-400 text-sm">در حال تولید فرمت‌های مختلف کانفیگ…</span>
         </div>
 
         <div v-if="userConfigs && !configLoading" class="space-y-4">
@@ -166,47 +169,47 @@
             </button>
           </div>
 
-          <!-- VLESS Links -->
+          <!-- VLESS Links (LTR Fixed) -->
           <div v-if="activeConfigTab === 'vless'" class="space-y-3">
             <div v-for="(link, i) in userConfigs.vlessLinks" :key="i" class="bg-black/40 rounded-2xl p-3 border border-white/5">
               <div class="flex items-center justify-between mb-2">
-                <span class="text-xs text-cyberCyan font-semibold">لینک {{ i + 1 }} — {{ userConfigs.username }}</span>
-                <button @click="copy(link)" class="px-2 py-0.5 rounded-lg bg-cyberViolet/30 text-cyberViolet text-xs">کپی</button>
+                <span class="text-xs text-cyberCyan font-semibold">لینک مستقیم VLESS (اینباند {{ i + 1 }})</span>
+                <button @click="copy(link)" class="px-3 py-1 rounded-lg bg-cyberViolet/30 text-cyberViolet hover:bg-cyberViolet/50 text-xs transition-all">کپی لینک</button>
               </div>
-              <pre class="text-[10px] font-mono text-gray-300 break-all whitespace-pre-wrap">{{ link }}</pre>
+              <pre dir="ltr" class="text-[11px] font-mono text-gray-200 break-all whitespace-pre-wrap text-left p-2.5 bg-black/60 rounded-xl border border-white/5 leading-relaxed">{{ link }}</pre>
             </div>
-            <div class="p-3 bg-white/5 rounded-2xl">
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-xs text-cyberGreen font-semibold">Base64 Subscription</span>
-                <button @click="copy(userConfigs.base64Sub)" class="px-2 py-0.5 rounded-lg bg-cyberGreen/20 text-cyberGreen text-xs">کپی</button>
+            <div class="p-3 bg-white/5 rounded-2xl space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-cyberGreen font-semibold">لینک سابسکریپشن کدگذاری شده (Base64)</span>
+                <button @click="copy(userConfigs.base64Sub)" class="px-3 py-1 rounded-lg bg-cyberGreen/20 text-cyberGreen hover:bg-cyberGreen/30 text-xs transition-all">کپی سابسکریپشن</button>
               </div>
-              <input readonly :value="userConfigs.subUrl" class="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-1.5 text-xs font-mono text-cyberCyan outline-none" />
+              <input readonly :value="userConfigs.subUrl" dir="ltr" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-left text-cyberCyan outline-none" />
             </div>
           </div>
 
-          <!-- Clash YAML -->
+          <!-- Clash YAML (LTR Fixed) -->
           <div v-if="activeConfigTab === 'clash'" class="space-y-3">
             <div class="flex items-center justify-between">
-              <p class="text-xs text-gray-400">کانفیگ آماده برای Clash Meta / Stash / Mihomo</p>
-              <button @click="copy(userConfigs.clashYaml)" class="px-3 py-1 rounded-xl bg-cyberCyan/20 text-cyberCyan text-xs font-semibold">کپی کامل</button>
+              <p class="text-xs text-gray-400">فایل تنظیمات کامل آماده برای Clash Meta / Stash / Mihomo</p>
+              <button @click="copy(userConfigs.clashYaml)" class="px-3 py-1 rounded-xl bg-cyberCyan/20 text-cyberCyan text-xs font-semibold">کپی کامل فایل YAML</button>
             </div>
-            <pre class="bg-black/50 p-4 rounded-2xl text-[10px] font-mono text-cyberGreen overflow-x-auto border border-white/5 max-h-72">{{ userConfigs.clashYaml }}</pre>
+            <pre dir="ltr" class="bg-black/60 p-4 rounded-2xl text-[11px] font-mono text-cyberGreen text-left overflow-x-auto border border-white/5 max-h-72 leading-relaxed">{{ userConfigs.clashYaml }}</pre>
           </div>
 
-          <!-- Sing-Box JSON -->
+          <!-- Sing-Box JSON (LTR Fixed) -->
           <div v-if="activeConfigTab === 'singbox'" class="space-y-3">
             <div class="flex items-center justify-between">
-              <p class="text-xs text-gray-400">کانفیگ آماده برای Sing-Box / NekoBox / Hiddify</p>
-              <button @click="copy(JSON.stringify(userConfigs.singboxJson, null, 2))" class="px-3 py-1 rounded-xl bg-cyberViolet/20 text-cyberViolet text-xs font-semibold">کپی کامل</button>
+              <p class="text-xs text-gray-400">فایل تنظیمات JSON کامل برای نرم‌افزارهای Sing-Box / NekoBox / Hiddify</p>
+              <button @click="copy(JSON.stringify(userConfigs.singboxJson, null, 2))" class="px-3 py-1 rounded-xl bg-cyberViolet/20 text-cyberViolet text-xs font-semibold">کپی کامل JSON</button>
             </div>
-            <pre class="bg-black/50 p-4 rounded-2xl text-[10px] font-mono text-cyberCyan overflow-x-auto border border-white/5 max-h-72">{{ JSON.stringify(userConfigs.singboxJson, null, 2) }}</pre>
+            <pre dir="ltr" class="bg-black/60 p-4 rounded-2xl text-[11px] font-mono text-cyberCyan text-left overflow-x-auto border border-white/5 max-h-72 leading-relaxed">{{ JSON.stringify(userConfigs.singboxJson, null, 2) }}</pre>
           </div>
 
           <!-- QR Code -->
-          <div v-if="activeConfigTab === 'qr'" class="flex flex-col items-center gap-4">
+          <div v-if="activeConfigTab === 'qr'" class="flex flex-col items-center gap-4 py-2">
             <div v-for="(link, i) in userConfigs.vlessLinks" :key="i" class="flex flex-col items-center gap-2">
-              <p class="text-xs text-gray-400">لینک {{ i + 1 }}</p>
-              <div class="bg-white p-3 rounded-2xl">
+              <p class="text-xs text-gray-300">اسکن بارکد لینک {{ i + 1 }}</p>
+              <div class="bg-white p-3.5 rounded-2xl shadow-xl">
                 <QrcodeVue :value="link" :size="160" />
               </div>
             </div>
@@ -215,7 +218,7 @@
       </div>
     </div>
 
-    <!-- Subscription & QR Modal (legacy) -->
+    <!-- Subscription & QR Modal -->
     <div v-if="selectedUserForSub" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
       <div class="glass-panel max-w-lg w-full rounded-3xl p-6 border border-white/10 space-y-4">
         <div class="flex items-center justify-between">
@@ -224,45 +227,46 @@
         </div>
 
         <div class="bg-white/5 p-4 rounded-2xl border border-white/10 space-y-3">
-          <label class="block text-xs text-gray-400">انتخاب اپراتور (برای تنظیم هوشمند Fragment):</label>
-          <div class="flex items-center gap-2">
+          <label class="block text-xs text-gray-400">انتخاب اپراتور (جهت تنظیم خودکار ترفند Fragment):</label>
+          <div class="flex flex-wrap items-center gap-2">
             <button 
               @click="selectedIsp = 'MCI'"
-              :class="['px-3 py-1.5 rounded-xl text-xs font-medium', selectedIsp === 'MCI' ? 'bg-cyberPink text-white' : 'bg-white/5 text-gray-400']"
+              :class="['px-3 py-1.5 rounded-xl text-xs font-medium transition-all', selectedIsp === 'MCI' ? 'bg-cyberPink text-white' : 'bg-white/5 text-gray-400']"
             >
               همراه اول
             </button>
             <button 
               @click="selectedIsp = 'IRANCELL'"
-              :class="['px-3 py-1.5 rounded-xl text-xs font-medium', selectedIsp === 'IRANCELL' ? 'bg-cyberCyan text-white' : 'bg-white/5 text-gray-400']"
+              :class="['px-3 py-1.5 rounded-xl text-xs font-medium transition-all', selectedIsp === 'IRANCELL' ? 'bg-cyberCyan text-white' : 'bg-white/5 text-gray-400']"
             >
               ایرانسل
             </button>
             <button 
               @click="selectedIsp = 'WHITE_SNI'"
-              :class="['px-3 py-1.5 rounded-xl text-xs font-medium', selectedIsp === 'WHITE_SNI' ? 'bg-cyberGreen text-white font-bold animate-pulse' : 'bg-white/5 text-gray-400']"
+              :class="['px-3 py-1.5 rounded-xl text-xs font-medium transition-all', selectedIsp === 'WHITE_SNI' ? 'bg-cyberGreen text-black font-bold' : 'bg-white/5 text-gray-400']"
             >
               ⚡ SNI سفید (زمان قطعی نت)
             </button>
             <button 
               @click="selectedIsp = 'DEFAULT'"
-              :class="['px-3 py-1.5 rounded-xl text-xs font-medium', selectedIsp === 'DEFAULT' ? 'bg-cyberViolet text-white' : 'bg-white/5 text-gray-400']"
+              :class="['px-3 py-1.5 rounded-xl text-xs font-medium transition-all', selectedIsp === 'DEFAULT' ? 'bg-cyberViolet text-white' : 'bg-white/5 text-gray-400']"
             >
               عمومی
             </button>
           </div>
 
           <div class="pt-2">
-            <label class="block text-xs text-gray-400 mb-1">لینک سابسکریپشن کامل:</label>
+            <label class="block text-xs text-gray-400 mb-1">لینک مستقیم اشتراک:</label>
             <div class="flex items-center gap-2">
               <input 
                 readonly
                 :value="getSubUrl(selectedUserForSub.uuid, selectedIsp)"
-                class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-cyberCyan outline-none"
+                dir="ltr"
+                class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-left text-cyberCyan outline-none"
               />
               <button 
                 @click="copyToClipboard(getSubUrl(selectedUserForSub.uuid, selectedIsp))"
-                class="px-3 py-2 rounded-xl bg-cyberViolet text-white text-xs font-semibold flex items-center gap-1"
+                class="px-3.5 py-2 rounded-xl bg-cyberViolet text-white text-xs font-semibold flex items-center gap-1 shrink-0"
               >
                 <Copy class="w-3.5 h-3.5" />
                 کپی
@@ -273,7 +277,7 @@
 
         <div class="flex flex-col items-center justify-center p-4 bg-white rounded-2xl">
           <QrcodeVue :value="getSubUrl(selectedUserForSub.uuid, selectedIsp)" :size="180" />
-          <p class="text-xs text-gray-800 font-semibold mt-2">اسکن در نرم‌افزار Sing-Box, V2rayN یا Shadowrocket</p>
+          <p class="text-xs text-gray-800 font-semibold mt-2">اسکن هوشمند توسط Sing-Box, V2rayN یا Shadowrocket</p>
         </div>
       </div>
     </div>
@@ -299,17 +303,17 @@ const selectedConfigIsp = ref('DEFAULT');
 const activeConfigTab = ref('vless');
 
 const configTabs = [
-  { id: 'vless', label: '🔗 VLESS Links' },
+  { id: 'vless', label: '🔗 لینک مستقیم VLESS' },
   { id: 'clash', label: '⚡ Clash Meta' },
   { id: 'singbox', label: '📦 Sing-Box' },
-  { id: 'qr', label: '📱 QR Code' },
+  { id: 'qr', label: '📱 بارکد QR' },
 ];
 
 const ispOptions = [
   { id: 'DEFAULT', label: '🌐 عمومی', activeClass: 'bg-cyberViolet text-white' },
   { id: 'MCI', label: '📱 همراه اول', activeClass: 'bg-cyberPink text-white' },
   { id: 'IRANCELL', label: '📡 ایرانسل', activeClass: 'bg-cyberCyan text-black' },
-  { id: 'WHITE_SNI', label: '⚡ SNI سفید (قطعی نت)', activeClass: 'bg-cyberGreen text-black font-bold' },
+  { id: 'WHITE_SNI', label: '⚡ SNI سفید (زمان قطعی نت)', activeClass: 'bg-cyberGreen text-black font-bold' },
 ];
 
 const newUser = ref({ username: '', dataLimitGb: 0, expireDays: 30 });
@@ -326,7 +330,7 @@ async function createUser() {
     showCreateModal.value = false;
     newUser.value = { username: '', dataLimitGb: 0, expireDays: 30 };
     fetchUsers();
-  } catch (err) { alert('خطا در ساخت کاربر'); }
+  } catch (err) { alert('خطا در ساخت کاربر جدید'); }
 }
 
 async function deleteUser(id: string) {
@@ -355,7 +359,7 @@ async function loadConfigs() {
 
 function copy(text: string) {
   navigator.clipboard.writeText(text);
-  alert('کپی شد!');
+  alert('محتوا با موفقیت کپی شد.');
 }
 
 function openSubModal(user: any) { selectedUserForSub.value = user; }
@@ -367,7 +371,7 @@ function getSubUrl(uuid: string, isp: string) {
 
 function copyToClipboard(text: string) {
   navigator.clipboard.writeText(text);
-  alert('لینک سابسکریپشن با موفقیت کپی شد!');
+  alert('لینک سابسکریپشن کپی شد.');
 }
 
 onMounted(fetchUsers);
