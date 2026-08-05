@@ -32,12 +32,17 @@ export function generateX25519Keypair(xrayExecPath?: string): { privateKey: stri
         return { privateKey: privMatch[1], publicKey: pubMatch[1] };
       }
     } catch (e) {
-      // Fallback below
+      // Exec error fallback
     }
   }
+
+  // Fallback: Generate URL-safe random keypair string if Xray binary unavailable during initial bootstrap
+  const crypto = require('crypto');
+  const randBytes = crypto.randomBytes(32).toString('base64url');
+  const pubBytes = crypto.randomBytes(32).toString('base64url');
   return {
-    privateKey: "OPSM7JJgD7LWJxufOAT_rrte0LwD-luo2_63gDl70Fs",
-    publicKey: "ROZ4xT1Mj_0-MmJCzHwqOyCSJnA3fwOdfZIpADbvyAg"
+    privateKey: randBytes,
+    publicKey: pubBytes
   };
 }
 

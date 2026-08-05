@@ -249,11 +249,13 @@ export class SubscriptionService {
     outbounds.push({ type: "direct", tag: "direct" });
     outbounds.push({ type: "block", tag: "block" });
 
+    const defaultDetour = outbounds.length > 2 ? outbounds[0].tag : "direct";
+
     return {
       log: { level: "info" },
       dns: {
         servers: [
-          { tag: "remote", address: "tls://1.1.1.1", detour: outbounds[0]?.tag },
+          { tag: "remote", address: "tls://1.1.1.1", detour: defaultDetour },
           { tag: "local", address: "223.5.5.5", detour: "direct" }
         ]
       },
@@ -303,7 +305,10 @@ export class SubscriptionService {
     servername: ${inbound.sni || sni}`;
     });
 
-    const proxyNames = inbounds.map(i => `      - "Nyx-${user.username}-${i.remark}"`).join('\n');
+    const proxyNamesList = inbounds.map(i => `      - "Nyx-${user.username}-${i.remark}"`).join('\n');
+    const hasProxies = inbounds.length > 0;
+    const proxiesYaml = hasProxies ? proxies.join('\n\n') : '  - name: "DIRECT"\n    type: direct';
+    const namesYaml = hasProxies ? proxyNamesList : '      - DIRECT';
 
     return `# Nyx Panel - Clash Meta Config
 # Generated for: ${user.username} | ISP: ${isp}
@@ -322,20 +327,20 @@ dns:
     - 8.8.8.8
 
 proxies:
-${proxies.join('\n\n')}
+${proxiesYaml}
 
 proxy-groups:
   - name: "🚀 Nyx Auto"
     type: url-test
     proxies:
-${proxyNames}
+${namesYaml}
     url: "http://www.gstatic.com/generate_204"
     interval: 300
 
   - name: "🛡️ Select"
     type: select
     proxies:
-${proxyNames}
+${namesYaml}
       - DIRECT
 
 rules:

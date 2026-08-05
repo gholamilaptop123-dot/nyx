@@ -2,11 +2,13 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+import crypto from 'crypto';
 import { PrismaClient } from '@prisma/client';
 import { ensureXrayBinary } from './xray/downloader';
 import { generateXrayJsonConfig, saveXrayConfig, generateX25519Keypair } from './xray/configGenerator';
 import { SubscriptionService } from './services/subscriptionService';
 import { TunnelManager } from './services/tunnelManager';
+import { XrayStatsService } from './services/xrayStatsService';
 import { initTelegramBot } from './services/telegramBot';
 import { execFile, ChildProcess } from 'child_process';
 import tls from 'tls';
@@ -18,6 +20,10 @@ const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3000;
 const SERVER_IP = process.env.SERVER_IP || '127.0.0.1';
 
+const ADMIN_USER = process.env.ADMIN_USER || 'admin';
+const ADMIN_PASS = process.env.ADMIN_PASS || 'nyx2026!';
+const activeTokens = new Set<string>();
+
 let xrayBinaryPath: string = '';
 let xrayProcess: ChildProcess | null = null;
 
@@ -27,6 +33,53 @@ app.use(express.json());
 // Serve static frontend build if present
 const frontendBuildPath = path.join(__dirname, '../../frontend/dist');
 app.use(express.static(frontendBuildPath));
+
+// --- AUTHENTICATION MIDDLEWARE ---
+const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  // Exclude public endpoints
+  if (
+    req.path.startsWith('/api/sub/') ||
+    req.path === '/api/auth/login' ||
+    req.path === '/api/sni/test'
+  ) {
+    return next();
+  }
+
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token || !activeTokens.has(token)) {
+    return res.status(401).json({ error: 'عدم دسترسی: لطفاً ابتدا وارد حساب کاربری خود شوید.' });
+  }
+
+  next();
+};
+
+app.use(requireAuth);
+
+// --- AUTH ENDPOINTS ---
+app.post('/api/auth/login', (req, res) => {
+  const { username, password } = req.body;
+
+  if (username === ADMIN_USER && password === ADMIN_PASS) {
+    const token = crypto.randomBytes(32).toString('hex');
+    activeTokens.add(token);
+    return res.json({ success: true, token, username });
+  }
+
+  return res.status(401).json({ error: 'نام کاربری یا کلمه عبور اشتباه است.' });
+});
+
+app.get('/api/auth/me', (req, res) => {
+  res.json({ authenticated: true, username: ADMIN_USER });
+});
+
+app.post('/api/auth/logout', (req, res) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(' ')[1];
+  if (token) activeTokens.delete(token);
+  res.json({ success: true });
+});
 
 // --- API ENDPOINTS ---
 
@@ -79,8 +132,13 @@ app.post('/api/users', async (req, res) => {
   try {
     const { username, dataLimitGb, expireDays, maxDevices } = req.body;
     
-    if (!username) {
-      return res.status(400).json({ error: 'Username is required' });
+    if (!username || username.trim() === '') {
+      return res.status(400).json({ error: 'نام کاربری الزامی است.' });
+    }
+
+    const existing = await prisma.user.findFirst({ where: { username: username.trim() } });
+    if (existing) {
+      return res.status(400).json({ error: 'کاربری با این نام هم‌اکنون وجود دارد.' });
     }
 
     let expireDate: Date | null = null;
@@ -91,7 +149,7 @@ app.post('/api/users', async (req, res) => {
 
     const newUser = await prisma.user.create({
       data: {
-        username,
+        username: username.trim(),
         dataLimitGb: parseFloat(dataLimitGb || 0),
         expireDate,
         maxDevices: parseInt(maxDevices || 2),
@@ -106,7 +164,7 @@ app.post('/api/users', async (req, res) => {
       usedDataBytes: newUser.usedDataBytes.toString()
     });
   } catch (error: any) {
-    res.status(500).json({ error: error.message || 'Failed to create user' });
+    res.status(500).json({ error: error.message || 'خطا در ثبت کاربر جدید' });
   }
 });
 
@@ -190,13 +248,24 @@ app.get('/api/inbounds', async (req, res) => {
 app.post('/api/inbounds', async (req, res) => {
   try {
     const { remark, protocol, port, network, security, sni, privateKey, publicKey, shortId, enableFragment } = req.body;
+    const parsedPort = parseInt(port);
+
+    if (isNaN(parsedPort) || parsedPort < 1 || parsedPort > 65535) {
+      return res.status(400).json({ error: 'شماره پورت نامعتبر است (بین ۱ تا ۶۵۵۳۵).' });
+    }
+
+    const existingPort = await prisma.inbound.findFirst({ where: { port: parsedPort } });
+    if (existingPort) {
+      return res.status(400).json({ error: `پورت ${parsedPort} قبلاً برای اینباند دیگری استفاده شده است.` });
+    }
+
     const generatedKeys = generateX25519Keypair(xrayBinaryPath);
 
     const newInbound = await prisma.inbound.create({
       data: {
-        remark: remark || `Port-${port}`,
+        remark: remark || `Port-${parsedPort}`,
         protocol: protocol || 'vless',
-        port: parseInt(port),
+        port: parsedPort,
         network: network || 'tcp',
         security: security || 'reality',
         sni: sni || 'yahoo.com',
@@ -210,13 +279,20 @@ app.post('/api/inbounds', async (req, res) => {
     await reloadXrayService();
     res.status(201).json(newInbound);
   } catch (error: any) {
-    res.status(500).json({ error: error.message || 'Failed to create inbound' });
+    res.status(500).json({ error: error.message || 'خطا در ثبت اینباند' });
   }
 });
 
 app.patch('/api/inbounds/:id', async (req, res) => {
   try {
-    const updated = await prisma.inbound.update({ where: { id: req.params.id }, data: req.body });
+    const { remark, enabled, sni, enableFragment } = req.body;
+    const allowedData: any = {};
+    if (remark !== undefined) allowedData.remark = remark;
+    if (enabled !== undefined) allowedData.enabled = Boolean(enabled);
+    if (sni !== undefined) allowedData.sni = sni;
+    if (enableFragment !== undefined) allowedData.enableFragment = Boolean(enableFragment);
+
+    const updated = await prisma.inbound.update({ where: { id: req.params.id }, data: allowedData });
     await reloadXrayService();
     res.json(updated);
   } catch (error: any) {
@@ -347,7 +423,7 @@ app.post('/api/nodes/tunnel-script', async (req, res) => {
   }
 });
 
-// 5. Universal Subscription Endpoint
+// 5. Universal Subscription Endpoint (Public)
 app.get('/api/sub/:uuid', async (req, res) => {
   try {
     const user = await prisma.user.findUnique({ where: { uuid: req.params.uuid } });
@@ -370,7 +446,7 @@ app.get('/api/sub/:uuid', async (req, res) => {
       return res.send(yaml);
     }
 
-    const base64Sub = SubscriptionService.generateBase64Sub(user, inbounds, hostIp, isp);
+    const base64Sub = SubscriptionService.generateBase64Sub(user as any, inbounds as any[], hostIp, isp);
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.send(base64Sub);
   } catch (error) {
@@ -378,7 +454,7 @@ app.get('/api/sub/:uuid', async (req, res) => {
   }
 });
 
-// --- HELPER TO RELOAD XRAY CONFIG & PROCESS ---
+// --- HELPER TO RELOAD XRAY CONFIG & PROCESS WITH GRACEFUL SOCKET RELEASE ---
 async function reloadXrayService() {
   try {
     const inbounds = await prisma.inbound.findMany({ where: { enabled: true } });
@@ -402,19 +478,21 @@ async function reloadXrayService() {
       id: u.id,
       username: u.username,
       uuid: u.uuid,
-      email: u.email || undefined
+      email: u.username
     }));
 
     const jsonConfig = generateXrayJsonConfig(formattedInbounds, formattedUsers);
     const configPath = saveXrayConfig(jsonConfig);
     console.log(`[Nyx Server] Saved updated Xray configuration to: ${configPath}`);
 
-    // Restart Xray-core child process if binary is available
+    // Restart Xray-core child process safely
     if (xrayBinaryPath) {
       if (xrayProcess) {
-        console.log('[Nyx Server] Restarting Xray-core child process...');
-        xrayProcess.kill();
+        console.log('[Nyx Server] Terminating previous Xray process...');
+        xrayProcess.kill('SIGTERM');
         xrayProcess = null;
+        // Wait 300ms for OS to free sockets
+        await new Promise(r => setTimeout(r, 300));
       }
       xrayProcess = execFile(xrayBinaryPath, ['run', '-config', configPath], (err) => {
         if (err && !err.killed) {
@@ -459,18 +537,26 @@ async function start() {
         }
       });
     } else {
-      // Fix any inbounds with invalid placeholder keys from old installs
+      // Fix any inbounds with invalid static keys from older installs
       const invalidInbounds = await (prisma as any).inbound.findMany({
-        where: { OR: [{ privateKey: { contains: '...' } }, { privateKey: { contains: 'Sample' } }, { privateKey: { contains: 'KEY' } }] }
+        where: { OR: [
+          { privateKey: { contains: '...' } },
+          { privateKey: { contains: 'Sample' } },
+          { privateKey: { contains: 'KEY' } },
+          { privateKey: { contains: 'OPSM7JJgD7LW' } }
+        ] }
       });
       for (const inbound of invalidInbounds) {
         const keys = generateX25519Keypair(xrayBinaryPath);
         await prisma.inbound.update({ where: { id: inbound.id }, data: { privateKey: keys.privateKey, publicKey: keys.publicKey } });
-        console.log(`[Nyx Server] Fixed invalid REALITY keys for inbound: ${inbound.remark}`);
+        console.log(`[Nyx Server] ✅ Automatically replaced static REALITY keys for inbound: ${inbound.remark}`);
       }
     }
 
     await reloadXrayService();
+
+    // Start live Xray traffic sync
+    XrayStatsService.startTrafficSyncLoop(xrayBinaryPath, 20000);
 
     // Start Telegram Bot if BOT_TOKEN is present
     if (process.env.BOT_TOKEN) {

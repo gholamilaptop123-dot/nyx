@@ -172,9 +172,12 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import axios from 'axios';
-import { Zap, Code, BookOpen } from 'lucide-vue-next';
+import { Zap, Copy, Check, Terminal, FileText, ArrowLeftRight, Code, BookOpen } from 'lucide-vue-next';
+
+const props = defineProps<{ toast?: (msg: string, type?: 'success' | 'error' | 'info') => void }>();
 
 const params = ref({
+  iranIp: '',
   kharejIp: '185.100.100.1',
   tunnelPort: 8443,
   targetInboundPort: 443,
@@ -196,13 +199,14 @@ async function generateScripts() {
     kharejScript.value = res.data.kharejScript;
     stepGuide.value = res.data.stepGuide;
     generated.value = true;
+    props.toast?.('اسکریپت‌های اتوماتیک تونل با موفقیت تولید شدند', 'success');
   } catch (err) {
-    alert('خطا در دریافت اطلاعات اسکریپت تونل');
+    props.toast?.('خطا در دریافت اطلاعات اسکریپت تونل', 'error');
   }
 }
 
 function copyText(text: string) {
   navigator.clipboard.writeText(text);
-  alert('اسکریپت در حافظه کپی شد.');
+  props.toast?.('اسکریپت در حافظه کپی شد.', 'success');
 }
 </script>

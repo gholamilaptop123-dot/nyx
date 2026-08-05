@@ -316,6 +316,7 @@ const ispOptions = [
   { id: 'WHITE_SNI', label: '⚡ SNI سفید (زمان قطعی نت)', activeClass: 'bg-cyberGreen text-black font-bold' },
 ];
 
+const props = defineProps<{ toast?: (msg: string, type?: 'success' | 'error' | 'info') => void }>();
 const newUser = ref({ username: '', dataLimitGb: 0, expireDays: 30 });
 
 async function fetchUsers() {
@@ -329,14 +330,19 @@ async function createUser() {
     await axios.post('/api/users', newUser.value);
     showCreateModal.value = false;
     newUser.value = { username: '', dataLimitGb: 0, expireDays: 30 };
+    props.toast?.('کاربر جدید با موفقیت ساخته شد', 'success');
     fetchUsers();
-  } catch (err) { alert('خطا در ساخت کاربر جدید'); }
+  } catch (err: any) { props.toast?.(err?.response?.data?.error || 'خطا در ساخت کاربر جدید', 'error'); }
 }
 
 async function deleteUser(id: string) {
   if (!confirm('آیا از حذف این کاربر اطمینان دارید؟')) return;
-  try { await axios.delete(`/api/users/${id}`); fetchUsers(); }
-  catch (err) { alert('خطا در حذف کاربر'); }
+  try {
+    await axios.delete(`/api/users/${id}`);
+    props.toast?.('کاربر با موفقیت حذف شد', 'success');
+    fetchUsers();
+  }
+  catch (err) { props.toast?.('خطا در حذف کاربر', 'error'); }
 }
 
 async function openConfigModal(user: any) {
@@ -359,7 +365,7 @@ async function loadConfigs() {
 
 function copy(text: string) {
   navigator.clipboard.writeText(text);
-  alert('محتوا با موفقیت کپی شد.');
+  props.toast?.('محتوا در حافظه کپی شد.', 'success');
 }
 
 function openSubModal(user: any) { selectedUserForSub.value = user; }
@@ -371,7 +377,7 @@ function getSubUrl(uuid: string, isp: string) {
 
 function copyToClipboard(text: string) {
   navigator.clipboard.writeText(text);
-  alert('لینک سابسکریپشن کپی شد.');
+  props.toast?.('لینک سابسکریپشن کپی شد.', 'success');
 }
 
 onMounted(fetchUsers);

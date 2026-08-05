@@ -104,6 +104,8 @@ import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { Server } from 'lucide-vue-next';
 
+const props = defineProps<{ toast?: (msg: string, type?: 'success' | 'error' | 'info') => void }>();
+
 const nodes = ref<any[]>([]);
 const showCreateModal = ref(false);
 const newNode = ref({
@@ -127,9 +129,10 @@ async function createNode() {
     await axios.post('/api/nodes', newNode.value);
     showCreateModal.value = false;
     newNode.value = { name: '', ip: '', type: 'IRAN_RELAY' };
+    props.toast?.('نود جدید با موفقیت ثبت شد', 'success');
     fetchNodes();
   } catch (err) {
-    alert('خطا در ثبت نود');
+    props.toast?.('خطا در ثبت نود', 'error');
   }
 }
 

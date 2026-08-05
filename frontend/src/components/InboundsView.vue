@@ -242,6 +242,8 @@ import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { Plus, Trash2, AlertTriangle, Activity, RefreshCw } from 'lucide-vue-next';
 
+const props = defineProps<{ toast?: (msg: string, type?: 'success' | 'error' | 'info') => void }>();
+
 const inbounds = ref<any[]>([]);
 const showCreateModal = ref(false);
 const creating = ref(false);
@@ -288,22 +290,37 @@ async function createInbound() {
     await axios.post('/api/inbounds', { ...form.value, sni });
     showCreateModal.value = false;
     form.value = { remark: '', protocol: 'vless', port: 443, network: 'tcp', security: 'reality', sni: 'yahoo.com', customSni: '', privateKey: '', publicKey: '', shortId: '6ba7b810', enableFragment: true };
+    props.toast?.('اینباند جدید با موفقیت ایجاد گردید', 'success');
     fetchInbounds();
-  } catch (err: any) { alert(err?.response?.data?.error || 'خطا در ثبت اینباند'); } finally { creating.value = false; }
+  } catch (err: any) {
+    props.toast?.(err?.response?.data?.error || 'خطا در ثبت اینباند', 'error');
+  } finally { creating.value = false; }
 }
 
 async function toggleInbound(inbound: any) {
-  try { await axios.patch(`/api/inbounds/${inbound.id}`, { enabled: !inbound.enabled }); fetchInbounds(); } catch (err) { alert('خطا در تغییر وضعیت اینباند'); }
+  try {
+    await axios.patch(`/api/inbounds/${inbound.id}`, { enabled: !inbound.enabled });
+    props.toast?.(`وضعیت اینباند ${inbound.remark} به‌روزرسانی شد`, 'info');
+    fetchInbounds();
+  } catch (err: any) {
+    props.toast?.('خطا در تغییر وضعیت اینباند', 'error');
+  }
 }
 
 async function deleteInbound(id: string) {
   if (!confirm('آیا از حذف این اینباند اطمینان دارید؟')) return;
-  try { await axios.delete(`/api/inbounds/${id}`); fetchInbounds(); } catch (err) { alert('خطا در حذف اینباند'); }
+  try {
+    await axios.delete(`/api/inbounds/${id}`);
+    props.toast?.('اینباند با موفقیت حذف شد', 'success');
+    fetchInbounds();
+  } catch (err) {
+    props.toast?.('خطا در حذف اینباند', 'error');
+  }
 }
 
 function copyText(text: string) {
   navigator.clipboard.writeText(text);
-  alert('دستور کپی شد.');
+  props.toast?.('دستور در حافظه کپی شد.', 'success');
 }
 
 onMounted(fetchInbounds);
