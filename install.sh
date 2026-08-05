@@ -27,8 +27,6 @@ echo -e "${CYAN}----------------------------------------------------${NC}"
 echo -e "${YELLOW}🔑 تنظیم اطلاعات ورود به پنل مدیریتی (Admin Setup):${NC}"
 echo -e "${CYAN}----------------------------------------------------${NC}"
 
-# Read from TTY if piped via curl | bash
-exec 3<>&1
 if [ -t 0 ]; then
   read -p "👤 نام کاربری ادمین (پیش‌فرض: admin): " INPUT_ADMIN_USER
   read -sp "🔐 کلمه عبور ادمین (پیش‌فرض: nyx2026!): " INPUT_ADMIN_PASS
