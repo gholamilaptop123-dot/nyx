@@ -88,14 +88,98 @@ export class SubscriptionService {
       }
     }));
 
-    outbounds.push({
-      type: "direct",
-      tag: "direct"
-    });
+    outbounds.push({ type: "direct", tag: "direct" });
+    outbounds.push({ type: "block", tag: "block" });
 
     return {
       log: { level: "info" },
-      outbounds: outbounds
+      dns: {
+        servers: [
+          { tag: "remote", address: "tls://1.1.1.1", detour: outbounds[0]?.tag },
+          { tag: "local", address: "223.5.5.5", detour: "direct" }
+        ]
+      },
+      outbounds,
+      route: {
+        rules: [{ geosite: ["cn"], outbound: "direct" }],
+        auto_detect_interface: true
+      }
     };
+  }
+
+  /**
+   * Generates Clash Meta YAML config for Clash / Stash / Mihomo clients
+   */
+  static generateClashYaml(user: User, inbounds: Inbound[], serverIp: string, isp: string = 'DEFAULT'): string {
+    const sni = isp === 'WHITE_SNI' ? this.WHITE_IRAN_SNIS[0] : 'yahoo.com';
+
+    const proxies = inbounds.map(inbound => {
+      const proxyName = `Nyx-${user.username}-${inbound.remark}`;
+      if (inbound.security === 'reality') {
+        return `  - name: "${proxyName}"
+    type: vless
+    server: ${serverIp}
+    port: ${inbound.port}
+    uuid: ${user.uuid}
+    network: ${inbound.network || 'tcp'}
+    tls: true
+    udp: true
+    flow: xtls-rprx-vision
+    servername: ${inbound.sni || sni}
+    reality-opts:
+      public-key: ${inbound.publicKey || ''}
+      short-id: ${inbound.shortId || '6ba7b810'}
+    client-fingerprint: chrome`;
+      }
+      return `  - name: "${proxyName}"
+    type: vless
+    server: ${serverIp}
+    port: ${inbound.port}
+    uuid: ${user.uuid}
+    network: ${inbound.network || 'tcp'}
+    tls: ${inbound.security === 'tls'}
+    udp: true
+    servername: ${inbound.sni || sni}`;
+    });
+
+    const proxyNames = inbounds.map(i => `      - "Nyx-${user.username}-${i.remark}"`).join('\n');
+
+    return `# Nyx Panel - Clash Meta Config
+# Generated for: ${user.username} | ISP: ${isp}
+# Server: ${serverIp}
+
+mixed-port: 7890
+allow-lan: true
+mode: rule
+log-level: info
+
+dns:
+  enable: true
+  enhanced-mode: fake-ip
+  nameserver:
+    - 1.1.1.1
+    - 8.8.8.8
+
+proxies:
+${proxies.join('\n\n')}
+
+proxy-groups:
+  - name: "🚀 Nyx Auto"
+    type: url-test
+    proxies:
+${proxyNames}
+    url: "http://www.gstatic.com/generate_204"
+    interval: 300
+
+  - name: "🛡️ Select"
+    type: select
+    proxies:
+${proxyNames}
+      - DIRECT
+
+rules:
+  - GEOIP,IR,DIRECT
+  - MATCH,🚀 Nyx Auto
+`;
   }
 }

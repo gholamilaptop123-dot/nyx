@@ -54,12 +54,13 @@
                 </span>
               </td>
               <td class="p-4 flex items-center justify-center gap-2">
-                <button 
-                  @click="openSubModal(user)"
-                  class="px-3 py-1.5 rounded-xl bg-cyberCyan/20 text-cyberCyan hover:bg-cyberCyan/30 text-xs font-semibold flex items-center gap-1 transition-all"
-                >
+                <button @click="openConfigModal(user)" class="px-3 py-1.5 rounded-xl bg-cyberViolet/20 text-cyberViolet hover:bg-cyberViolet/30 text-xs font-semibold flex items-center gap-1 transition-all">
+                  <Download class="w-3.5 h-3.5" />
+                  کانفیگ VPN
+                </button>
+                <button @click="openSubModal(user)" class="px-3 py-1.5 rounded-xl bg-cyberCyan/20 text-cyberCyan hover:bg-cyberCyan/30 text-xs font-semibold flex items-center gap-1 transition-all">
                   <QrCode class="w-3.5 h-3.5" />
-                  لینک ساب & QR
+                  لینک ساب
                 </button>
                 <button 
                   @click="deleteUser(user.id)"
@@ -136,7 +137,85 @@
       </div>
     </div>
 
-    <!-- Subscription & QR Modal -->
+    <!-- VPN Config Modal -->
+    <div v-if="selectedUserForConfig" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
+      <div class="glass-panel max-w-2xl w-full rounded-3xl p-6 border border-white/10 space-y-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-bold text-white">🔑 کانفیگ‌های VPN: {{ selectedUserForConfig.username }}</h3>
+          <button @click="selectedUserForConfig = null" class="text-gray-400 hover:text-white text-xl">✕</button>
+        </div>
+
+        <!-- ISP Selector -->
+        <div class="flex flex-wrap items-center gap-2 p-3 bg-white/5 rounded-2xl">
+          <span class="text-xs text-gray-400">اپراتور / حالت:</span>
+          <button v-for="isp in ispOptions" :key="isp.id" @click="selectedConfigIsp = isp.id; loadConfigs()" :class="['px-3 py-1.5 rounded-xl text-xs font-medium transition-all', selectedConfigIsp === isp.id ? isp.activeClass : 'bg-white/5 text-gray-400 hover:text-white']">
+            {{ isp.label }}
+          </button>
+        </div>
+
+        <div v-if="configLoading" class="flex items-center justify-center py-8">
+          <div class="w-6 h-6 border-2 border-cyberViolet border-t-transparent rounded-full animate-spin"></div>
+          <span class="mr-3 text-gray-400 text-sm">در حال دریافت کانفیگ‌ها…</span>
+        </div>
+
+        <div v-if="userConfigs && !configLoading" class="space-y-4">
+          <!-- Tab switcher -->
+          <div class="flex items-center gap-1 bg-white/5 p-1 rounded-2xl">
+            <button v-for="tab in configTabs" :key="tab.id" @click="activeConfigTab = tab.id" :class="['flex-1 py-1.5 rounded-xl text-xs font-medium transition-all', activeConfigTab === tab.id ? 'bg-cyberViolet text-white shadow-lg' : 'text-gray-400 hover:text-white']">
+              {{ tab.label }}
+            </button>
+          </div>
+
+          <!-- VLESS Links -->
+          <div v-if="activeConfigTab === 'vless'" class="space-y-3">
+            <div v-for="(link, i) in userConfigs.vlessLinks" :key="i" class="bg-black/40 rounded-2xl p-3 border border-white/5">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs text-cyberCyan font-semibold">لینک {{ i + 1 }} — {{ userConfigs.username }}</span>
+                <button @click="copy(link)" class="px-2 py-0.5 rounded-lg bg-cyberViolet/30 text-cyberViolet text-xs">کپی</button>
+              </div>
+              <pre class="text-[10px] font-mono text-gray-300 break-all whitespace-pre-wrap">{{ link }}</pre>
+            </div>
+            <div class="p-3 bg-white/5 rounded-2xl">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs text-cyberGreen font-semibold">Base64 Subscription</span>
+                <button @click="copy(userConfigs.base64Sub)" class="px-2 py-0.5 rounded-lg bg-cyberGreen/20 text-cyberGreen text-xs">کپی</button>
+              </div>
+              <input readonly :value="userConfigs.subUrl" class="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-1.5 text-xs font-mono text-cyberCyan outline-none" />
+            </div>
+          </div>
+
+          <!-- Clash YAML -->
+          <div v-if="activeConfigTab === 'clash'" class="space-y-3">
+            <div class="flex items-center justify-between">
+              <p class="text-xs text-gray-400">کانفیگ آماده برای Clash Meta / Stash / Mihomo</p>
+              <button @click="copy(userConfigs.clashYaml)" class="px-3 py-1 rounded-xl bg-cyberCyan/20 text-cyberCyan text-xs font-semibold">کپی کامل</button>
+            </div>
+            <pre class="bg-black/50 p-4 rounded-2xl text-[10px] font-mono text-cyberGreen overflow-x-auto border border-white/5 max-h-72">{{ userConfigs.clashYaml }}</pre>
+          </div>
+
+          <!-- Sing-Box JSON -->
+          <div v-if="activeConfigTab === 'singbox'" class="space-y-3">
+            <div class="flex items-center justify-between">
+              <p class="text-xs text-gray-400">کانفیگ آماده برای Sing-Box / NekoBox / Hiddify</p>
+              <button @click="copy(JSON.stringify(userConfigs.singboxJson, null, 2))" class="px-3 py-1 rounded-xl bg-cyberViolet/20 text-cyberViolet text-xs font-semibold">کپی کامل</button>
+            </div>
+            <pre class="bg-black/50 p-4 rounded-2xl text-[10px] font-mono text-cyberCyan overflow-x-auto border border-white/5 max-h-72">{{ JSON.stringify(userConfigs.singboxJson, null, 2) }}</pre>
+          </div>
+
+          <!-- QR Code -->
+          <div v-if="activeConfigTab === 'qr'" class="flex flex-col items-center gap-4">
+            <div v-for="(link, i) in userConfigs.vlessLinks" :key="i" class="flex flex-col items-center gap-2">
+              <p class="text-xs text-gray-400">لینک {{ i + 1 }}</p>
+              <div class="bg-white p-3 rounded-2xl">
+                <QrcodeVue :value="link" :size="160" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Subscription & QR Modal (legacy) -->
     <div v-if="selectedUserForSub" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
       <div class="glass-panel max-w-lg w-full rounded-3xl p-6 border border-white/10 space-y-4">
         <div class="flex items-center justify-between">
@@ -204,7 +283,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import { UserPlus, Trash2, QrCode, Copy } from 'lucide-vue-next';
+import { UserPlus, Trash2, QrCode, Copy, Download } from 'lucide-vue-next';
 import QrcodeVue from 'qrcode.vue';
 
 const users = ref<any[]>([]);
@@ -212,19 +291,32 @@ const showCreateModal = ref(false);
 const selectedUserForSub = ref<any>(null);
 const selectedIsp = ref('MCI');
 
-const newUser = ref({
-  username: '',
-  dataLimitGb: 0,
-  expireDays: 30
-});
+// VPN Config Modal state
+const selectedUserForConfig = ref<any>(null);
+const userConfigs = ref<any>(null);
+const configLoading = ref(false);
+const selectedConfigIsp = ref('DEFAULT');
+const activeConfigTab = ref('vless');
+
+const configTabs = [
+  { id: 'vless', label: '🔗 VLESS Links' },
+  { id: 'clash', label: '⚡ Clash Meta' },
+  { id: 'singbox', label: '📦 Sing-Box' },
+  { id: 'qr', label: '📱 QR Code' },
+];
+
+const ispOptions = [
+  { id: 'DEFAULT', label: '🌐 عمومی', activeClass: 'bg-cyberViolet text-white' },
+  { id: 'MCI', label: '📱 همراه اول', activeClass: 'bg-cyberPink text-white' },
+  { id: 'IRANCELL', label: '📡 ایرانسل', activeClass: 'bg-cyberCyan text-black' },
+  { id: 'WHITE_SNI', label: '⚡ SNI سفید (قطعی نت)', activeClass: 'bg-cyberGreen text-black font-bold' },
+];
+
+const newUser = ref({ username: '', dataLimitGb: 0, expireDays: 30 });
 
 async function fetchUsers() {
-  try {
-    const res = await axios.get('/api/users');
-    users.value = res.data;
-  } catch (err) {
-    console.error('Failed to fetch users:', err);
-  }
+  try { const res = await axios.get('/api/users'); users.value = res.data; }
+  catch (err) { console.error('Failed to fetch users:', err); }
 }
 
 async function createUser() {
@@ -234,24 +326,39 @@ async function createUser() {
     showCreateModal.value = false;
     newUser.value = { username: '', dataLimitGb: 0, expireDays: 30 };
     fetchUsers();
-  } catch (err) {
-    alert('خطا در ساخت کاربر');
-  }
+  } catch (err) { alert('خطا در ساخت کاربر'); }
 }
 
 async function deleteUser(id: string) {
   if (!confirm('آیا از حذف این کاربر اطمینان دارید؟')) return;
-  try {
-    await axios.delete(`/api/users/${id}`);
-    fetchUsers();
-  } catch (err) {
-    alert('خطا در حذف کاربر');
-  }
+  try { await axios.delete(`/api/users/${id}`); fetchUsers(); }
+  catch (err) { alert('خطا در حذف کاربر'); }
 }
 
-function openSubModal(user: any) {
-  selectedUserForSub.value = user;
+async function openConfigModal(user: any) {
+  selectedUserForConfig.value = user;
+  selectedConfigIsp.value = 'DEFAULT';
+  activeConfigTab.value = 'vless';
+  await loadConfigs();
 }
+
+async function loadConfigs() {
+  if (!selectedUserForConfig.value) return;
+  configLoading.value = true;
+  userConfigs.value = null;
+  try {
+    const res = await axios.get(`/api/users/${selectedUserForConfig.value.id}/configs?isp=${selectedConfigIsp.value}`);
+    userConfigs.value = res.data;
+  } catch (err) { console.error('Failed to load configs:', err); }
+  finally { configLoading.value = false; }
+}
+
+function copy(text: string) {
+  navigator.clipboard.writeText(text);
+  alert('کپی شد!');
+}
+
+function openSubModal(user: any) { selectedUserForSub.value = user; }
 
 function getSubUrl(uuid: string, isp: string) {
   const host = window.location.host;
@@ -263,7 +370,5 @@ function copyToClipboard(text: string) {
   alert('لینک سابسکریپشن با موفقیت کپی شد!');
 }
 
-onMounted(() => {
-  fetchUsers();
-});
+onMounted(fetchUsers);
 </script>

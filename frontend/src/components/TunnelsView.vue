@@ -93,6 +93,40 @@
       </div>
     </div>
 
+    <!-- Step by Step Guide -->
+    <div v-if="generated && stepGuide && stepGuide.steps" class="space-y-4">
+      <div class="glass-panel p-5 rounded-3xl border border-cyberCyan/30">
+        <h3 class="text-base font-bold text-white flex items-center gap-2 mb-4">
+          <BookOpen class="w-5 h-5 text-cyberCyan" />
+          راهنمای گام‌به‌گام نصب تونل
+        </h3>
+        <div class="space-y-4">
+          <div v-for="(step, i) in stepGuide.steps" :key="i" class="border border-white/10 rounded-2xl overflow-hidden">
+            <div class="bg-white/5 px-4 py-2.5 flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-cyberViolet flex items-center justify-center text-xs font-bold text-white">{{ i + 1 }}</span>
+              <h4 class="text-sm font-bold text-white">{{ step.title }}</h4>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-white/5">
+              <div class="p-4 space-y-2">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="text-base">🇮🇷</span>
+                  <span class="text-xs font-bold text-cyberViolet">سرور ایران ({{ stepGuide.iranIp }})</span>
+                </div>
+                <pre class="text-xs font-mono text-gray-300 bg-black/40 p-3 rounded-xl whitespace-pre-wrap break-all border border-white/5">{{ step.iranStep }}</pre>
+              </div>
+              <div class="p-4 space-y-2">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="text-base">🇪🇺</span>
+                  <span class="text-xs font-bold text-cyberGreen">سرور خارج ({{ stepGuide.kharejIp }})</span>
+                </div>
+                <pre class="text-xs font-mono text-gray-300 bg-black/40 p-3 rounded-xl whitespace-pre-wrap break-all border border-white/5">{{ step.kharejStep }}</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Output Generated Bash Scripts -->
     <div v-if="generated" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <!-- Iran Server Script -->
@@ -133,7 +167,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import axios from 'axios';
-import { Zap, Code } from 'lucide-vue-next';
+import { Zap, Code, BookOpen } from 'lucide-vue-next';
 
 const params = ref({
   kharejIp: '185.100.100.1',
@@ -148,12 +182,14 @@ const params = ref({
 const generated = ref(false);
 const iranScript = ref('');
 const kharejScript = ref('');
+const stepGuide = ref<any>(null);
 
 async function generateScripts() {
   try {
     const res = await axios.post('/api/nodes/tunnel-script', params.value);
     iranScript.value = res.data.iranScript;
     kharejScript.value = res.data.kharejScript;
+    stepGuide.value = res.data.stepGuide;
     generated.value = true;
   } catch (err) {
     alert('خطا در تولید اسکریپت تونل');

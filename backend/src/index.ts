@@ -34,20 +34,20 @@ app.get('/api/stats/dashboard', async (req, res) => {
   try {
     const totalUsers = await prisma.user.count();
     const activeUsers = await prisma.user.count({ where: { status: 'ACTIVE' } });
+    const expiredUsers = await prisma.user.count({ where: { status: 'EXPIRED' } });
     const nodes = await prisma.node.findMany();
     const inbounds = await prisma.inbound.findMany();
     const users = await prisma.user.findMany();
 
     let totalBytes = BigInt(0);
-    users.forEach(u => {
-      totalBytes += u.usedDataBytes;
-    });
+    users.forEach(u => { totalBytes += u.usedDataBytes; });
 
     const hostIp = (req.headers.host ? req.headers.host.split(':')[0] : SERVER_IP);
 
     res.json({
       totalUsers,
       activeUsers,
+      expiredUsers,
       totalNodes: nodes.length,
       totalInbounds: inbounds.length,
       totalTransferredGb: (Number(totalBytes) / (1024 * 1024 * 1024)).toFixed(2),
@@ -109,6 +109,29 @@ app.post('/api/users', async (req, res) => {
   }
 });
 
+app.patch('/api/users/:id', async (req, res) => {
+  try {
+    const { status, dataLimitGb, expireDays } = req.body;
+    const updateData: any = {};
+    if (status) updateData.status = status;
+    if (dataLimitGb !== undefined) updateData.dataLimitGb = parseFloat(dataLimitGb);
+    if (expireDays !== undefined) {
+      if (Number(expireDays) > 0) {
+        const expireDate = new Date();
+        expireDate.setDate(expireDate.getDate() + Number(expireDays));
+        updateData.expireDate = expireDate;
+      } else {
+        updateData.expireDate = null;
+      }
+    }
+    const updated = await prisma.user.update({ where: { id: req.params.id }, data: updateData });
+    await reloadXrayService();
+    res.json({ ...updated, usedDataBytes: updated.usedDataBytes.toString() });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || 'Failed to update user' });
+  }
+});
+
 app.delete('/api/users/:id', async (req, res) => {
   try {
     await prisma.user.delete({ where: { id: req.params.id } });
@@ -119,7 +142,41 @@ app.delete('/api/users/:id', async (req, res) => {
   }
 });
 
-// 3. Inbound Management APIs
+// 3. VPN Config Generator — Full configs for a user (all formats)
+app.get('/api/users/:id/configs', async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.params.id } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const inbounds = await prisma.inbound.findMany({ where: { enabled: true } });
+    const hostIp = (req.headers.host ? req.headers.host.split(':')[0] : SERVER_IP);
+    const isp = (req.query.isp as string) || 'DEFAULT';
+
+    const vlessLinks = inbounds.map(inbound =>
+      SubscriptionService.generateVlessLink(user as any, inbound as any, hostIp, isp)
+    );
+    const base64Sub = SubscriptionService.generateBase64Sub(user as any, inbounds as any[], hostIp, isp);
+    const singboxJson = SubscriptionService.generateSingBoxJson(user as any, inbounds as any[], hostIp, isp);
+    const clashYaml = SubscriptionService.generateClashYaml(user as any, inbounds as any[], hostIp, isp);
+    const subUrl = `http://${hostIp}:${PORT}/api/sub/${user.uuid}?isp=${isp}`;
+
+    res.json({ username: user.username, uuid: user.uuid, subUrl, base64Sub, vlessLinks, singboxJson, clashYaml, serverIp: hostIp });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || 'Failed to generate configs' });
+  }
+});
+
+// 4. Inbound Management APIs
+app.get('/api/inbounds/keygen', (req, res) => {
+  try {
+    const keys = generateX25519Keypair(xrayBinaryPath);
+    const shortId = Math.random().toString(16).substring(2, 10);
+    res.json({ ...keys, shortId });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to generate keypair' });
+  }
+});
+
 app.get('/api/inbounds', async (req, res) => {
   try {
     const inbounds = await prisma.inbound.findMany();
@@ -156,7 +213,27 @@ app.post('/api/inbounds', async (req, res) => {
   }
 });
 
-// 4. Multi-Node & Tunnel Generator APIs
+app.patch('/api/inbounds/:id', async (req, res) => {
+  try {
+    const updated = await prisma.inbound.update({ where: { id: req.params.id }, data: req.body });
+    await reloadXrayService();
+    res.json(updated);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || 'Failed to update inbound' });
+  }
+});
+
+app.delete('/api/inbounds/:id', async (req, res) => {
+  try {
+    await prisma.inbound.delete({ where: { id: req.params.id } });
+    await reloadXrayService();
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete inbound' });
+  }
+});
+
+// 5. Multi-Node & Tunnel Generator APIs
 app.get('/api/nodes', async (req, res) => {
   try {
     const nodes = await prisma.node.findMany();
@@ -184,9 +261,18 @@ app.post('/api/nodes', async (req, res) => {
   }
 });
 
+app.delete('/api/nodes/:id', async (req, res) => {
+  try {
+    await prisma.node.delete({ where: { id: req.params.id } });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete node' });
+  }
+});
+
 app.post('/api/nodes/tunnel-script', async (req, res) => {
   try {
-    const { iranIp, kharejIp, tunnelPort, targetInboundPort, secret, tunnelType } = req.body;
+    const { iranIp, kharejIp, tunnelPort, targetInboundPort, secret, tunnelType, whiteDnsServer, whiteDomain } = req.body;
     const hostIp = (req.headers.host ? req.headers.host.split(':')[0] : SERVER_IP);
     const params = {
       iranIp: iranIp || 'IRAN_SERVER_IP',
@@ -194,16 +280,16 @@ app.post('/api/nodes/tunnel-script', async (req, res) => {
       tunnelPort: parseInt(tunnelPort || 8443),
       targetInboundPort: parseInt(targetInboundPort || 443),
       secret: secret || 'NyxSecret123',
-      tunnelType: tunnelType || 'GOST'
+      tunnelType: tunnelType || 'GOST',
+      whiteDnsServer,
+      whiteDomain
     };
 
-    const iranScript = TunnelManager.generateIranScript(params);
-    const kharejScript = TunnelManager.generateKharejScript(params);
+    const iranScript = TunnelManager.generateIranScript(params as any);
+    const kharejScript = TunnelManager.generateKharejScript(params as any);
+    const stepGuide = TunnelManager.generateStepByStepGuide(params as any);
 
-    res.json({
-      iranScript,
-      kharejScript
-    });
+    res.json({ iranScript, kharejScript, stepGuide });
   } catch (error) {
     res.status(500).json({ error: 'Failed to generate tunnel script' });
   }
@@ -223,8 +309,13 @@ app.get('/api/sub/:uuid', async (req, res) => {
     const hostIp = (req.headers.host ? req.headers.host.split(':')[0] : SERVER_IP);
 
     if (format === 'singbox') {
-      const jsonConfig = SubscriptionService.generateSingBoxJson(user, inbounds, hostIp);
+      const jsonConfig = SubscriptionService.generateSingBoxJson(user as any, inbounds as any[], hostIp, isp);
       return res.json(jsonConfig);
+    }
+    if (format === 'clash') {
+      const yaml = SubscriptionService.generateClashYaml(user as any, inbounds as any[], hostIp, isp);
+      res.setHeader('Content-Type', 'text/yaml; charset=utf-8');
+      return res.send(yaml);
     }
 
     const base64Sub = SubscriptionService.generateBase64Sub(user, inbounds, hostIp, isp);
@@ -310,17 +401,21 @@ async function start() {
       await prisma.inbound.create({
         data: {
           remark: 'VLESS-REALITY-Default',
-          protocol: 'vless',
-          port: 443,
-          network: 'tcp',
-          security: 'reality',
-          sni: 'yahoo.com',
-          privateKey: keys.privateKey,
-          publicKey: keys.publicKey,
-          shortId: '6ba7b810',
-          enableFragment: true
+          protocol: 'vless', port: 443, network: 'tcp', security: 'reality',
+          sni: 'yahoo.com', privateKey: keys.privateKey, publicKey: keys.publicKey,
+          shortId: '6ba7b810', enableFragment: true
         }
       });
+    } else {
+      // Fix any inbounds with invalid placeholder keys from old installs
+      const invalidInbounds = await (prisma as any).inbound.findMany({
+        where: { OR: [{ privateKey: { contains: '...' } }, { privateKey: { contains: 'Sample' } }, { privateKey: { contains: 'KEY' } }] }
+      });
+      for (const inbound of invalidInbounds) {
+        const keys = generateX25519Keypair(xrayBinaryPath);
+        await prisma.inbound.update({ where: { id: inbound.id }, data: { privateKey: keys.privateKey, publicKey: keys.publicKey } });
+        console.log(`[Nyx Server] Fixed invalid REALITY keys for inbound: ${inbound.remark}`);
+      }
     }
 
     await reloadXrayService();

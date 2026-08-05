@@ -61,6 +61,7 @@
     <main class="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto">
       <DashboardView v-if="activeTab === 'dashboard'" />
       <UsersView v-if="activeTab === 'users'" />
+      <InboundsView v-if="activeTab === 'inbounds'" />
       <NodesView v-if="activeTab === 'nodes'" />
       <TunnelsView v-if="activeTab === 'tunnels'" />
     </main>
@@ -75,18 +76,20 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Shield, LayoutDashboard, Users, Server, Zap } from 'lucide-vue-next';
+import { Shield, LayoutDashboard, Users, Server, Zap, Network } from 'lucide-vue-next';
 import DashboardView from './components/DashboardView.vue';
 import UsersView from './components/UsersView.vue';
+import InboundsView from './components/InboundsView.vue';
 import NodesView from './components/NodesView.vue';
 import TunnelsView from './components/TunnelsView.vue';
 
 const activeTab = ref('dashboard');
 
 const tabs = [
-  { id: 'dashboard', name: 'داشبورد اصلی', icon: LayoutDashboard },
-  { id: 'users', name: 'مدیریت کاربران', icon: Users },
+  { id: 'dashboard', name: 'داشبورد', icon: LayoutDashboard },
+  { id: 'users', name: 'کاربران', icon: Users },
+  { id: 'inbounds', name: 'اینباندها', icon: Network },
   { id: 'nodes', name: 'سرورها و نودها', icon: Server },
-  { id: 'tunnels', name: 'تونل قطعی نت (Gost)', icon: Zap },
+  { id: 'tunnels', name: 'تونل قطعی نت', icon: Zap },
 ];
 </script>
