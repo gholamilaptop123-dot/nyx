@@ -10,11 +10,11 @@ export function initTelegramBot(token: string, domainOrIp: string) {
   }
 
   const bot = new TelegramBot(token, { polling: true });
-  console.log('[Telegram Bot] AegisX Bot successfully started!');
+  console.log('[Telegram Bot] Nyx Bot successfully started!');
 
   bot.onText(/\/start|\/help/, async (msg) => {
     const chatId = msg.chat.id;
-    const welcomeText = `🛡️ *به ربات مدیریت کانفیگ AegisX خوش آمدید!*
+    const welcomeText = `🛡️ *به ربات مدیریت Nyx Panel خوش آمدید!*
 
 برنامه‌ریزی‌شده برای شرایط سخت فیلترینگ و قطعی اینترنت بین‌الملل.
 

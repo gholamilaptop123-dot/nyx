@@ -8,7 +8,7 @@
         </div>
         <div>
           <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-cyberCyan glow-purple">
-            AegisX Panel
+            Nyx Panel
           </h1>
           <p class="text-xs text-gray-400">سامانه مدیریت ضد فیلترینگ و قطعی شبکه ملی</p>
         </div>
@@ -68,7 +68,7 @@
 
     <!-- Footer -->
     <footer class="border-t border-white/5 py-4 px-6 text-center text-xs text-gray-500 flex flex-col md:flex-row justify-between items-center gap-2">
-      <span>AegisX v1.0.0 - طراحی ویژه لینوکس و شرایط سخت فیلترینگ ایران</span>
+      <span>Nyx Panel v2.0 - طراحی ویژه برای فیلترینگ سنگین و قطعی اینترنت بین‌الملل ایران</span>
       <span>مبتنی بر هسته Xray-core & Gost v3</span>
     </footer>
   </div>

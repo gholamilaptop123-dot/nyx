@@ -5,7 +5,7 @@
       <div class="absolute -left-10 -bottom-10 w-48 h-48 bg-cyberViolet/20 rounded-full blur-3xl pointer-events-none"></div>
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
         <div>
-          <h2 class="text-2xl font-bold text-white mb-1">خوش آمدید به AegisX Panel 🔥</h2>
+          <h2 class="text-2xl font-bold text-white mb-1">خوش آمدید به Nyx Panel 🔥</h2>
           <p class="text-sm text-gray-300">سیستم فعال و آماده دور زدن فیلترینگ شدید و اختلالات شبکه ملی اطلاعات.</p>
         </div>
         <div class="flex items-center gap-3">
@@ -65,7 +65,7 @@
       <div class="glass-panel p-6 rounded-3xl lg:col-span-2 space-y-4 border border-white/10">
         <h3 class="text-lg font-bold text-white flex items-center gap-2">
           <ShieldAlert class="w-5 h-5 text-cyberCyan" />
-          وضعیت پروتکل‌های ضد فیلترینگ AegisX
+          وضعیت پروتکل‌های ضد فیلترینگ Nyx Panel
         </h3>
         <p class="text-xs text-gray-400">تنظیمات فعال برای عبور از DPI و فیلترینگ شدید اپراتورهای ایران</p>
 

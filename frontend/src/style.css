@@ -1,4 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+/* === FONT LOADING STRATEGY ===
+   Primary: jsDelivr CDN (works in Iran + intranet mode)
+   Fallback: Local system fonts for Persian
+   Last resort: system-ui for Latin
+*/
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/vazirmatn@5.1.0/400.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/vazirmatn@5.1.0/500.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/vazirmatn@5.1.0/600.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/vazirmatn@5.1.0/700.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/vazirmatn@5.1.0/800.css');
 
 @tailwind base;
 @tailwind components;
@@ -7,7 +16,8 @@
 body {
   background-color: #090d16;
   color: #f3f4f6;
-  font-family: 'Vazirmatn', 'Inter', sans-serif;
+  /* Comprehensive font stack: Vazirmatn → known system Persian fonts → fallback */
+  font-family: 'Vazirmatn', 'Tahoma', 'IRANSans', 'IRANSansX', 'IRANYekan', 'B Nazanin', 'Arial', sans-serif;
   direction: rtl;
   overflow-x: hidden;
 }
