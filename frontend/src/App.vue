@@ -28,10 +28,10 @@
           :key="tab.id"
           @click="activeTab = tab.id"
           :class="[
-            'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200',
+            'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200',
             activeTab === tab.id 
-              ? 'bg-cyberViolet text-white shadow-lg shadow-cyberViolet/40' 
-              : 'text-gray-400 hover:text-white hover:bg-white/5'
+              ? 'bg-cyberYellow text-black font-extrabold shadow-lg shadow-cyberYellow/40 border border-cyberYellow' 
+              : 'text-gray-400 hover:text-cyberYellow hover:bg-white/5'
           ]"
         >
           <component :is="tab.icon" class="w-4 h-4" />
@@ -48,7 +48,7 @@
         <button 
           @click="handleLogout" 
           title="خروج از سیستم"
-          class="p-2 rounded-xl bg-white/5 hover:bg-red-500/20 text-gray-400 hover:text-red-400 border border-white/10 transition-all"
+          class="p-2 rounded-xl bg-white/5 hover:bg-cyberRed/20 text-gray-400 hover:text-cyberRed border border-white/10 transition-all"
         >
           <LogOut class="w-4 h-4" />
         </button>
@@ -63,7 +63,7 @@
         @click="activeTab = tab.id"
         :class="[
           'flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl shrink-0 transition-all',
-          activeTab === tab.id ? 'bg-cyberViolet text-white shadow-lg shadow-cyberViolet/40' : 'text-gray-400 bg-white/5'
+          activeTab === tab.id ? 'bg-cyberYellow text-black font-extrabold shadow-lg shadow-cyberYellow/40 border border-cyberYellow' : 'text-gray-400 bg-white/5'
         ]"
       >
         <component :is="tab.icon" class="w-4 h-4" />
@@ -86,15 +86,15 @@
       <div class="flex items-center gap-2">
         <span class="font-semibold text-gray-200">Nyx Panel v2.0</span>
         <span class="text-gray-600">|</span>
-        <span>توسعه‌داده‌شده توسط <strong class="text-cyberCyan font-bold">تیم امنیتی ساینت (Cynet)</strong></span>
+        <span>توسعه‌داده‌شده توسط <strong class="text-cyberYellow font-bold">تیم امنیتی ساینت (Cynet)</strong></span>
       </div>
 
       <div class="flex items-center gap-4 text-xs">
-        <a href="https://t.me/cynetx" target="_blank" class="text-gray-400 hover:text-cyberCyan transition-all flex items-center gap-1">
+        <a href="https://t.me/cynetx" target="_blank" class="text-gray-400 hover:text-cyberYellow transition-all flex items-center gap-1">
           📢 کانال تلگرام (cynetx)
         </a>
         <span class="text-gray-700">•</span>
-        <a href="https://www.youtube.com/@cynetxir" target="_blank" class="text-gray-400 hover:text-cyberPink transition-all flex items-center gap-1">
+        <a href="https://www.youtube.com/@cynetxir" target="_blank" class="text-gray-400 hover:text-cyberRed transition-all flex items-center gap-1">
           🎥 یوتیوب (@cynetxir)
         </a>
         <span class="text-gray-700">•</span>

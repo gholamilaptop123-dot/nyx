@@ -24,11 +24,11 @@
     </div>
 
     <!-- Live SNI Connection Tester Card -->
-    <div class="glass-panel p-5 rounded-3xl border border-cyberCyan/30 space-y-4">
+    <div class="glass-panel p-5 rounded-3xl border border-cyberYellow/40 space-y-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <Activity class="w-5 h-5 text-cyberCyan" />
-          <h3 class="text-sm font-bold text-white">ابزار تست زنده دست‌تکانی TLS (ارزیابی باز بودن SNI از سرور)</h3>
+          <Activity class="w-5 h-5 text-cyberYellow" />
+          <h3 class="text-sm font-extrabold text-cyberYellow glow-yellow">ابزار تست زنده دست‌تکانی TLS (ارزیابی باز بودن SNI از سرور)</h3>
         </div>
         <span class="text-[11px] text-gray-400">تست واقعی برقراری ارتباط روی پورت ۴۴۳</span>
       </div>
@@ -39,14 +39,14 @@
           type="text" 
           placeholder="مثال: archive.ubuntu.com یا ebanking.banksepah.ir"
           dir="ltr"
-          class="flex-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs font-mono text-left text-white focus:border-cyberCyan outline-none"
+          class="flex-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs font-mono text-left text-white focus:border-cyberYellow outline-none"
         />
         <button 
           @click="runSniTest" 
           :disabled="testingSni"
-          class="w-full sm:w-auto px-5 py-2 rounded-xl bg-cyberCyan/20 text-cyberCyan hover:bg-cyberCyan/30 text-xs font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+          class="w-full sm:w-auto px-5 py-2 rounded-xl bg-cyberYellow text-black font-extrabold hover:opacity-90 text-xs transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-cyberYellow/20"
         >
-          <RefreshCw v-if="testingSni" class="w-3.5 h-3.5 animate-spin" />
+          <RefreshCw v-if="testingSni" class="w-3.5 h-3.5 animate-spin text-black" />
           <span>{{ testingSni ? 'در حال سنجش…' : 'شروع تست ارتباط' }}</span>
         </button>
       </div>

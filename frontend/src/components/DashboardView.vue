@@ -62,67 +62,67 @@
 
     <!-- Anti-Censorship Health Matrix -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div class="glass-panel p-6 rounded-3xl lg:col-span-2 space-y-4 border border-white/10">
-        <h3 class="text-lg font-bold text-white flex items-center gap-2">
-          <ShieldAlert class="w-5 h-5 text-cyberCyan" />
+      <div class="glass-panel p-6 rounded-3xl lg:col-span-2 space-y-4 border border-cyberYellow/30">
+        <h3 class="text-lg font-extrabold text-cyberYellow glow-yellow flex items-center gap-2">
+          <ShieldAlert class="w-5 h-5 text-cyberYellow" />
           وضعیت پروتکل‌های ضد فیلترینگ Nyx Panel
         </h3>
-        <p class="text-xs text-gray-400">تنظیمات فعال برای عبور از DPI و فیلترینگ شدید اپراتورهای ایران</p>
+        <p class="text-xs text-gray-400">تنظیمات فعال برای عبور از DPI و فیلترینگ اپراتورهای ایران</p>
 
         <div class="space-y-3 pt-2">
           <div class="p-4 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-between">
             <div class="flex items-center gap-3">
-              <div class="w-3 h-3 rounded-full bg-cyberGreen"></div>
+              <div class="w-3 h-3 rounded-full bg-cyberGreen shadow-sm shadow-cyberGreen"></div>
               <div>
                 <h4 class="text-sm font-semibold text-white">VLESS + REALITY</h4>
                 <p class="text-xs text-gray-400">مخفی‌سازی Handshake و بدون نیاز به گواهی SSL</p>
               </div>
             </div>
-            <span class="px-3 py-1 text-xs rounded-full bg-cyberGreen/20 text-cyberGreen font-medium">فعال و عملیاتی</span>
+            <span class="px-3 py-1 text-xs rounded-full bg-cyberGreen/20 text-cyberGreen font-bold border border-cyberGreen/30">فعال و عملیاتی</span>
           </div>
 
           <div class="p-4 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-between">
             <div class="flex items-center gap-3">
-              <div class="w-3 h-3 rounded-full bg-cyberGreen"></div>
+              <div class="w-3 h-3 rounded-full bg-cyberGreen shadow-sm shadow-cyberGreen"></div>
               <div>
                 <h4 class="text-sm font-semibold text-white">Xray Packet Fragment</h4>
                 <p class="text-xs text-gray-400">تکه‌تکه‌سازی پکت‌ها برای دور زدن سیستم تحلیل DPI همراه اول و ایرانسل</p>
               </div>
             </div>
-            <span class="px-3 py-1 text-xs rounded-full bg-cyberGreen/20 text-cyberGreen font-medium">پیکربندی شده</span>
+            <span class="px-3 py-1 text-xs rounded-full bg-cyberGreen/20 text-cyberGreen font-bold border border-cyberGreen/30">پیکربندی شده</span>
           </div>
 
           <div class="p-4 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-between">
             <div class="flex items-center gap-3">
-              <div class="w-3 h-3 rounded-full bg-cyberViolet"></div>
+              <div class="w-3 h-3 rounded-full bg-cyberYellow shadow-sm shadow-cyberYellow"></div>
               <div>
                 <h4 class="text-sm font-semibold text-white">Gost v3 Intranet Tunnel</h4>
                 <p class="text-xs text-gray-400">تونل‌زنی اختصاصی ایران به خارج برای شرایط قطعی اینترنت بین‌الملل</p>
               </div>
             </div>
-            <span class="px-3 py-1 text-xs rounded-full bg-cyberViolet/20 text-cyberViolet font-medium">آماده اتصال</span>
+            <span class="px-3 py-1 text-xs rounded-full bg-cyberYellow/20 text-cyberYellow font-bold border border-cyberYellow/30">آماده اتصال</span>
           </div>
         </div>
       </div>
 
       <!-- Quick ISP Advice -->
-      <div class="glass-panel p-6 rounded-3xl space-y-4 border border-white/10">
-        <h3 class="text-lg font-bold text-white flex items-center gap-2">
-          <Zap class="w-5 h-5 text-cyberViolet" />
+      <div class="glass-panel p-6 rounded-3xl space-y-4 border border-cyberYellow/30">
+        <h3 class="text-lg font-extrabold text-cyberYellow glow-yellow flex items-center gap-2">
+          <Zap class="w-5 h-5 text-cyberYellow" />
           توصیه هوشمند اپراتورها
         </h3>
         <div class="space-y-3 text-xs">
           <div class="p-3 rounded-xl bg-white/5 border border-white/5">
-            <span class="font-bold text-cyberPink">همراه اول (MCI):</span>
+            <span class="font-bold text-cyberYellow">همراه اول (MCI):</span>
             <p class="text-gray-300 mt-1">استفاده از VLESS-REALITY + Fragment 100-200 با SNI عمومی.</p>
           </div>
           <div class="p-3 rounded-xl bg-white/5 border border-white/5">
-            <span class="font-bold text-cyberCyan">ایرانسل (Irancell):</span>
+            <span class="font-bold text-cyberRed">ایرانسل (Irancell):</span>
             <p class="text-gray-300 mt-1">ترکیب VLESS + gRPC / WS یا REALITY با فینگرپرینت Chrome.</p>
           </div>
           <div class="p-3 rounded-xl bg-white/5 border border-white/5">
-            <span class="font-bold text-cyberGreen">زمان قطعی اینترنت بین‌الملل:</span>
-            <p class="text-gray-300 mt-1">استفاده از نود ایران (Relay) و فیلد Gost Tunnel.</p>
+            <span class="font-bold text-cyberYellow">زمان قطعی اینترنت بین‌الملل:</span>
+            <p class="text-gray-300 mt-1">استفاده از نود ایران (Relay) و هدر Gost Tunnel.</p>
           </div>
         </div>
       </div>

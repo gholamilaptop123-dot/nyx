@@ -1,9 +1,9 @@
 <template>
   <div class="space-y-6">
-    <div class="glass-panel p-6 rounded-3xl border border-cyberViolet/30 relative overflow-hidden">
+    <div class="glass-panel p-6 rounded-3xl border border-cyberYellow/40 relative overflow-hidden">
       <div class="flex items-center gap-3 mb-2">
-        <Zap class="w-6 h-6 text-cyberViolet" />
-        <h2 class="text-xl font-bold text-white">اتصال سرور ایران به خارج (راهنمای گام‌به‌گام و اسکریپت تونل)</h2>
+        <Zap class="w-6 h-6 text-cyberYellow" />
+        <h2 class="text-xl font-extrabold text-cyberYellow glow-yellow">اتصال سرور ایران به خارج (راهنمای گام‌به‌گام و اسکریپت تونل)</h2>
       </div>
       <p class="text-xs text-gray-300 leading-relaxed">
         وقتی اینترنت بین‌الملل دچار اختلال یا قطعی کامل می‌شود، ترافیک کاربران باید ابتدا به یک سرور داخل ایران منتقل شده و سپس از طریق تونل امن به سرور خارج هدایت شود. از بین روش‌های زیر مناسب‌ترین متد را برای شرایط شبکه خود انتخاب کنید.
@@ -11,7 +11,7 @@
     </div>
 
     <!-- Generator Input Form -->
-    <div class="glass-panel p-6 rounded-3xl border border-white/10 space-y-4">
+    <div class="glass-panel p-6 rounded-3xl border border-cyberYellow/30 space-y-4">
       <h3 class="text-base font-bold text-white">پیکربندی پارامترهای تونل</h3>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -19,7 +19,7 @@
           <label class="block text-xs text-gray-400 mb-1">روش تونل‌زنی</label>
           <select 
             v-model="params.tunnelType"
-            class="w-full bg-[#090d16] border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:border-cyberViolet outline-none"
+            class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:border-cyberYellow outline-none"
           >
             <option value="GOST">Gost v3 (تونل انکریپت‌شده WebSocket - پیشنهادی)</option>
             <option value="ICMP_TUNNEL">ICMP Ping Tunnel (عبور از طریق پکت‌های پینگ)</option>
@@ -36,7 +36,7 @@
             type="text" 
             placeholder="185.x.x.x"
             dir="ltr"
-            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberViolet outline-none"
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberYellow outline-none"
           />
         </div>
 
@@ -47,7 +47,7 @@
             type="number" 
             placeholder="8443"
             dir="ltr"
-            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberViolet outline-none"
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberYellow outline-none"
           />
         </div>
 
@@ -58,7 +58,7 @@
             type="number" 
             placeholder="443"
             dir="ltr"
-            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberViolet outline-none"
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberYellow outline-none"
           />
         </div>
       </div>
@@ -72,7 +72,7 @@
             type="text" 
             placeholder="178.22.122.100"
             dir="ltr"
-            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberViolet outline-none"
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberYellow outline-none"
           />
         </div>
         <div>
@@ -82,7 +82,7 @@
             type="text" 
             placeholder="tunnel.nyx.ir"
             dir="ltr"
-            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberViolet outline-none"
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberYellow outline-none"
           />
         </div>
       </div>
@@ -90,9 +90,9 @@
       <div class="flex items-center justify-end">
         <button 
           @click="generateScripts"
-          class="px-6 py-2.5 rounded-2xl bg-cyberViolet text-white font-semibold text-xs shadow-lg shadow-cyberViolet/30 hover:opacity-90 transition-all flex items-center gap-2"
+          class="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-cyberYellow via-red-600 to-cyberRed text-black font-extrabold text-xs shadow-lg shadow-cyberYellow/20 hover:opacity-90 transition-all flex items-center gap-2 border border-cyberYellow/40"
         >
-          <Code class="w-4 h-4" />
+          <Code class="w-4 h-4 text-black font-bold" />
           تولید راهنما و اسکریپت‌های نصب
         </button>
       </div>
@@ -100,15 +100,15 @@
 
     <!-- Step by Step Guide (Fixed LTR for Commands) -->
     <div v-if="generated && stepGuide && stepGuide.steps" class="space-y-4">
-      <div class="glass-panel p-5 rounded-3xl border border-cyberCyan/30">
-        <h3 class="text-base font-bold text-white flex items-center gap-2 mb-4">
-          <BookOpen class="w-5 h-5 text-cyberCyan" />
+      <div class="glass-panel p-5 rounded-3xl border border-cyberYellow/30">
+        <h3 class="text-base font-extrabold text-cyberYellow glow-yellow flex items-center gap-2 mb-4">
+          <BookOpen class="w-5 h-5 text-cyberYellow" />
           راهنمای گام‌به‌گام راه‌اندازی (ترتیب اجرای دستورات)
         </h3>
         <div class="space-y-4">
-          <div v-for="(step, i) in stepGuide.steps" :key="i" class="border border-white/10 rounded-2xl overflow-hidden bg-black/20">
+          <div v-for="(step, i) in stepGuide.steps" :key="i" class="border border-white/10 rounded-2xl overflow-hidden bg-black/40">
             <div class="bg-white/5 px-4 py-2.5 flex items-center gap-2">
-              <span class="w-6 h-6 rounded-full bg-cyberViolet flex items-center justify-center text-xs font-bold text-white">{{ i + 1 }}</span>
+              <span class="w-6 h-6 rounded-full bg-cyberYellow flex items-center justify-center text-xs font-extrabold text-black">{{ i + 1 }}</span>
               <h4 class="text-sm font-bold text-white">{{ step.title }}</h4>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x md:divide-x-reverse divide-white/5">

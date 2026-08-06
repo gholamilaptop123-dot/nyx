@@ -12,10 +12,10 @@ export default {
         cardBorder: "rgba(250, 204, 21, 0.15)",
         cyberYellow: "#facc15",
         cyberRed: "#ff0055",
-        cyberViolet: "#facc15", // Mapped to Cyber Yellow for seamless compatibility
-        cyberCyan: "#00f0ff",
-        cyberGreen: "#10b981",
-        cyberPink: "#ff0055"   // Mapped to Neon Crimson Red
+        cyberViolet: "#facc15", // Mapped to Cyber Yellow
+        cyberCyan: "#facc15",   // Mapped to Cyber Yellow (Purge Cyan/Blue)
+        cyberGreen: "#10b981",  // Matrix Green for Active status
+        cyberPink: "#ff0055"    // Mapped to Crimson Red
       },
       fontFamily: {
         sans: ['Vazirmatn', 'Inter', 'sans-serif']
