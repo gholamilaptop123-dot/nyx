@@ -48,6 +48,7 @@
 
 | Feature / Capability | 🛡️ Nyx Panel v2.0 | 3x-ui (Sanaei) | Marzban |
 |---|:---:|:---:|:---:|
+| **Cross-Platform (Linux + Windows Server)** | **Yes (Native PowerShell + Bash)** | Linux Only | Linux Only |
 | **RAM Footprint (Memory)** | **Lightweight (~70 MB)** | Moderate (~250 MB) | Heavy (~400 MB+) |
 | **Token-based Authentication** | **Yes (Secure Auth)** | Yes | Yes |
 | **Live Traffic Sync via gRPC** | **Yes (Every 20 seconds)** | Yes | Yes |
@@ -60,6 +61,43 @@
 </div>
 
 ---
+
+<div dir="rtl">
+
+## 💻 راهنمای نصب روی لینوکس و سرور ویندوز (Cross-Platform Installation)
+
+> [!NOTE]
+> **متمایز از سایر پنل‌ها:** پنل Nyx علاوه بر لینوکس، به صورت کاملاً نیتیو (Native) روی **سرورهای ویندوزی (Windows Server 2016/2019/2022/10/11)** نصب و اجرا می‌شود!
+
+### 🐧 ۱. نصب روی سرور لینوکس (Linux - Ubuntu/Debian/CentOS):
+دستور زیر را با دسترسی **root** در ترمینال لینوکس اجرا کنید:
+
+</div>
+
+<div dir="ltr">
+
+```bash
+curl -sSL "https://raw.githubusercontent.com/icynetx/Nyx/main/install.sh?v=3" | sudo bash
+```
+
+</div>
+
+<div dir="rtl">
+
+---
+
+### 🪟 ۲. نصب روی سرور ویندوز (Windows Server / Windows 10/11):
+ترمینال **PowerShell** را به صورت **Run as Administrator** باز کرده و دستور زیر را اجرا کنید:
+
+</div>
+
+<div dir="ltr">
+
+```powershell
+iwr -useb https://raw.githubusercontent.com/icynetx/Nyx/main/install.ps1 | iex
+```
+
+</div>
 
 <div dir="rtl">
 
