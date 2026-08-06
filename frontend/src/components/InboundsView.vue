@@ -4,7 +4,7 @@
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div>
         <h2 class="text-2xl font-extrabold text-cyberYellow glow-yellow">ساخت و مدیریت اینباندها و کانفیگ‌ها</h2>
-        <p class="text-sm text-gray-400">تعریف پروتکل، رمزنگاری REALITY، دامنه SNI، محدودیت حجم، انقضا و تعداد کاربر همزمان</p>
+        <p class="text-sm text-gray-400">تعریف ساختار VPN، محدودیت حجم، انقضا، تست زنده SNI و مدیریت کانفیگ‌ها</p>
       </div>
       <button 
         @click="showCreateModal = true"
@@ -13,6 +13,79 @@
         <Plus class="w-4 h-4 text-black font-bold" />
         ساخت اینباند / کانفیگ جدید
       </button>
+    </div>
+
+    <!-- Live SNI Connection Tester Panel -->
+    <div class="glass-panel rounded-3xl p-6 border border-cyberYellow/30 space-y-4">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div>
+          <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
+            <Activity class="w-5 h-5 text-cyberYellow" />
+            <span>سامانه پایش و تست زنده دامنه‌های SNI (ارزیابی گذر از اینترنت ملی)</span>
+          </h3>
+          <p class="text-xs text-gray-400 mt-1">
+            عملکرد هر SNI متغیر است و ممکن است روی همراه اول، ایرانسل یا در شرایط قطعی نت متفاوت باشد. پیش از ساخت کانفیگ، وضعیت اتصال دامنه را تست کنید.
+          </p>
+        </div>
+      </div>
+
+      <!-- Category Filter Tabs -->
+      <div class="flex flex-wrap items-center gap-2">
+        <button 
+          v-for="cat in sniCategories" 
+          :key="cat.id" 
+          @click="activeSniCat = cat.id"
+          :class="['px-3 py-1.5 rounded-xl text-xs font-semibold transition-all', activeSniCat === cat.id ? 'bg-cyberYellow text-black font-bold shadow-md shadow-cyberYellow/20' : 'bg-white/5 text-gray-300 hover:bg-white/10']"
+        >
+          {{ cat.label }}
+        </button>
+      </div>
+
+      <!-- SNI Presets Grid & Custom Test -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div class="md:col-span-2 flex flex-wrap gap-2 p-3 bg-black/40 rounded-2xl border border-white/5 max-h-40 overflow-y-auto">
+          <button 
+            v-for="domain in filteredSniList" 
+            :key="domain"
+            @click="testDomainInput = domain; runSniTest(domain)"
+            :class="['px-3 py-1.5 rounded-xl text-xs font-mono transition-all flex items-center gap-1.5 border', testDomainInput === domain ? 'bg-cyberYellow/20 text-cyberYellow border-cyberYellow' : 'bg-white/5 text-gray-300 border-white/10 hover:border-white/30']"
+          >
+            <span>{{ domain }}</span>
+            <Play class="w-3 h-3 opacity-60" />
+          </button>
+        </div>
+
+        <!-- Custom Domain Test Box -->
+        <div class="p-3 bg-black/60 rounded-2xl border border-white/10 flex flex-col justify-between space-y-2">
+          <label class="text-xs text-gray-400">تست دامنه دلخواه (Custom SNI):</label>
+          <div class="flex items-center gap-2">
+            <input 
+              v-model="testDomainInput"
+              type="text" 
+              placeholder="ebanking.banksepah.ir"
+              dir="ltr"
+              class="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-mono text-left outline-none focus:border-cyberYellow"
+            />
+            <button 
+              @click="runSniTest(testDomainInput)"
+              :disabled="testingSni"
+              class="px-3 py-1.5 rounded-xl bg-cyberYellow text-black font-bold text-xs hover:opacity-90 transition-all shrink-0 flex items-center gap-1"
+            >
+              <RefreshCw v-if="testingSni" class="w-3.5 h-3.5 animate-spin" />
+              <span>تست</span>
+            </button>
+          </div>
+
+          <!-- Test Result Box -->
+          <div v-if="sniTestResult" :class="['p-2.5 rounded-xl border text-xs font-mono space-y-1', sniTestResult.success ? 'bg-cyberGreen/10 border-cyberGreen/30 text-cyberGreen' : 'bg-cyberRed/10 border-cyberRed/30 text-cyberRed']">
+            <div class="flex items-center justify-between font-bold">
+              <span>{{ sniTestResult.domain }}</span>
+              <span>{{ sniTestResult.latencyMs }} ms</span>
+            </div>
+            <p class="text-[11px] opacity-90">{{ sniTestResult.message }}</p>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Inbound Cards Grid -->
@@ -171,19 +244,30 @@
           <div>
             <label class="block text-gray-400 mb-1">انتخاب دامنه وانمودی (SNI)</label>
             <select v-model="selectedSniPreset" @change="handleSniPresetChange" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none mb-2">
-              <option value="yahoo.com">yahoo.com — دامنه عمومی بسیار باثبات</option>
-              <option value="www.google.com">www.google.com — گوگل</option>
-              <option value="dl.google.com">dl.google.com — دانلود گوگل</option>
-              <option value="www.microsoft.com">www.microsoft.com — مایکروسافت</option>
-              <option value="speed.cloudflare.com">speed.cloudflare.com — کلادفلر</option>
-              <option value="www.amazon.com">www.amazon.com — آمازون</option>
-              <option value="www.apple.com">www.apple.com — اپل</option>
-              <option value="archive.ubuntu.com">archive.ubuntu.com — مخازن اوبونتو</option>
-              <option value="pypi.org">pypi.org — مخازن پایتون</option>
-              <option value="registry.npmjs.org">registry.npmjs.org — مخازن نودJS</option>
-              <option value="acme-v02.api.letsencrypt.org">acme-v02.api.letsencrypt.org — گواهی SSL</option>
-              <option value="ebanking.banksepah.ir">ebanking.banksepah.ir — ⚡ SNI سفید بانکی (زمان قطعی نت)</option>
-              <option value="bmi.ir">bmi.ir — بانک ملی</option>
+              <optgroup label="🏦 دامنه‌های سفید بانکی (زمان قطعی نت)">
+                <option value="ebanking.banksepah.ir">ebanking.banksepah.ir — بانک سپه</option>
+                <option value="bmi.ir">bmi.ir — بانک ملی</option>
+                <option value="bank-maskan.ir">bank-maskan.ir — بانک مسکن</option>
+                <option value="tejarat24.ir">tejarat24.ir — بانک تجارت</option>
+              </optgroup>
+              <optgroup label="🌐 دامنه‌های بین‌المللی عمومی باثبات">
+                <option value="yahoo.com">yahoo.com — یاهو</option>
+                <option value="www.google.com">www.google.com — گوگل</option>
+                <option value="dl.google.com">dl.google.com — دانلود گوگل</option>
+                <option value="www.microsoft.com">www.microsoft.com — مایکروسافت</option>
+                <option value="speed.cloudflare.com">speed.cloudflare.com — کلادفلر</option>
+                <option value="www.amazon.com">www.amazon.com — آمازون</option>
+                <option value="www.apple.com">www.apple.com — اپل</option>
+              </optgroup>
+              <optgroup label="📦 مخازن نرم‌افزاری (احتمال بالای باز ماندن)">
+                <option value="archive.ubuntu.com">archive.ubuntu.com — اوبونتو</option>
+                <option value="pypi.org">pypi.org — مخازن پایتون</option>
+                <option value="registry.npmjs.org">registry.npmjs.org — مخازن نودJS</option>
+              </optgroup>
+              <optgroup label="🔒 مراجع گواهی SSL">
+                <option value="acme-v02.api.letsencrypt.org">acme-v02.api.letsencrypt.org — Let's Encrypt</option>
+                <option value="ocsp.digicert.com">ocsp.digicert.com — DigiCert</option>
+              </optgroup>
               <option value="custom">✏️ وارد کردن دامنه دلخواه (Custom SNI)</option>
             </select>
 
@@ -319,9 +403,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
-import { Plus, Trash2, Download, Network, Edit3, ExternalLink } from 'lucide-vue-next';
+import { Plus, Trash2, Download, Network, Edit3, ExternalLink, Activity, Play, RefreshCw } from 'lucide-vue-next';
 import QrcodeVue from 'qrcode.vue';
 
 const inbounds = ref<any[]>([]);
@@ -331,6 +415,49 @@ const selectedInboundForConfig = ref<any>(null);
 const inboundConfigs = ref<any>(null);
 const configLoading = ref(false);
 const selectedSniPreset = ref('yahoo.com');
+
+// Live SNI Tester State
+const activeSniCat = ref('BANK');
+const testDomainInput = ref('ebanking.banksepah.ir');
+const testingSni = ref(false);
+const sniTestResult = ref<any>(null);
+
+const sniCategories = [
+  { id: 'BANK', label: '🏦 سفید بانکی (قطعی نت)' },
+  { id: 'GENERAL', label: '🌐 بین‌المللی باثبات' },
+  { id: 'REPOS', label: '📦 مخازن نرم‌افزار' },
+  { id: 'SSL', label: '🔒 مراجع SSL' },
+  { id: 'IRAN', label: '🇮🇷 سایت‌های داخلی' },
+];
+
+const sniLists: Record<string, string[]> = {
+  BANK: ['ebanking.banksepah.ir', 'bmi.ir', 'bank-maskan.ir', 'tejarat24.ir', 'en.sb24.com'],
+  GENERAL: ['yahoo.com', 'www.google.com', 'dl.google.com', 'www.microsoft.com', 'speed.cloudflare.com', 'www.amazon.com', 'www.apple.com'],
+  REPOS: ['archive.ubuntu.com', 'security.ubuntu.com', 'pypi.org', 'registry.npmjs.org', 'registry-1.docker.io'],
+  SSL: ['acme-v02.api.letsencrypt.org', 'ocsp.digicert.com', 'ocsp.sectigo.com', 'ocsp2.globalsign.com'],
+  IRAN: ['irancell.ir', 'mci.ir', 'arvancloud.ir', 'divar.ir', 'digikala.com', 'snapp.ir']
+};
+
+const filteredSniList = computed(() => sniLists[activeSniCat.value] || sniLists.BANK);
+
+async function runSniTest(domain: string) {
+  if (!domain) return;
+  testingSni.value = true;
+  sniTestResult.value = null;
+  try {
+    const res = await axios.get(`/api/sni/test?domain=${encodeURIComponent(domain)}`);
+    sniTestResult.value = res.data;
+  } catch (err: any) {
+    sniTestResult.value = {
+      domain,
+      success: false,
+      latencyMs: 4000,
+      message: 'خطا در ارتباط شبکه (احتمال مسدودی)'
+    };
+  } finally {
+    testingSni.value = false;
+  }
+}
 
 const props = defineProps<{ toast?: (msg: string, type?: 'success' | 'error' | 'info') => void }>();
 
