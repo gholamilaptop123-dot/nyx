@@ -55,19 +55,19 @@
       </div>
     </header>
 
-    <!-- Mobile Subnav -->
-    <nav class="md:hidden flex items-center justify-around bg-darkBg border-b border-white/10 p-2">
+    <!-- Mobile Subnav (Scrollable & Touch-Friendly) -->
+    <nav class="md:hidden flex items-center gap-1 bg-darkBg border-b border-white/10 px-3 py-2 overflow-x-auto no-scrollbar scroll-smooth">
       <button 
         v-for="tab in tabs" 
         :key="tab.id"
         @click="activeTab = tab.id"
         :class="[
-          'flex flex-col items-center gap-1 p-2 text-xs font-medium rounded-lg',
-          activeTab === tab.id ? 'text-cyberViolet font-bold' : 'text-gray-400'
+          'flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl shrink-0 transition-all',
+          activeTab === tab.id ? 'bg-cyberViolet text-white shadow-lg shadow-cyberViolet/40' : 'text-gray-400 bg-white/5'
         ]"
       >
-        <component :is="tab.icon" class="w-5 h-5" />
-        {{ tab.name }}
+        <component :is="tab.icon" class="w-4 h-4" />
+        <span>{{ tab.name }}</span>
       </button>
     </nav>
 

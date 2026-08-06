@@ -18,7 +18,7 @@
     <!-- User List Table / Cards -->
     <div class="glass-panel rounded-3xl overflow-hidden border border-white/10">
       <div class="overflow-x-auto">
-        <table class="w-full text-right border-collapse">
+        <table class="w-full min-w-[700px] text-right border-collapse">
           <thead>
             <tr class="bg-white/5 border-b border-white/10 text-xs text-gray-400 font-semibold">
               <th class="p-4">نام کاربر</th>
