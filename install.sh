@@ -41,20 +41,21 @@ ADMIN_USER=${INPUT_ADMIN_USER:-admin}
 ADMIN_PASS=${INPUT_ADMIN_PASS:-nyx2026!}
 PANEL_PORT=${INPUT_PORT:-3000}
 
-# 3. Update System & Install Dependencies
+# 3. Check & Prepare System Dependencies
 echo -e "${YELLOW}📦 Checking system dependencies...${NC}"
 export DEBIAN_FRONTEND=noninteractive
 
-for pkg in curl wget git unzip; do
-  if ! command -v $pkg &> /dev/null; then
-    echo -e "${YELLOW}Installing $pkg...${NC}"
-    (apt-get install -y $pkg || yum install -y $pkg || dnf install -y $pkg) 2>/dev/null || true
-  fi
-done
+if ! command -v git &> /dev/null; then
+  (apt-get install -y --no-install-recommends git || yum install -y git || dnf install -y git) 2>/dev/null || true
+fi
 
-if ! command -v node &> /dev/null || ! command -v npm &> /dev/null; then
+if ! command -v unzip &> /dev/null; then
+  (apt-get install -y --no-install-recommends unzip || yum install -y unzip || dnf install -y unzip) 2>/dev/null || true
+fi
+
+if ! command -v node &> /dev/null; then
   echo -e "${YELLOW}🟢 Installing Node.js LTS...${NC}"
-  (curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y nodejs) 2>/dev/null || true
+  (curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y --no-install-recommends nodejs) 2>/dev/null || true
 fi
 
 # 4. Setup Project Directory
