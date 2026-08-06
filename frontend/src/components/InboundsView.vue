@@ -86,6 +86,49 @@
           </div>
         </div>
       </div>
+
+      <!-- Technical Warnings & Engineering Best Practices for SNI -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 border-t border-white/10 text-xs">
+        <div class="p-3 rounded-2xl bg-cyberYellow/10 border border-cyberYellow/30 space-y-1">
+          <div class="flex items-center gap-1.5 text-cyberYellow font-bold">
+            <AlertTriangle class="w-4 h-4 shrink-0" />
+            <span>⚠️ هشدار ۱: تفاوت رفتار اپراتورها (MCI / Irancell / ADSL)</span>
+          </div>
+          <p class="text-[11px] text-gray-300 leading-relaxed">
+            دامنه‌ای که روی همراه اول پاسخ می‌دهد ممکن است روی ایرانسل یا شاتل مسدود باشد. قبل از ارائه عمومی کانفیگ، حتماً پایش زنده اتصال را انجام دهید.
+          </p>
+        </div>
+
+        <div class="p-3 rounded-2xl bg-cyberRed/10 border border-cyberRed/30 space-y-1">
+          <div class="flex items-center gap-1.5 text-cyberRed font-bold">
+            <ShieldAlert class="w-4 h-4 shrink-0" />
+            <span>⚠️ هشدار ۲: تغییر رفتار فیلترینگ در قطعی نت ملی</span>
+          </div>
+          <p class="text-[11px] text-gray-300 leading-relaxed">
+            در زمان قطعی کامل اینترنت بین‌الملل، سیستم لیست سفید (Whitelist) فعال می‌شود. در این شرایط دامنه‌های شاپرک (درگاه‌های بانکی) و ابر آروان بالاترین پایداری را دارند.
+          </p>
+        </div>
+
+        <div class="p-3 rounded-2xl bg-cyberGreen/10 border border-cyberGreen/30 space-y-1">
+          <div class="flex items-center gap-1.5 text-cyberGreen font-bold">
+            <Zap class="w-4 h-4 shrink-0" />
+            <span>⚡ نکته فنی ۳: الزام ترکیب SNI با تکنولوژی Packet Fragment</span>
+          </div>
+          <p class="text-[11px] text-gray-300 leading-relaxed">
+            استفاده از SNI بدون فعال بودن تکنولوژی Fragment ممکن است توسط سیستم‌های DPI زیرساخت شناسایی شود. حتماً چک‌باکس Fragment را روی اینباند فعال نگه دارید.
+          </p>
+        </div>
+
+        <div class="p-3 rounded-2xl bg-blue-500/10 border border-blue-500/30 space-y-1">
+          <div class="flex items-center gap-1.5 text-blue-400 font-bold">
+            <Info class="w-4 h-4 shrink-0" />
+            <span>💡 نکته فنی ۴: پشتیبانی از گواهی TLS 1.3 در پروتکل REALITY</span>
+          </div>
+          <p class="text-[11px] text-gray-300 leading-relaxed">
+            در پروتکل VLESS-REALITY حتماً دامنه‌هایی را انتخاب کنید که از TLS 1.3 و Cipherهای مدرن پشتیبانی می‌کنند تا دست‌تکانی SSL بدون اختلال برقرار گردد.
+          </p>
+        </div>
+      </div>
     </div>
 
     <!-- Inbound Cards Grid -->
@@ -434,7 +477,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
-import { Plus, Trash2, Download, Network, Edit3, ExternalLink, Activity, Play, RefreshCw } from 'lucide-vue-next';
+import { Plus, Trash2, Download, Network, Edit3, ExternalLink, Activity, Play, RefreshCw, AlertTriangle, ShieldAlert, Zap, Info } from 'lucide-vue-next';
 import QrcodeVue from 'qrcode.vue';
 
 const inbounds = ref<any[]>([]);
