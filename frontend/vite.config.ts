@@ -3,6 +3,15 @@ import vue from '@vitejs/plugin-vue';
 
 export default defineConfig({
   plugins: [vue()],
+  build: {
+    rollupOptions: {
+      output: {
+        entryFileNames: `assets/app-[hash].js`,
+        chunkFileNames: `assets/[name]-[hash].js`,
+        assetFileNames: `assets/app-[hash].[ext]`
+      }
+    }
+  },
   server: {
     port: 5173,
     proxy: {

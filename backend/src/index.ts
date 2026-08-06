@@ -665,9 +665,12 @@ app.get('*', (req, res) => {
   if (req.path.startsWith('/api')) {
     return res.status(404).json({ error: 'Endpoint not found' });
   }
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
   res.sendFile(path.join(frontendBuildPath, 'index.html'), (err) => {
     if (err) {
-      res.send('Nyx Anti-Censorship Backend API is live!');
+      res.send('Nyx Backend API is live!');
     }
   });
 });
