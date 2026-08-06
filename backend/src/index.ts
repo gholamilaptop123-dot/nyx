@@ -30,9 +30,15 @@ let xrayProcess: ChildProcess | null = null;
 app.use(cors());
 app.use(express.json());
 
-// Serve static frontend build if present
+// Serve static frontend build with no-cache headers so UI updates reflect immediately
 const frontendBuildPath = path.join(__dirname, '../../frontend/dist');
-app.use(express.static(frontendBuildPath));
+app.use(express.static(frontendBuildPath, {
+  setHeaders: (res, path) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+}));
 
 // --- AUTHENTICATION MIDDLEWARE ---
 const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -663,6 +669,13 @@ async function start() {
     if (activeToken) {
       initTelegramBot(activeToken, SERVER_IP, reloadXrayService, activeAdminChatId);
     }
+
+    app.get('*', (req, res) => {
+      if (!req.path.startsWith('/api/')) {
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        return res.sendFile(path.join(frontendBuildPath, 'index.html'));
+      }
+    });
 
     app.listen(PORT, () => {
       console.log(`🚀 [Nyx Panel] Server running smoothly on http://localhost:${PORT}`);
