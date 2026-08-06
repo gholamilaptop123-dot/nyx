@@ -625,7 +625,7 @@ app.get('/api/subinfo/:uuid', async (req, res) => {
       },
       subUrl,
       base64Sub,
-      vlessLinks,
+      vlessLinks: [vlessLink],
       singboxJson,
       clashYaml,
       serverIp: hostIp
