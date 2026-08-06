@@ -74,6 +74,7 @@
       <InboundsView v-if="activeTab === 'inbounds'" :toast="showToast" />
       <NodesView v-if="activeTab === 'nodes'" :toast="showToast" />
       <TunnelsView v-if="activeTab === 'tunnels'" :toast="showToast" />
+      <SettingsView v-if="activeTab === 'settings'" :toast="showToast" />
     </main>
 
     <!-- Footer -->
@@ -89,12 +90,13 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import { Shield, LayoutDashboard, Users, Server, Zap, Network, LogOut } from 'lucide-vue-next';
+import { Shield, LayoutDashboard, Users, Server, Zap, Network, Settings, LogOut } from 'lucide-vue-next';
 import DashboardView from './components/DashboardView.vue';
 import UsersView from './components/UsersView.vue';
 import InboundsView from './components/InboundsView.vue';
 import NodesView from './components/NodesView.vue';
 import TunnelsView from './components/TunnelsView.vue';
+import SettingsView from './components/SettingsView.vue';
 import LoginView from './components/LoginView.vue';
 import ToastNotification from './components/ToastNotification.vue';
 
@@ -108,6 +110,7 @@ const tabs = [
   { id: 'inbounds', name: 'اینباندها', icon: Network },
   { id: 'nodes', name: 'سرورها و نودها', icon: Server },
   { id: 'tunnels', name: 'تونل قطعی نت', icon: Zap },
+  { id: 'settings', name: 'ربات و تنظیمات', icon: Settings },
 ];
 
 function showToast(message: string, type: 'success' | 'error' | 'info' = 'info') {

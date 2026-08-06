@@ -2,8 +2,23 @@ import TelegramBot from 'node-telegram-bot-api';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
+let currentBotInstance: TelegramBot | null = null;
+
+export function stopTelegramBot() {
+  if (currentBotInstance) {
+    try {
+      console.log('[Telegram Bot] Stopping previous Telegram bot polling instance...');
+      currentBotInstance.stopPolling();
+    } catch (e) {
+      console.warn('[Telegram Bot] Warning stopping polling:', e);
+    }
+    currentBotInstance = null;
+  }
+}
 
 export function initTelegramBot(token: string, domainOrIp: string) {
+  stopTelegramBot();
+
   if (!token || token.trim() === '') {
     console.log('[Telegram Bot] No token provided. Skipping Telegram Bot startup.');
     return null;
@@ -11,6 +26,7 @@ export function initTelegramBot(token: string, domainOrIp: string) {
 
   const PANEL_PORT = process.env.PORT || '3000';
   const bot = new TelegramBot(token, { polling: true });
+  currentBotInstance = bot;
   console.log('[Telegram Bot] Nyx Bot successfully started!');
 
   bot.onText(/\/start|\/help/, async (msg) => {

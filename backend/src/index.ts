@@ -454,6 +454,52 @@ app.get('/api/sub/:uuid', async (req, res) => {
   }
 });
 
+// 6. System & Telegram Bot Settings APIs
+app.get('/api/settings', async (req, res) => {
+  try {
+    const botTokenSetting = await prisma.systemSetting.findUnique({ where: { key: 'BOT_TOKEN' } });
+    const botToken = botTokenSetting?.value || process.env.BOT_TOKEN || '';
+    const botEnabled = Boolean(botToken && botToken.trim() !== '');
+
+    res.json({
+      botToken,
+      botEnabled,
+      serverIp: SERVER_IP
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch system settings' });
+  }
+});
+
+app.post('/api/settings', async (req, res) => {
+  try {
+    const { botToken } = req.body;
+    const cleanToken = (botToken || '').trim();
+
+    await prisma.systemSetting.upsert({
+      where: { key: 'BOT_TOKEN' },
+      update: { value: cleanToken },
+      create: { key: 'BOT_TOKEN', value: cleanToken }
+    });
+
+    process.env.BOT_TOKEN = cleanToken;
+
+    if (cleanToken) {
+      initTelegramBot(cleanToken, SERVER_IP);
+    } else {
+      stopTelegramBot();
+    }
+
+    res.json({
+      success: true,
+      message: cleanToken ? 'ربات تلگرام با موفقیت فعال و راه‌اندازی شد.' : 'ربات تلگرام غیرفعال گردید.',
+      botEnabled: Boolean(cleanToken)
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || 'Failed to save settings' });
+  }
+});
+
 // --- HELPER TO RELOAD XRAY CONFIG & PROCESS WITH GRACEFUL SOCKET RELEASE ---
 async function reloadXrayService() {
   try {
@@ -558,9 +604,11 @@ async function start() {
     // Start live Xray traffic sync
     XrayStatsService.startTrafficSyncLoop(xrayBinaryPath, 20000);
 
-    // Start Telegram Bot if BOT_TOKEN is present
-    if (process.env.BOT_TOKEN) {
-      initTelegramBot(process.env.BOT_TOKEN, SERVER_IP);
+    // Start Telegram Bot if BOT_TOKEN is present in DB or ENV
+    const dbBotToken = await prisma.systemSetting.findUnique({ where: { key: 'BOT_TOKEN' } });
+    const activeToken = dbBotToken?.value || process.env.BOT_TOKEN || '';
+    if (activeToken) {
+      initTelegramBot(activeToken, SERVER_IP);
     }
 
     app.listen(PORT, () => {
