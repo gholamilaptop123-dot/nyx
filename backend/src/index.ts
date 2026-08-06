@@ -12,6 +12,7 @@ import { XrayStatsService } from './services/xrayStatsService';
 import { initTelegramBot, stopTelegramBot } from './services/telegramBot';
 import { execFile, ChildProcess } from 'child_process';
 import tls from 'tls';
+import os from 'os';
 
 dotenv.config();
 
