@@ -132,9 +132,6 @@ pkill -9 -f "node.*backend" 2>/dev/null || true
 pkill -9 -f "node.*index.js" 2>/dev/null || true
 sleep 1
 
-# Clean old dist builds to guarantee fresh compilation
-rm -rf ${INSTALL_DIR}/frontend/dist ${INSTALL_DIR}/backend/dist
-
 systemctl daemon-reload
 systemctl enable nyx
 systemctl restart nyx
