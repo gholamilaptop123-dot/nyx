@@ -127,7 +127,8 @@ const activeTab = ref('dashboard');
 const toastRef = ref<any>(null);
 
 const isSubInfoPage = computed(() => {
-  return window.location.pathname.startsWith('/subinfo/');
+  const p = window.location.pathname;
+  return p.startsWith('/subinfo/') || p.startsWith('/sub/info/');
 });
 
 const tabs = [

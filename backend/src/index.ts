@@ -13,6 +13,7 @@ import { initTelegramBot, stopTelegramBot } from './services/telegramBot';
 import { execFile, ChildProcess } from 'child_process';
 import tls from 'tls';
 import os from 'os';
+import axios from 'axios';
 
 dotenv.config();
 
@@ -20,6 +21,36 @@ const app = express();
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3000;
 const SERVER_IP = process.env.SERVER_IP || '127.0.0.1';
+
+let cachedPublicIp = '';
+
+async function autoDetectPublicIp() {
+  try {
+    const res = await axios.get('https://api.ipify.org?format=json', { timeout: 4000 });
+    if (res.data && res.data.ip) {
+      cachedPublicIp = res.data.ip;
+    }
+  } catch (err) {
+    // fallback
+  }
+}
+
+autoDetectPublicIp();
+setInterval(autoDetectPublicIp, 300000);
+
+function getPublicHost(req: express.Request): string {
+  const reqHost = req.headers.host ? req.headers.host.split(':')[0] : '';
+  if (reqHost && reqHost !== 'localhost' && reqHost !== '127.0.0.1' && !reqHost.startsWith('192.168.') && !reqHost.startsWith('10.')) {
+    return reqHost;
+  }
+  if (process.env.SERVER_IP && process.env.SERVER_IP !== '127.0.0.1' && process.env.SERVER_IP !== 'localhost') {
+    return process.env.SERVER_IP;
+  }
+  if (cachedPublicIp) {
+    return cachedPublicIp;
+  }
+  return reqHost || '127.0.0.1';
+}
 
 const ADMIN_USER = process.env.ADMIN_USER || 'admin';
 const ADMIN_PASS = process.env.ADMIN_PASS || 'nyx2026!';
@@ -104,7 +135,7 @@ app.get('/api/stats/dashboard', async (req, res) => {
     let totalBytes = BigInt(0);
     users.forEach(u => { totalBytes += u.usedDataBytes; });
 
-    const hostIp = (req.headers.host ? req.headers.host.split(':')[0] : SERVER_IP);
+    const hostIp = getPublicHost(req);
 
     const totalMemGb = (os.totalmem() / (1024 * 1024 * 1024)).toFixed(1);
     const usedMemGb = ((os.totalmem() - os.freemem()) / (1024 * 1024 * 1024)).toFixed(1);
@@ -235,7 +266,7 @@ app.get('/api/users/:id/configs', async (req, res) => {
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const inbounds = await prisma.inbound.findMany({ where: { enabled: true } });
-    const hostIp = (req.headers.host ? req.headers.host.split(':')[0] : SERVER_IP);
+    const hostIp = getPublicHost(req);
     const isp = (req.query.isp as string) || 'DEFAULT';
 
     const vlessLinks = inbounds.map(inbound =>
@@ -461,7 +492,7 @@ app.get('/api/sub/:uuid', async (req, res) => {
     const inbounds = await prisma.inbound.findMany({ where: { enabled: true } });
     const format = (req.query.format as string) || 'base64';
     const isp = (req.query.isp as string) || 'DEFAULT';
-    const hostIp = (req.headers.host ? req.headers.host.split(':')[0] : SERVER_IP);
+    const hostIp = getPublicHost(req);
 
     if (format === 'singbox') {
       const jsonConfig = SubscriptionService.generateSingBoxJson(user as any, inbounds as any[], hostIp, isp);
@@ -488,7 +519,7 @@ app.get('/api/subinfo/:uuid', async (req, res) => {
     if (!user) return res.status(404).json({ error: 'حساب کاربر یافت نشد.' });
 
     const inbounds = await prisma.inbound.findMany({ where: { enabled: true } });
-    const hostIp = (req.headers.host ? req.headers.host.split(':')[0] : SERVER_IP);
+    const hostIp = getPublicHost(req);
     const isp = (req.query.isp as string) || 'DEFAULT';
 
     const vlessLinks = inbounds.map(inbound =>
