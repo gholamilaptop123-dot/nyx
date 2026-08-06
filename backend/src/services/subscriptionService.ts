@@ -13,6 +13,11 @@ export class SubscriptionService {
   ];
 
   static WHITE_IRAN_SNIS = [
+    'arvancloud.ir',
+    'n2a.arvancloud.ir',
+    'shaparak.ir',
+    'pep.shaparak.ir',
+    'iran.liara.run',
     'ebanking.banksepah.ir',
     'bmi.ir',
     'pypi.org',
@@ -20,8 +25,9 @@ export class SubscriptionService {
     'registry.npmjs.org',
     'acme-v02.api.letsencrypt.org',
     'ocsp.digicert.com',
-    'arvancloud.ir',
     'divar.ir',
+    'snapp.ir',
+    'digikala.com'
   ];
 
   /**

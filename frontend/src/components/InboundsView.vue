@@ -244,12 +244,38 @@
           <div>
             <label class="block text-gray-400 mb-1">انتخاب دامنه وانمودی (SNI)</label>
             <select v-model="selectedSniPreset" @change="handleSniPresetChange" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none mb-2">
-              <optgroup label="🏦 دامنه‌های سفید بانکی (زمان قطعی نت)">
-                <option value="ebanking.banksepah.ir">ebanking.banksepah.ir — بانک سپه</option>
-                <option value="bmi.ir">bmi.ir — بانک ملی</option>
-                <option value="bank-maskan.ir">bank-maskan.ir — بانک مسکن</option>
-                <option value="tejarat24.ir">tejarat24.ir — بانک تجارت</option>
+              <optgroup label="☁️ ابر و CDNهای داخلی (احتمال دسترسی بالا در قطعی نت)">
+                <option value="arvancloud.ir">arvancloud.ir — ابر آروان</option>
+                <option value="n2a.arvancloud.ir">n2a.arvancloud.ir — شبکه توزیع آروان</option>
+                <option value="iran.liara.run">iran.liara.run — پلتفرم ابری لیارا</option>
+                <option value="derak.cloud">derak.cloud — ابر دراک</option>
+                <option value="asiatech.ir">asiatech.ir — آسیا تک CDN</option>
               </optgroup>
+
+              <optgroup label="💳 شبکه پرداخت و شاپرک (درگاه‌های بانکی همیشه فعال)">
+                <option value="shaparak.ir">shaparak.ir — شبکه مرکزی شاپرک</option>
+                <option value="pep.shaparak.ir">pep.shaparak.ir — درگاه بانک پاسارگاد</option>
+                <option value="bpm.shaparak.ir">bpm.shaparak.ir — درگاه به پرداخت ملت</option>
+                <option value="sadad.shaparak.ir">sadad.shaparak.ir — درگاه سداد بانک ملی</option>
+                <option value="zarinpal.com">zarinpal.com — درگاه پرداخت زرین‌پال</option>
+                <option value="ebanking.banksepah.ir">ebanking.banksepah.ir — بانک سپه</option>
+                <option value="bmi.ir">bmi.ir — بانک ملی ایران</option>
+              </optgroup>
+
+              <optgroup label="🚗 سوپر اپ‌ها و خدمات ضروری کشور">
+                <option value="snapp.ir">snapp.ir — اسنپ</option>
+                <option value="tapsi.ir">tapsi.ir — تپسی</option>
+                <option value="digikala.com">digikala.com — دیجی‌کالا</option>
+                <option value="torob.com">torob.com — موتور جستجوی ترب</option>
+                <option value="divar.ir">divar.ir — دیوار</option>
+              </optgroup>
+
+              <optgroup label="🏛️ پنجره ملی خدمات دولت و احراز هویت">
+                <option value="my.gov.ir">my.gov.ir — پنجره ملی خدمات دولت</option>
+                <option value="eservices.gov.ir">eservices.gov.ir — درگاه خدمات الکترونیک</option>
+                <option value="tamin.ir">tamin.ir — سازمان تأمین اجتماعی</option>
+              </optgroup>
+
               <optgroup label="🌐 دامنه‌های بین‌المللی عمومی باثبات">
                 <option value="yahoo.com">yahoo.com — یاهو</option>
                 <option value="www.google.com">www.google.com — گوگل</option>
@@ -259,15 +285,18 @@
                 <option value="www.amazon.com">www.amazon.com — آمازون</option>
                 <option value="www.apple.com">www.apple.com — اپل</option>
               </optgroup>
-              <optgroup label="📦 مخازن نرم‌افزاری (احتمال بالای باز ماندن)">
-                <option value="archive.ubuntu.com">archive.ubuntu.com — اوبونتو</option>
+
+              <optgroup label="📦 مخازن نرم‌افزاری و OS (احتمال ۹۰٪ استثنا در نت ملی)">
+                <option value="archive.ubuntu.com">archive.ubuntu.com — مخازن اوبونتو</option>
                 <option value="pypi.org">pypi.org — مخازن پایتون</option>
                 <option value="registry.npmjs.org">registry.npmjs.org — مخازن نودJS</option>
               </optgroup>
-              <optgroup label="🔒 مراجع گواهی SSL">
+
+              <optgroup label="🔒 مراجع صدور گواهی SSL (ضروری برای کل اینترنت)">
                 <option value="acme-v02.api.letsencrypt.org">acme-v02.api.letsencrypt.org — Let's Encrypt</option>
                 <option value="ocsp.digicert.com">ocsp.digicert.com — DigiCert</option>
               </optgroup>
+
               <option value="custom">✏️ وارد کردن دامنه دلخواه (Custom SNI)</option>
             </select>
 
@@ -417,25 +446,29 @@ const configLoading = ref(false);
 const selectedSniPreset = ref('yahoo.com');
 
 // Live SNI Tester State
-const activeSniCat = ref('BANK');
-const testDomainInput = ref('ebanking.banksepah.ir');
+const activeSniCat = ref('CLOUD');
+const testDomainInput = ref('arvancloud.ir');
 const testingSni = ref(false);
 const sniTestResult = ref<any>(null);
 
 const sniCategories = [
-  { id: 'BANK', label: '🏦 سفید بانکی (قطعی نت)' },
-  { id: 'GENERAL', label: '🌐 بین‌المللی باثبات' },
+  { id: 'CLOUD', label: '☁️ ابر و CDN داخلی' },
+  { id: 'SHAPARAK', label: '💳 درگاه بانکی/شاپرک' },
+  { id: 'APPS', label: '🚗 سوپر اپ‌ها' },
+  { id: 'GOV', label: '🏛️ خدمات دولتی' },
   { id: 'REPOS', label: '📦 مخازن نرم‌افزار' },
   { id: 'SSL', label: '🔒 مراجع SSL' },
-  { id: 'IRAN', label: '🇮🇷 سایت‌های داخلی' },
+  { id: 'GENERAL', label: '🌐 بین‌المللی باثبات' },
 ];
 
 const sniLists: Record<string, string[]> = {
-  BANK: ['ebanking.banksepah.ir', 'bmi.ir', 'bank-maskan.ir', 'tejarat24.ir', 'en.sb24.com'],
-  GENERAL: ['yahoo.com', 'www.google.com', 'dl.google.com', 'www.microsoft.com', 'speed.cloudflare.com', 'www.amazon.com', 'www.apple.com'],
+  CLOUD: ['arvancloud.ir', 'n2a.arvancloud.ir', 'iran.liara.run', 'storage.iran.liara.ir', 'derak.cloud', 'asiatech.ir', 'hostiran.net'],
+  SHAPARAK: ['shaparak.ir', 'pep.shaparak.ir', 'bpm.shaparak.ir', 'sadad.shaparak.ir', 'zarinpal.com', 'ebanking.banksepah.ir', 'bmi.ir', 'bank-maskan.ir', 'tejarat24.ir'],
+  APPS: ['snapp.ir', 'tapsi.ir', 'digikala.com', 'torob.com', 'divar.ir', 'sheypoor.com', 'bale.ai', 'eitaa.com', 'rubika.ir'],
+  GOV: ['my.gov.ir', 'eservices.gov.ir', 'ncr.ir', 'tamin.ir', 'tax.gov.ir'],
   REPOS: ['archive.ubuntu.com', 'security.ubuntu.com', 'pypi.org', 'registry.npmjs.org', 'registry-1.docker.io'],
   SSL: ['acme-v02.api.letsencrypt.org', 'ocsp.digicert.com', 'ocsp.sectigo.com', 'ocsp2.globalsign.com'],
-  IRAN: ['irancell.ir', 'mci.ir', 'arvancloud.ir', 'divar.ir', 'digikala.com', 'snapp.ir']
+  GENERAL: ['yahoo.com', 'www.google.com', 'dl.google.com', 'www.microsoft.com', 'speed.cloudflare.com', 'www.amazon.com', 'www.apple.com']
 };
 
 const filteredSniList = computed(() => sniLists[activeSniCat.value] || sniLists.BANK);
