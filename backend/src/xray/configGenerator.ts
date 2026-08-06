@@ -3,6 +3,7 @@ import path from 'path';
 
 export interface InboundConfig {
   id: string;
+  uuid?: string;
   remark: string;
   protocol: string;
   port: number;
@@ -36,7 +37,6 @@ export function generateX25519Keypair(xrayExecPath?: string): { privateKey: stri
     }
   }
 
-  // Fallback: Generate URL-safe random keypair string if Xray binary unavailable during initial bootstrap
   const crypto = require('crypto');
   const randBytes = crypto.randomBytes(32).toString('base64url');
   const pubBytes = crypto.randomBytes(32).toString('base64url');
@@ -48,7 +48,6 @@ export function generateX25519Keypair(xrayExecPath?: string): { privateKey: stri
 
 export function generateXrayJsonConfig(inbounds: InboundConfig[], users: UserConfig[]) {
   const xrayInbounds: any[] = [
-    // API Inbound for gRPC management
     {
       listen: "127.0.0.1",
       port: 10085,
@@ -63,12 +62,15 @@ export function generateXrayJsonConfig(inbounds: InboundConfig[], users: UserCon
   for (const inbound of inbounds) {
     const isReality = inbound.security === 'reality';
 
-    const clients = users.map(u => ({
+    const clients = users.length > 0 ? users.map(u => ({
       id: u.uuid,
-      // flow is only valid for REALITY+TCP, empty string causes error in other modes
       ...(isReality && inbound.network === 'tcp' ? { flow: 'xtls-rprx-vision' } : {}),
       email: u.username
-    }));
+    })) : [{
+      id: inbound.uuid || inbound.id,
+      ...(isReality && inbound.network === 'tcp' ? { flow: 'xtls-rprx-vision' } : {}),
+      email: inbound.remark
+    }];
 
     const streamSettings: any = {
       network: inbound.network || 'tcp',
@@ -77,7 +79,7 @@ export function generateXrayJsonConfig(inbounds: InboundConfig[], users: UserCon
 
     if (isReality) {
       if (!inbound.privateKey) {
-        console.warn(`[Nyx Config] ⚠️ Inbound ${inbound.remark} has no privateKey! Skipping REALITY config for this inbound.`);
+        console.warn(`[Nyx Config] ⚠️ Inbound ${inbound.remark} has no privateKey!`);
       }
       streamSettings.realitySettings = {
         show: false,
@@ -97,7 +99,6 @@ export function generateXrayJsonConfig(inbounds: InboundConfig[], users: UserCon
       };
     }
 
-    // Fragment sockopt — enables kernel-level packet fragmentation on the server
     if (inbound.enableFragment && inbound.network === 'tcp') {
       streamSettings.sockopt = {
         tcpKeepAliveIdle: 100,
@@ -109,7 +110,6 @@ export function generateXrayJsonConfig(inbounds: InboundConfig[], users: UserCon
       };
     }
 
-    // Add network-specific settings
     if (inbound.network === 'ws') {
       streamSettings.wsSettings = {
         path: '/nyx',
@@ -122,7 +122,7 @@ export function generateXrayJsonConfig(inbounds: InboundConfig[], users: UserCon
     }
 
     xrayInbounds.push({
-      tag: `inbound-${inbound.port}`,
+      tag: `inbound-${inbound.id}`,
       port: inbound.port,
       protocol: inbound.protocol || 'vless',
       settings: {

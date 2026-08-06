@@ -42,7 +42,7 @@ model Inbound {
   uuid             String   @unique @default(uuid())
   remark           String
   protocol         String   @default("vless")
-  port             Int      @unique
+  port             Int
   network          String   @default("tcp")
   security         String   @default("reality")
   sni              String?  @default("yahoo.com")

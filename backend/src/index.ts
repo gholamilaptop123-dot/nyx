@@ -305,19 +305,19 @@ app.get('/api/inbounds', async (req, res) => {
 
 app.post('/api/inbounds', async (req, res) => {
   try {
-    const { remark, protocol, port, network, security, sni, privateKey, publicKey, shortId, enableFragment } = req.body;
+    const { remark, protocol, port, network, security, sni, privateKey, publicKey, shortId, enableFragment, dataLimitGb, expireDays, maxDevices } = req.body;
     const parsedPort = parseInt(port);
 
     if (isNaN(parsedPort) || parsedPort < 1 || parsedPort > 65535) {
       return res.status(400).json({ error: 'شماره پورت نامعتبر است (بین ۱ تا ۶۵۵۳۵).' });
     }
 
-    const existingPort = await prisma.inbound.findFirst({ where: { port: parsedPort } });
-    if (existingPort) {
-      return res.status(400).json({ error: `پورت ${parsedPort} قبلاً برای اینباند دیگری استفاده شده است.` });
-    }
-
     const generatedKeys = generateX25519Keypair(xrayBinaryPath);
+    let expireDate: Date | null = null;
+    if (expireDays && Number(expireDays) > 0) {
+      expireDate = new Date();
+      expireDate.setDate(expireDate.getDate() + Number(expireDays));
+    }
 
     const newInbound = await prisma.inbound.create({
       data: {
@@ -330,7 +330,10 @@ app.post('/api/inbounds', async (req, res) => {
         privateKey: privateKey || generatedKeys.privateKey,
         publicKey: publicKey || generatedKeys.publicKey,
         shortId: shortId || '6ba7b810',
-        enableFragment: enableFragment !== undefined ? Boolean(enableFragment) : true
+        enableFragment: enableFragment !== undefined ? Boolean(enableFragment) : true,
+        dataLimitGb: dataLimitGb ? parseFloat(dataLimitGb) : 0,
+        expireDate,
+        maxDevices: maxDevices ? parseInt(maxDevices, 10) : 2
       }
     });
 
