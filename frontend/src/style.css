@@ -1,8 +1,4 @@
-/* === FONT LOADING STRATEGY ===
-   Primary: jsDelivr CDN (works in Iran + intranet mode)
-   Fallback: Local system fonts for Persian
-   Last resort: system-ui for Latin
-*/
+/* === FONT LOADING STRATEGY === */
 @import url('https://cdn.jsdelivr.net/npm/@fontsource/vazirmatn@5.1.0/400.css');
 @import url('https://cdn.jsdelivr.net/npm/@fontsource/vazirmatn@5.1.0/500.css');
 @import url('https://cdn.jsdelivr.net/npm/@fontsource/vazirmatn@5.1.0/600.css');
@@ -14,47 +10,46 @@
 @tailwind utilities;
 
 body {
-  background-color: #090d16;
+  background-color: #06070a;
   color: #f3f4f6;
-  /* Comprehensive font stack: Vazirmatn → known system Persian fonts → fallback */
   font-family: 'Vazirmatn', 'Tahoma', 'IRANSans', 'IRANSansX', 'IRANYekan', 'B Nazanin', 'Arial', sans-serif;
   direction: rtl;
   overflow-x: hidden;
 }
 
-/* Glassmorphism Styles */
+/* Cyberpunk Glassmorphism Panel & Card Styles */
 .glass-panel {
-  background: rgba(18, 25, 41, 0.75);
+  background: rgba(14, 15, 23, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  border: 1px solid rgba(250, 204, 21, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(250, 204, 21, 0.03);
 }
 
 .glass-card {
-  background: rgba(26, 36, 59, 0.6);
+  background: rgba(18, 20, 31, 0.7);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 0, 85, 0.18);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-card:hover {
-  border-color: rgba(124, 58, 237, 0.4);
+  border-color: rgba(250, 204, 21, 0.4);
   transform: translateY(-2px);
-  box-shadow: 0 12px 24px -10px rgba(124, 58, 237, 0.3);
+  box-shadow: 0 12px 24px -10px rgba(250, 204, 21, 0.3);
 }
 
-/* Glowing Neon Text & Accent Effects */
-.glow-purple {
-  text-shadow: 0 0 12px rgba(124, 58, 237, 0.6);
+/* Glowing Cyberpunk Neon Effects */
+.glow-yellow {
+  text-shadow: 0 0 14px rgba(250, 204, 21, 0.7);
+}
+
+.glow-red {
+  text-shadow: 0 0 14px rgba(255, 0, 85, 0.7);
 }
 
 .glow-cyan {
-  text-shadow: 0 0 12px rgba(6, 182, 212, 0.6);
-}
-
-.glow-green {
-  text-shadow: 0 0 12px rgba(16, 185, 129, 0.6);
+  text-shadow: 0 0 14px rgba(0, 240, 255, 0.7);
 }
 
 /* Custom Scrollbar */
@@ -64,14 +59,15 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #090d16;
+  background: #06070a;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1f293d;
+  background: #1e1b18;
   border-radius: 4px;
+  border: 1px solid rgba(250, 204, 21, 0.2);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #374151;
+  background: #facc15;
 }

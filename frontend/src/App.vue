@@ -10,14 +10,14 @@
     <!-- Header Navbar -->
     <header class="glass-panel sticky top-0 z-50 border-b border-white/10 px-6 py-4 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyberViolet to-cyberCyan flex items-center justify-center shadow-lg shadow-cyberViolet/30">
-          <Shield class="w-6 h-6 text-white" />
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyberYellow via-red-600 to-cyberRed flex items-center justify-center shadow-lg shadow-cyberYellow/30 border border-cyberYellow/40">
+          <Shield class="w-6 h-6 text-black font-bold" />
         </div>
         <div>
-          <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-cyberCyan glow-purple">
+          <h1 class="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-cyberYellow via-red-400 to-cyberRed glow-yellow tracking-wider">
             Nyx Panel
           </h1>
-          <p class="text-xs text-gray-400">سامانه مدیریت ضد فیلترینگ و قطعی شبکه ملی</p>
+          <p class="text-xs text-gray-400 font-mono">سامانه مدیریت ضد فیلترینگ و شبکه ملی</p>
         </div>
       </div>
 

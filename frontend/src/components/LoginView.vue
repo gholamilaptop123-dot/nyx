@@ -1,18 +1,18 @@
 <template>
   <div class="min-h-screen flex items-center justify-center bg-darkBg text-gray-100 px-4">
-    <div class="glass-panel max-w-md w-full p-8 rounded-3xl border border-cyberViolet/30 space-y-6 shadow-2xl relative overflow-hidden">
-      <!-- Ambient Glow -->
-      <div class="absolute -top-20 -right-20 w-40 h-40 bg-cyberViolet/20 blur-3xl rounded-full"></div>
-      <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-cyberCyan/20 blur-3xl rounded-full"></div>
+    <div class="glass-panel max-w-md w-full p-8 rounded-3xl border border-cyberYellow/30 space-y-6 shadow-2xl relative overflow-hidden">
+      <!-- Ambient Cyberpunk Glow -->
+      <div class="absolute -top-20 -right-20 w-40 h-40 bg-cyberYellow/20 blur-3xl rounded-full"></div>
+      <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-cyberRed/20 blur-3xl rounded-full"></div>
 
       <div class="text-center space-y-2 relative z-10">
-        <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-cyberViolet to-cyberCyan flex items-center justify-center shadow-lg shadow-cyberViolet/40">
-          <Shield class="w-8 h-8 text-white" />
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-cyberYellow via-red-600 to-cyberRed flex items-center justify-center shadow-lg shadow-cyberYellow/30 border border-cyberYellow/40">
+          <Shield class="w-8 h-8 text-black font-bold" />
         </div>
-        <h2 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-cyberCyan">
+        <h2 class="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-cyberYellow via-red-400 to-cyberRed glow-yellow">
           ورود به Nyx Panel
         </h2>
-        <p class="text-xs text-gray-400">سامانه مدیریت ضد فیلترینگ و قطعی شبکه ملی</p>
+        <p class="text-xs text-gray-400 font-mono">سامانه مدیریت ضد فیلترینگ و شبکه ملی</p>
       </div>
 
       <form @submit.prevent="handleLogin" class="space-y-4 relative z-10">
@@ -25,7 +25,7 @@
               type="text" 
               placeholder="admin" 
               required
-              class="w-full bg-white/5 border border-white/10 rounded-xl pr-10 pl-4 py-2.5 text-xs text-white placeholder-gray-500 focus:border-cyberCyan outline-none"
+              class="w-full bg-white/5 border border-white/10 rounded-xl pr-10 pl-4 py-2.5 text-xs text-white placeholder-gray-500 focus:border-cyberYellow outline-none"
             />
           </div>
         </div>
@@ -39,21 +39,21 @@
               type="password" 
               placeholder="••••••••" 
               required
-              class="w-full bg-white/5 border border-white/10 rounded-xl pr-10 pl-4 py-2.5 text-xs text-white placeholder-gray-500 focus:border-cyberCyan outline-none"
+              class="w-full bg-white/5 border border-white/10 rounded-xl pr-10 pl-4 py-2.5 text-xs text-white placeholder-gray-500 focus:border-cyberYellow outline-none"
             />
           </div>
         </div>
 
-        <div v-if="errorMsg" class="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-medium">
+        <div v-if="errorMsg" class="p-3 rounded-xl bg-cyberRed/10 border border-cyberRed/30 text-cyberRed text-xs font-medium">
           {{ errorMsg }}
         </div>
 
         <button 
           type="submit" 
           :disabled="loading"
-          class="w-full py-3 rounded-xl bg-gradient-to-r from-cyberViolet to-cyberCyan text-white font-bold text-xs shadow-lg shadow-cyberViolet/30 hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+          class="w-full py-3 rounded-xl bg-gradient-to-r from-cyberYellow via-red-600 to-cyberRed text-black font-extrabold text-xs shadow-lg shadow-cyberYellow/20 hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
         >
-          <RefreshCw v-if="loading" class="w-4 h-4 animate-spin" />
+          <RefreshCw v-if="loading" class="w-4 h-4 animate-spin text-black" />
           <span>{{ loading ? 'در حال بررسی…' : 'ورود به داشبورد' }}</span>
         </button>
       </form>

@@ -7,13 +7,15 @@ export default {
   theme: {
     extend: {
       colors: {
-        darkBg: "#090d16",
-        cardBg: "rgba(18, 25, 41, 0.75)",
-        cardBorder: "rgba(255, 255, 255, 0.08)",
-        cyberViolet: "#7c3aed",
-        cyberCyan: "#06b6d4",
+        darkBg: "#06070a",
+        cardBg: "rgba(14, 15, 23, 0.85)",
+        cardBorder: "rgba(250, 204, 21, 0.15)",
+        cyberYellow: "#facc15",
+        cyberRed: "#ff0055",
+        cyberViolet: "#facc15", // Mapped to Cyber Yellow for seamless compatibility
+        cyberCyan: "#00f0ff",
         cyberGreen: "#10b981",
-        cyberPink: "#ec4899"
+        cyberPink: "#ff0055"   // Mapped to Neon Crimson Red
       },
       fontFamily: {
         sans: ['Vazirmatn', 'Inter', 'sans-serif']
