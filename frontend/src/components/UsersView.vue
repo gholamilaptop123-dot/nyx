@@ -3,24 +3,24 @@
     <!-- Header Action Bar -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div>
-        <h2 class="text-2xl font-bold text-white">مدیریت کاربران و اشتراک‌ها</h2>
+        <h2 class="text-2xl font-extrabold text-cyberYellow glow-yellow">مدیریت کاربران و اشتراک‌ها</h2>
         <p class="text-sm text-gray-400">تعریف کاربران جدید، مدیریت حجم مصرفی و دریافت لینک‌های اختصاصی</p>
       </div>
       <button 
         @click="showCreateModal = true"
-        class="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-cyberViolet to-cyberPink text-white font-semibold text-sm shadow-lg shadow-cyberViolet/30 hover:opacity-90 transition-all"
+        class="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-cyberYellow via-red-600 to-cyberRed text-black font-extrabold text-sm shadow-lg shadow-cyberYellow/20 hover:opacity-90 transition-all border border-cyberYellow/40"
       >
-        <UserPlus class="w-4 h-4" />
+        <UserPlus class="w-4 h-4 text-black font-bold" />
         ساخت کاربر جدید
       </button>
     </div>
 
     <!-- User List Table / Cards -->
-    <div class="glass-panel rounded-3xl overflow-hidden border border-white/10">
+    <div class="glass-panel rounded-3xl overflow-hidden border border-cyberYellow/30">
       <div class="overflow-x-auto">
         <table class="w-full min-w-[700px] text-right border-collapse">
           <thead>
-            <tr class="bg-white/5 border-b border-white/10 text-xs text-gray-400 font-semibold">
+            <tr class="bg-white/5 border-b border-cyberYellow/20 text-xs text-cyberYellow font-bold">
               <th class="p-4">نام کاربر</th>
               <th class="p-4">شناسه اختصاصی (UUID)</th>
               <th class="p-4">مصرف / سقف حجم</th>
@@ -32,14 +32,14 @@
           <tbody class="divide-y divide-white/5 text-sm">
             <tr v-for="user in users" :key="user.id" class="hover:bg-white/5 transition-colors">
               <td class="p-4 font-semibold text-white flex items-center gap-2">
-                <div class="w-8 h-8 rounded-full bg-cyberViolet/20 text-cyberViolet flex items-center justify-center font-bold text-xs font-mono">
+                <div class="w-8 h-8 rounded-full bg-cyberYellow/20 border border-cyberYellow/40 text-cyberYellow flex items-center justify-center font-bold text-xs font-mono">
                   {{ user.username.charAt(0).toUpperCase() }}
                 </div>
                 {{ user.username }}
               </td>
               <td class="p-4 font-mono text-xs text-gray-400" dir="ltr">{{ user.uuid }}</td>
               <td class="p-4">
-                <span class="text-white font-mono" dir="ltr">{{ (Number(user.usedDataBytes) / (1024*1024*1024)).toFixed(2) }} GB</span>
+                <span class="text-cyberYellow font-mono font-bold" dir="ltr">{{ (Number(user.usedDataBytes) / (1024*1024*1024)).toFixed(2) }} GB</span>
                 <span class="text-gray-500 text-xs mr-1">/ {{ user.dataLimitGb > 0 ? user.dataLimitGb + ' GB' : 'نامحدود' }}</span>
               </td>
               <td class="p-4 text-xs text-gray-300">
@@ -48,17 +48,17 @@
               <td class="p-4">
                 <span :class="[
                   'px-3 py-1 text-xs rounded-full font-medium inline-block',
-                  user.status === 'ACTIVE' ? 'bg-cyberGreen/20 text-cyberGreen' : 'bg-red-500/20 text-red-400'
+                  user.status === 'ACTIVE' ? 'bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30' : 'bg-cyberRed/20 text-cyberRed border border-cyberRed/30'
                 ]">
                   {{ user.status === 'ACTIVE' ? 'فعال' : 'غیرفعال' }}
                 </span>
               </td>
               <td class="p-4 flex items-center justify-center gap-2">
-                <button @click="openConfigModal(user)" class="px-3 py-1.5 rounded-xl bg-cyberViolet/20 text-cyberViolet hover:bg-cyberViolet/30 text-xs font-semibold flex items-center gap-1 transition-all">
+                <button @click="openConfigModal(user)" class="px-3 py-1.5 rounded-xl bg-cyberYellow/20 border border-cyberYellow/40 text-cyberYellow hover:bg-cyberYellow/30 text-xs font-bold flex items-center gap-1 transition-all">
                   <Download class="w-3.5 h-3.5" />
                   دریافت کانفیگ
                 </button>
-                <button @click="openSubModal(user)" class="px-3 py-1.5 rounded-xl bg-cyberCyan/20 text-cyberCyan hover:bg-cyberCyan/30 text-xs font-semibold flex items-center gap-1 transition-all">
+                <button @click="openSubModal(user)" class="px-3 py-1.5 rounded-xl bg-cyberRed/20 border border-cyberRed/40 text-cyberRed hover:bg-cyberRed/30 text-xs font-bold flex items-center gap-1 transition-all">
                   <QrCode class="w-3.5 h-3.5" />
                   لینک ساب
                 </button>

@@ -1,17 +1,17 @@
 <template>
   <div class="space-y-6">
     <!-- Top Banner -->
-    <div class="glass-panel rounded-3xl p-6 relative overflow-hidden border border-cyberViolet/30">
-      <div class="absolute -left-10 -bottom-10 w-48 h-48 bg-cyberViolet/20 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="glass-panel rounded-3xl p-6 relative overflow-hidden border border-cyberYellow/40">
+      <div class="absolute -left-10 -bottom-10 w-48 h-48 bg-cyberYellow/20 rounded-full blur-3xl pointer-events-none"></div>
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
         <div>
-          <h2 class="text-2xl font-bold text-white mb-1">خوش آمدید به Nyx Panel 🔥</h2>
-          <p class="text-sm text-gray-300">سیستم فعال و آماده دور زدن فیلترینگ شدید و اختلالات شبکه ملی اطلاعات.</p>
+          <h2 class="text-2xl font-extrabold text-cyberYellow glow-yellow mb-1">خوش آمدید به Nyx Panel</h2>
+          <p class="text-sm text-gray-300">سیستم فعال و آماده مدیریت اتصالات شبکه.</p>
         </div>
         <div class="flex items-center gap-3">
-          <div class="bg-black/30 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10 text-xs flex items-center gap-2">
+          <div class="bg-black/50 backdrop-blur-md px-4 py-2 rounded-2xl border border-cyberYellow/30 text-xs flex items-center gap-2">
             <span class="text-gray-400">IP سرور شما:</span>
-            <span class="font-mono text-cyberCyan font-semibold">{{ stats.serverIp }}</span>
+            <span class="font-mono text-cyberYellow font-bold">{{ stats.serverIp }}</span>
           </div>
         </div>
       </div>
@@ -19,43 +19,43 @@
 
     <!-- Quick Stats Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="glass-card p-5 rounded-2xl flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl bg-cyberViolet/20 text-cyberViolet flex items-center justify-center">
+      <div class="glass-card p-5 rounded-2xl flex items-center gap-4 border border-cyberYellow/30">
+        <div class="w-12 h-12 rounded-xl bg-cyberYellow/20 text-cyberYellow border border-cyberYellow/30 flex items-center justify-center">
           <Users class="w-6 h-6" />
         </div>
         <div>
           <p class="text-xs text-gray-400 font-medium">کل کاربران</p>
-          <h3 class="text-2xl font-bold text-white mt-1">{{ stats.totalUsers }}</h3>
+          <h3 class="text-2xl font-extrabold text-white mt-1">{{ stats.totalUsers }}</h3>
         </div>
       </div>
 
-      <div class="glass-card p-5 rounded-2xl flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl bg-cyberGreen/20 text-cyberGreen flex items-center justify-center">
+      <div class="glass-card p-5 rounded-2xl flex items-center gap-4 border border-cyberYellow/30">
+        <div class="w-12 h-12 rounded-xl bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30 flex items-center justify-center">
           <CheckCircle class="w-6 h-6" />
         </div>
         <div>
           <p class="text-xs text-gray-400 font-medium">کاربران فعال</p>
-          <h3 class="text-2xl font-bold text-white mt-1">{{ stats.activeUsers }}</h3>
+          <h3 class="text-2xl font-extrabold text-white mt-1">{{ stats.activeUsers }}</h3>
         </div>
       </div>
 
-      <div class="glass-card p-5 rounded-2xl flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl bg-cyberCyan/20 text-cyberCyan flex items-center justify-center">
+      <div class="glass-card p-5 rounded-2xl flex items-center gap-4 border border-cyberRed/30">
+        <div class="w-12 h-12 rounded-xl bg-cyberRed/20 text-cyberRed border border-cyberRed/30 flex items-center justify-center">
           <Activity class="w-6 h-6" />
         </div>
         <div>
           <p class="text-xs text-gray-400 font-medium">ترافیک کل تبادل شده</p>
-          <h3 class="text-2xl font-bold text-white mt-1">{{ stats.totalTransferredGb }} GB</h3>
+          <h3 class="text-2xl font-extrabold text-white mt-1">{{ stats.totalTransferredGb }} GB</h3>
         </div>
       </div>
 
-      <div class="glass-card p-5 rounded-2xl flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl bg-cyberPink/20 text-cyberPink flex items-center justify-center">
+      <div class="glass-card p-5 rounded-2xl flex items-center gap-4 border border-cyberYellow/30">
+        <div class="w-12 h-12 rounded-xl bg-cyberYellow/20 text-cyberYellow border border-cyberYellow/30 flex items-center justify-center">
           <Server class="w-6 h-6" />
         </div>
         <div>
           <p class="text-xs text-gray-400 font-medium">نودها و سرورها</p>
-          <h3 class="text-2xl font-bold text-white mt-1">{{ stats.totalNodes }} نود</h3>
+          <h3 class="text-2xl font-extrabold text-white mt-1">{{ stats.totalNodes }} نود</h3>
         </div>
       </div>
     </div>
