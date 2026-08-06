@@ -133,8 +133,7 @@ const isSubInfoPage = computed(() => {
 
 const tabs = [
   { id: 'dashboard', name: 'داشبورد', icon: LayoutDashboard },
-  { id: 'users', name: 'کاربران', icon: Users },
-  { id: 'inbounds', name: 'اینباندها', icon: Network },
+  { id: 'inbounds', name: 'اینباندها و کانفیگ‌ها', icon: Network },
   { id: 'nodes', name: 'سرورها و نودها', icon: Server },
   { id: 'tunnels', name: 'تونل قطعی نت', icon: Zap },
   { id: 'settings', name: 'ربات و تنظیمات', icon: Settings },
