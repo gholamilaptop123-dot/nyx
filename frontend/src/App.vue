@@ -17,7 +17,7 @@
           <h1 class="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-cyberYellow via-red-400 to-cyberRed glow-yellow tracking-wider">
             Nyx Panel
           </h1>
-          <p class="text-xs text-gray-400 font-mono">سامانه مدیریت ضد فیلترینگ و شبکه ملی</p>
+          <p class="text-xs text-gray-400 font-mono">سامانه مدیریت VPN و شبکه اختصاصی</p>
         </div>
       </div>
 

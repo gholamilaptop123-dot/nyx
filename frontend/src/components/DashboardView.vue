@@ -6,10 +6,10 @@
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
         <div>
           <h2 class="text-2xl font-extrabold text-cyberYellow glow-yellow mb-1 flex items-center gap-2">
-            <span>داشبورد پایش آنی و هوشمند Nyx Panel</span>
-            <span class="text-xs px-2.5 py-0.5 rounded-full bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/40 animate-pulse font-normal">زنده (Live)</span>
+            <span>داشبورد مانیتورینگ زنده Nyx Panel</span>
+            <span class="text-xs px-2.5 py-0.5 rounded-full bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/40 animate-pulse font-normal">آنلاین (Live)</span>
           </h2>
-          <p class="text-sm text-gray-300">سیستم فعال و آماده دور زدن اختلالات شبکه ملی و فیلترینگ اپراتورها.</p>
+          <p class="text-sm text-gray-300">سامانه هوشمند پایش و مدیریت اتصالات Xray و تونل‌زنی.</p>
         </div>
         <div class="flex items-center gap-3">
           <div class="bg-black/60 backdrop-blur-md px-4 py-2 rounded-2xl border border-cyberYellow/30 text-xs flex items-center gap-2">
@@ -79,7 +79,7 @@
           <span class="text-xs font-bold text-cyberYellow">{{ stats.systemHealth.uptimeText }}</span>
         </div>
         <div class="flex items-center justify-between mt-2 text-xs">
-          <span class="text-gray-400">بازدهی ضد فیلتر:</span>
+          <span class="text-gray-400">نرخ پایداری شبکه:</span>
           <span class="font-bold text-cyberGreen" dir="ltr">{{ stats.systemHealth.bypassEfficiency }}</span>
         </div>
       </div>
@@ -128,16 +128,16 @@
       </div>
     </div>
 
-    <!-- Detailed Anti-Censorship Protocols Status Matrix -->
+    <!-- Detailed Protocols Status Matrix -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div class="glass-panel p-6 rounded-3xl lg:col-span-2 space-y-4 border border-cyberYellow/30">
         <div class="flex items-center justify-between border-b border-white/10 pb-3">
           <div>
             <h3 class="text-lg font-extrabold text-cyberYellow glow-yellow flex items-center gap-2">
               <ShieldAlert class="w-5 h-5 text-cyberYellow" />
-              وضعیت شفاف و آنی پروتکل‌های ضد فیلترینگ
+              وضعیت پایداری پروتکل‌های شبکه
             </h3>
-            <p class="text-xs text-gray-400 mt-0.5">وضعیت کارکرد، سرعت پاسخ‌دهی و تکنولوژی‌های فعال عبور از DPI</p>
+            <p class="text-xs text-gray-400 mt-0.5">وضعیت کارکرد، سرعت پاسخ‌دهی و تکنولوژی‌های فعال اتصال</p>
           </div>
           <span class="text-xs text-cyberGreen font-bold font-mono bg-cyberGreen/10 border border-cyberGreen/30 px-3 py-1 rounded-full">
             Xray Core: {{ stats.systemHealth.xrayStatus }}
@@ -152,20 +152,20 @@
                 <span class="w-3 h-3 rounded-full bg-cyberGreen shadow-sm shadow-cyberGreen animate-ping"></span>
                 <h4 class="text-sm font-extrabold text-white flex items-center gap-2">
                   <span>VLESS + REALITY (X25519)</span>
-                  <span class="text-[10px] bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30 px-2 py-0.5 rounded-md">پیشنهادی اصلی</span>
+                  <span class="text-[10px] bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30 px-2 py-0.5 rounded-md">پروتکل اصلی</span>
                 </h4>
               </div>
               <span class="px-3 py-1 text-xs rounded-full bg-cyberGreen/20 text-cyberGreen font-extrabold border border-cyberGreen/30">
-                🟢 آنلاین و فعال (۱۰۰٪ عملیاتی)
+                🟢 فعال و آماده‌به‌کار
               </span>
             </div>
             <p class="text-xs text-gray-300 leading-relaxed pr-6">
-              مخفی‌سازی کامل دست‌تکانی TLS و تقلید رفتار گواهی‌های معتبر (مانند Ubuntu/Python). بدون نیاز به دامنه شخصی یا گواهی SSL.
+              شبیه‌سازی کامل TLS با پروتکل REALITY بدون نیاز به گواهی SSL و دامنه شخصی.
             </p>
             <div class="flex flex-wrap items-center gap-4 text-[11px] text-gray-400 pr-6 pt-1 border-t border-white/5">
               <span>⚡ تاخیر متوسط: <strong class="text-cyberYellow font-mono" dir="ltr">۱۶ ms</strong></span>
-              <span>🔒 گواهی SSL: <strong class="text-cyberGreen">بی‌نیازمند (Masked)</strong></span>
-              <span>📱 پوشش اپراتور: <strong class="text-white">همراه اول، ایرانسل و رایتل</strong></span>
+              <span>🔒 وضعیت SSL: <strong class="text-cyberGreen">بدون نیاز به دامنه (REALITY Mask)</strong></span>
+              <span>📱 پوشش اپراتورها: <strong class="text-white">همراه اول، ایرانسل و رایتل</strong></span>
             </div>
           </div>
 
@@ -175,21 +175,21 @@
               <div class="flex items-center gap-3">
                 <span class="w-3 h-3 rounded-full bg-cyberGreen shadow-sm shadow-cyberGreen"></span>
                 <h4 class="text-sm font-extrabold text-white flex items-center gap-2">
-                  <span>Xray Packet Fragment Engine</span>
-                  <span class="text-[10px] bg-cyberYellow/20 text-cyberYellow border border-cyberYellow/30 px-2 py-0.5 rounded-md">ضد DPI</span>
+                  <span>Xray Packet Fragment</span>
+                  <span class="text-[10px] bg-cyberYellow/20 text-cyberYellow border border-cyberYellow/30 px-2 py-0.5 rounded-md">فرگمنت</span>
                 </h4>
               </div>
               <span class="px-3 py-1 text-xs rounded-full bg-cyberGreen/20 text-cyberGreen font-extrabold border border-cyberGreen/30">
-                ⚡ خردسازی پکت‌ها (100-200 Bytes)
+                ⚡ پکت فرگمنت (100-200 Bytes)
               </span>
             </div>
             <p class="text-xs text-gray-300 leading-relaxed pr-6">
-              تکه‌تکه‌سازی هوشمند پکت‌های اولیه Handshake برای کور کردن سیستم‌های تحلیل عمیق پکت (DPI) تجهیزات زیرساخت.
+              ارسال شکسته‌شده پکت‌های اولیه (Fragment) جهت عبور از سیستم‌های تحلیل پکت DPI همراه اول و ایرانسل.
             </p>
             <div class="flex flex-wrap items-center gap-4 text-[11px] text-gray-400 pr-6 pt-1 border-t border-white/5">
-              <span>🎯 سایز پکت‌ها: <strong class="text-cyberYellow font-mono" dir="ltr">100-200 Bytes</strong></span>
-              <span>📊 نرخ تحویل موفق: <strong class="text-cyberGreen font-mono">۹۹.۹٪</strong></span>
-              <span>🛡️ عبور از فیلترینگ شدید: <strong class="text-cyberYellow">فعال</strong></span>
+              <span>🎯 سایز پکت: <strong class="text-cyberYellow font-mono" dir="ltr">100-200 Bytes</strong></span>
+              <span>📊 نرخ تحویل: <strong class="text-cyberGreen font-mono">۹۹.۹٪</strong></span>
+              <span>🛡️ عبور از DPI زیرساخت: <strong class="text-cyberYellow">فعال</strong></span>
             </div>
           </div>
 
@@ -200,15 +200,15 @@
                 <span class="w-3 h-3 rounded-full bg-cyberYellow shadow-sm shadow-cyberYellow"></span>
                 <h4 class="text-sm font-extrabold text-white flex items-center gap-2">
                   <span>Gost v3 Intranet Tunnel</span>
-                  <span class="text-[10px] bg-cyberRed/20 text-cyberRed border border-cyberRed/30 px-2 py-0.5 rounded-md">ویژه قطعی نت</span>
+                  <span class="text-[10px] bg-cyberRed/20 text-cyberRed border border-cyberRed/30 px-2 py-0.5 rounded-md">تونل اختصاصی</span>
                 </h4>
               </div>
               <span class="px-3 py-1 text-xs rounded-full bg-cyberYellow/20 text-cyberYellow font-extrabold border border-cyberYellow/30">
-                🛡️ آماده رزرو و اتصالات ایران به خارج
+                🛡️ آمادگی کامل برای تونل‌زنی اختصاصی
               </span>
             </div>
             <p class="text-xs text-gray-300 leading-relaxed pr-6">
-              تونل‌زنی انکریپت‌شده WebSocket TLS بین سرور ایران و خارج جهت هدایت ترافیک در زمان مسدودی مستقیم IPهای خارجی.
+              ارتباط رمزنگاری‌شده WebSocket بین سرور ایران و خارج برای انتقال باثبات ترافیک.
             </p>
             <div class="flex flex-wrap items-center gap-4 text-[11px] text-gray-400 pr-6 pt-1 border-t border-white/5">
               <span>🔗 نوع تونل: <strong class="text-cyberYellow font-mono">WebSocket TLS</strong></span>
@@ -218,7 +218,7 @@
         </div>
       </div>
 
-      <!-- UPGRADED SMART OPERATOR RECOMMENDATIONS & ISP MATRIX -->
+      <!-- SMART OPERATOR RECOMMENDATIONS & ISP MATRIX -->
       <div class="space-y-6">
         <div class="glass-panel p-6 rounded-3xl space-y-4 border border-cyberYellow/40">
           <div class="flex items-center justify-between border-b border-white/10 pb-3">
@@ -289,10 +289,10 @@
             <div class="p-4 rounded-2xl bg-cyberRed/10 border border-cyberRed/40 space-y-2">
               <div class="flex items-center justify-between">
                 <span class="font-extrabold text-cyberRed flex items-center gap-1.5 text-sm">
-                  🛡️ زمان قطعی اینترنت بین‌الملل
+                  🛡️ پل ارتباطی شبکه‌ملی (Relay)
                 </span>
                 <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyberYellow/20 text-cyberYellow border border-cyberYellow/30 font-bold">
-                  حالت اضطراری
+                  تونل ایران
                 </span>
               </div>
               <p class="text-gray-200 leading-relaxed">

@@ -28,7 +28,7 @@
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
           <Activity class="w-5 h-5 text-cyberYellow" />
-          <h3 class="text-sm font-extrabold text-cyberYellow glow-yellow">ابزار تست زنده دست‌تکانی TLS (ارزیابی باز بودن SNI از سرور)</h3>
+          <h3 class="text-sm font-extrabold text-cyberYellow glow-yellow">ابزار تست زنده اتصال TLS (ارزیابی پاسخ‌دهی دامنه SNI)</h3>
         </div>
         <span class="text-[11px] text-gray-400">تست واقعی برقراری ارتباط روی پورت ۴۴۳</span>
       </div>
