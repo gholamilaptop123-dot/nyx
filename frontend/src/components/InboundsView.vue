@@ -647,7 +647,8 @@ function copyInboundInfoPage(inbound: any) {
   const host = window.location.host;
   const link = `http://${host}/subinfo/${inbound.uuid || inbound.id}`;
   navigator.clipboard.writeText(link);
-  props.toast?.('لینک صفحه وب کانفیگ کپی شد.', 'success');
+  window.open(link, '_blank');
+  props.toast?.('صفحه وب کانفیگ در تب جدید باز شد و لینک کپی گردید.', 'success');
 }
 
 function copy(text: string) {

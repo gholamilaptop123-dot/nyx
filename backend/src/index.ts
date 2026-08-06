@@ -376,6 +376,35 @@ app.delete('/api/inbounds/:id', async (req, res) => {
   }
 });
 
+// GET Output Configs for specific Inbound
+app.get('/api/inbounds/:id/configs', async (req, res) => {
+  try {
+    const inbound = await prisma.inbound.findFirst({
+      where: { OR: [{ id: req.params.id }, { uuid: req.params.id }] }
+    });
+    if (!inbound) {
+      return res.status(404).json({ error: 'اینباند یافت نشد.' });
+    }
+
+    const hostIp = getPublicHost(req);
+    const port = req.socket.localPort || PORT || 3080;
+    const vlessLink = SubscriptionService.generateVlessLink(inbound as any, hostIp);
+    const subUrl = `http://${hostIp}:${port}/api/sub/${inbound.uuid || inbound.id}`;
+    const base64Sub = Buffer.from(vlessLink).toString('base64');
+    const userInfoUrl = `http://${hostIp}:${port}/subinfo/${inbound.uuid || inbound.id}`;
+
+    res.json({
+      inbound,
+      vlessLink,
+      subUrl,
+      base64Sub,
+      userInfoUrl
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || 'خطا در تولید کانفیگ‌های اینباند' });
+  }
+});
+
 // Real SNI Connection Tester Endpoint
 app.get('/api/sni/test', async (req, res) => {
   const domain = (req.query.domain as string || 'yahoo.com').trim().toLowerCase();
@@ -439,14 +468,17 @@ app.get('/api/nodes', async (req, res) => {
 
 app.post('/api/nodes', async (req, res) => {
   try {
-    const { name, type, ip, tunnelType, tunnelPort } = req.body;
+    const { name, type, ip, apiPort, isMaster, tunnelType, tunnelPort, tunnelSecret } = req.body;
     const node = await prisma.node.create({
       data: {
         name,
         type: type || 'KHAREJ',
         ip,
+        apiPort: parseInt(apiPort || 10085),
+        isMaster: Boolean(isMaster),
         tunnelType: tunnelType || 'NONE',
-        tunnelPort: tunnelPort ? parseInt(tunnelPort) : null
+        tunnelPort: tunnelPort ? parseInt(tunnelPort) : null,
+        tunnelSecret: tunnelSecret || null
       }
     });
     res.status(201).json(node);
@@ -492,29 +524,42 @@ app.post('/api/nodes/tunnel-script', async (req, res) => {
 // 5. Universal Subscription Endpoint (Public)
 app.get('/api/sub/:uuid', async (req, res) => {
   try {
-    const user = await prisma.user.findUnique({ where: { uuid: req.params.uuid } });
-    if (!user || user.status !== 'ACTIVE') {
-      return res.status(404).send('Subscription disabled or expired');
-    }
-
-    const inbounds = await prisma.inbound.findMany({ where: { enabled: true } });
     const format = (req.query.format as string) || 'base64';
     const isp = (req.query.isp as string) || 'DEFAULT';
     const hostIp = getPublicHost(req);
 
-    if (format === 'singbox') {
-      const jsonConfig = SubscriptionService.generateSingBoxJson(user as any, inbounds as any[], hostIp, isp);
-      return res.json(jsonConfig);
-    }
-    if (format === 'clash') {
-      const yaml = SubscriptionService.generateClashYaml(user as any, inbounds as any[], hostIp, isp);
-      res.setHeader('Content-Type', 'text/yaml; charset=utf-8');
-      return res.send(yaml);
+    // Try finding by user first, then by inbound
+    const user = await prisma.user.findUnique({ where: { uuid: req.params.uuid } });
+    if (user) {
+      if (user.status !== 'ACTIVE') return res.status(404).send('Subscription disabled or expired');
+      const inbounds = await prisma.inbound.findMany({ where: { enabled: true } });
+      if (format === 'singbox') return res.json(SubscriptionService.generateSingBoxJson(user as any, inbounds as any[], hostIp, isp));
+      if (format === 'clash') {
+        res.setHeader('Content-Type', 'text/yaml; charset=utf-8');
+        return res.send(SubscriptionService.generateClashYaml(user as any, inbounds as any[], hostIp, isp));
+      }
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      return res.send(SubscriptionService.generateBase64Sub(user as any, inbounds as any[], hostIp, isp));
     }
 
-    const base64Sub = SubscriptionService.generateBase64Sub(user as any, inbounds as any[], hostIp, isp);
+    // Check if UUID belongs to an Inbound
+    const inbound = await prisma.inbound.findFirst({
+      where: { OR: [{ uuid: req.params.uuid }, { id: req.params.uuid }] }
+    });
+    if (!inbound || !inbound.enabled) {
+      return res.status(404).send('Inbound subscription not found or disabled');
+    }
+
+    const vlessLink = SubscriptionService.generateVlessLink(inbound as any, hostIp, isp);
+    if (format === 'singbox') return res.json(SubscriptionService.generateSingBoxJson(inbound as any, [inbound] as any[], hostIp, isp));
+    if (format === 'clash') {
+      res.setHeader('Content-Type', 'text/yaml; charset=utf-8');
+      return res.send(SubscriptionService.generateClashYaml(inbound as any, [inbound] as any[], hostIp, isp));
+    }
+
+    const base64Sub = Buffer.from(vlessLink).toString('base64');
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.send(base64Sub);
+    return res.send(base64Sub);
   } catch (error) {
     res.status(500).send('Error generating subscription');
   }
@@ -523,29 +568,60 @@ app.get('/api/sub/:uuid', async (req, res) => {
 // 5.1 Public User Web Subscription Info API
 app.get('/api/subinfo/:uuid', async (req, res) => {
   try {
-    const user = await prisma.user.findUnique({ where: { uuid: req.params.uuid } });
-    if (!user) return res.status(404).json({ error: 'حساب کاربر یافت نشد.' });
-
-    const inbounds = await prisma.inbound.findMany({ where: { enabled: true } });
     const hostIp = getPublicHost(req);
     const isp = (req.query.isp as string) || 'DEFAULT';
 
-    const vlessLinks = inbounds.map(inbound =>
-      SubscriptionService.generateVlessLink(user as any, inbound as any, hostIp, isp)
-    );
-    const base64Sub = SubscriptionService.generateBase64Sub(user as any, inbounds as any[], hostIp, isp);
-    const singboxJson = SubscriptionService.generateSingBoxJson(user as any, inbounds as any[], hostIp, isp);
-    const clashYaml = SubscriptionService.generateClashYaml(user as any, inbounds as any[], hostIp, isp);
-    const subUrl = `http://${hostIp}:${PORT}/api/sub/${user.uuid}?isp=${isp}`;
+    const user = await prisma.user.findUnique({ where: { uuid: req.params.uuid } });
+    if (user) {
+      const inbounds = await prisma.inbound.findMany({ where: { enabled: true } });
+      const vlessLinks = inbounds.map(inbound =>
+        SubscriptionService.generateVlessLink(user as any, inbound as any, hostIp, isp)
+      );
+      const base64Sub = SubscriptionService.generateBase64Sub(user as any, inbounds as any[], hostIp, isp);
+      const singboxJson = SubscriptionService.generateSingBoxJson(user as any, inbounds as any[], hostIp, isp);
+      const clashYaml = SubscriptionService.generateClashYaml(user as any, inbounds as any[], hostIp, isp);
+      const subUrl = `http://${hostIp}:${PORT}/api/sub/${user.uuid}?isp=${isp}`;
 
-    res.json({
+      return res.json({
+        user: {
+          username: user.username,
+          uuid: user.uuid,
+          status: user.status,
+          dataLimitGb: user.dataLimitGb,
+          usedDataBytes: user.usedDataBytes.toString(),
+          expireDate: user.expireDate
+        },
+        subUrl,
+        base64Sub,
+        vlessLinks,
+        singboxJson,
+        clashYaml,
+        serverIp: hostIp
+      });
+    }
+
+    // Check if UUID belongs to an Inbound
+    const inbound = await prisma.inbound.findFirst({
+      where: { OR: [{ uuid: req.params.uuid }, { id: req.params.uuid }] }
+    });
+    if (!inbound) {
+      return res.status(404).json({ error: 'اشتراک یا اینباند یافت نشد.' });
+    }
+
+    const vlessLink = SubscriptionService.generateVlessLink(inbound as any, hostIp, isp);
+    const base64Sub = Buffer.from(vlessLink).toString('base64');
+    const singboxJson = SubscriptionService.generateSingBoxJson(inbound as any, [inbound] as any[], hostIp, isp);
+    const clashYaml = SubscriptionService.generateClashYaml(inbound as any, [inbound] as any[], hostIp, isp);
+    const subUrl = `http://${hostIp}:${PORT}/api/sub/${inbound.uuid || inbound.id}?isp=${isp}`;
+
+    return res.json({
       user: {
-        username: user.username,
-        uuid: user.uuid,
-        status: user.status,
-        dataLimitGb: user.dataLimitGb,
-        usedDataBytes: user.usedDataBytes.toString(),
-        expireDate: user.expireDate
+        username: inbound.remark,
+        uuid: inbound.uuid || inbound.id,
+        status: inbound.enabled ? 'ACTIVE' : 'DISABLED',
+        dataLimitGb: inbound.dataLimitGb,
+        usedDataBytes: inbound.usedDataBytes.toString(),
+        expireDate: inbound.expireDate
       },
       subUrl,
       base64Sub,
