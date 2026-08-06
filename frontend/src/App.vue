@@ -82,9 +82,26 @@
     </main>
 
     <!-- Footer -->
-    <footer class="border-t border-white/5 py-4 px-6 text-center text-xs text-gray-500 flex flex-col md:flex-row justify-between items-center gap-2">
-      <span>Nyx Panel v2.0 - طراحی ویژه برای فیلترینگ سنگین و قطعی اینترنت بین‌الملل ایران</span>
-      <span>مبتنی بر هسته Xray-core & Gost v3</span>
+    <footer class="border-t border-white/10 py-4 px-6 text-center text-xs text-gray-400 flex flex-col md:flex-row justify-between items-center gap-3 bg-black/20">
+      <div class="flex items-center gap-2">
+        <span class="font-semibold text-gray-200">Nyx Panel v2.0</span>
+        <span class="text-gray-600">|</span>
+        <span>توسعه‌داده‌شده توسط <strong class="text-cyberCyan font-bold">تیم امنیتی ساینت (Cynet)</strong></span>
+      </div>
+
+      <div class="flex items-center gap-4 text-xs">
+        <a href="https://t.me/cynetx" target="_blank" class="text-gray-400 hover:text-cyberCyan transition-all flex items-center gap-1">
+          📢 کانال تلگرام (cynetx)
+        </a>
+        <span class="text-gray-700">•</span>
+        <a href="https://www.youtube.com/@cynetxir" target="_blank" class="text-gray-400 hover:text-cyberPink transition-all flex items-center gap-1">
+          🎥 یوتیوب (@cynetxir)
+        </a>
+        <span class="text-gray-700">•</span>
+        <a href="https://cynetx.ir" target="_blank" class="text-gray-400 hover:text-cyberGreen transition-all flex items-center gap-1 font-mono">
+          🌐 cynetx.ir
+        </a>
+      </div>
     </footer>
   </div>
 

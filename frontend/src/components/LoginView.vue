@@ -58,8 +58,15 @@
         </button>
       </form>
 
-      <div class="text-center text-[11px] text-gray-500 border-t border-white/5 pt-4">
-        Nyx Panel v2.0 · امنیت لایه بالا در شرایط نت ملی
+      <div class="text-center space-y-2 border-t border-white/5 pt-4 text-xs text-gray-400">
+        <p>توسعه‌داده‌شده توسط <strong class="text-cyberCyan font-bold">تیم امنیتی ساینت (Cynet)</strong></p>
+        <div class="flex items-center justify-center gap-3 text-[11px]">
+          <a href="https://t.me/cynetx" target="_blank" class="hover:text-cyberCyan transition-colors">📢 تلگرام</a>
+          <span>•</span>
+          <a href="https://www.youtube.com/@cynetxir" target="_blank" class="hover:text-cyberPink transition-colors">🎥 یوتیوب</a>
+          <span>•</span>
+          <a href="https://cynetx.ir" target="_blank" class="hover:text-cyberGreen transition-colors font-mono">🌐 cynetx.ir</a>
+        </div>
       </div>
     </div>
   </div>

@@ -139,8 +139,17 @@
             <button @click="copy(JSON.stringify(singboxJson, null, 2), 'فایل Sing-Box کپی شد')" class="px-3 py-1 rounded-xl bg-cyberViolet/20 text-cyberViolet text-xs font-bold">کپی JSON</button>
           </div>
           <pre dir="ltr" class="bg-black/60 p-4 rounded-2xl text-[11px] font-mono text-cyberCyan text-left overflow-x-auto border border-white/5 max-h-72 leading-relaxed">{{ JSON.stringify(singboxJson, null, 2) }}</pre>
+      <!-- Footer Branding -->
+      <footer class="text-center space-y-2 pt-4 text-xs text-gray-400">
+        <p>توسعه‌داده‌شده توسط <strong class="text-cyberCyan font-bold">تیم امنیتی ساینت (Cynet)</strong></p>
+        <div class="flex items-center justify-center gap-4 text-xs">
+          <a href="https://t.me/cynetx" target="_blank" class="hover:text-cyberCyan transition-colors">📢 تلگرام (cynetx)</a>
+          <span>•</span>
+          <a href="https://www.youtube.com/@cynetxir" target="_blank" class="hover:text-cyberPink transition-colors">🎥 یوتیوب (@cynetxir)</a>
+          <span>•</span>
+          <a href="https://cynetx.ir" target="_blank" class="hover:text-cyberGreen transition-colors font-mono">🌐 cynetx.ir</a>
         </div>
-      </div>
+      </footer>
     </div>
   </div>
 </template>

@@ -1,13 +1,14 @@
 <div align="center">
 
 # 🛡️ Nyx Panel (نیکس پنل)
-### سامانه مدیریت اتصالات Xray-core با تمرکز بر پایداری در شبکه ایران
+### سامانه مدیریت اتصالات Xray-core متمرکز بر شبکه ایران
+#### 🔐 توسعه‌داده‌شده توسط تیم امنیتی ساینت (Cynet Security Team)
 
 [![Version](https://img.shields.io/badge/version-2.0.0-cyberViolet?style=for-the-badge&logo=shield)](https://github.com/icynetx/Nyx)
+[![Telegram](https://img.shields.io/badge/Telegram-cynetx-2CA5E0?style=for-the-badge&logo=telegram)](https://t.me/cynetx)
+[![YouTube](https://img.shields.io/badge/YouTube-cynetxir-FF0000?style=for-the-badge&logo=youtube)](https://www.youtube.com/@cynetxir)
+[![Website](https://img.shields.io/badge/Website-cynetx.ir-cyberCyan?style=for-the-badge)](https://cynetx.ir)
 [![License](https://img.shields.io/badge/license-MIT-cyberGreen?style=for-the-badge)](https://github.com/icynetx/Nyx/blob/main/LICENSE)
-[![Xray-core](https://img.shields.io/badge/Xray--core-1.8.x-cyberCyan?style=for-the-badge&logo=rocket)](https://github.com/XTLS/Xray-core)
-[![Vue 3](https://img.shields.io/badge/Frontend-Vue%203-4FC08D?style=for-the-badge&logo=vuedotjs)](https://vuejs.org/)
-[![Node.js](https://img.shields.io/badge/Backend-Node.js%20%2B%20Prisma-339933?style=for-the-badge&logo=nodedotjs)](https://nodejs.org/)
 
 <p align="center" dir="rtl">
   طراحی‌شده برای شرایط اختلالات پویای شبکه، مسدودی SNI و انتقال ترافیک بین سرور داخل و خارج
@@ -222,6 +223,8 @@ flowchart LR
 
 ---
 
+---
+
 <div dir="rtl">
 
 ## 🛠️ دستورات مدیریت سرویس در لینوکس (Systemd Commands)
@@ -230,6 +233,16 @@ flowchart LR
 - **راه‌اندازی مجدد سرویس (Restart):** `systemctl restart nyx`
 - **مشاهده لاگ‌های زنده سیستم:** `journalctl -u nyx -f`
 - **توقف سرویس:** `systemctl stop nyx`
+
+---
+
+## 📢 تیم توسعه و شبکه اجتماعی ساینت (Cynet Security Team)
+
+پروژه **Nyx Panel** به صورت متن‌باز توسط **تیم امنیتی ساینت (Cynet)** توسعه داده شده است. جهت اطلاع از آخرین بروزرسانی‌ها، آموزش‌ها و اخبار امنیت شبکه، ما را در شبکه‌های اجتماعی دنبال کنید:
+
+- 📢 **کانال تلگرام:** [t.me/cynetx](https://t.me/cynetx)
+- 🎥 **کانال یوتیوب:** [youtube.com/@cynetxir](https://www.youtube.com/@cynetxir)
+- 🌐 **وب‌سایت رسمی:** [cynetx.ir](https://cynetx.ir)
 
 ---
 
