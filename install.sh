@@ -42,22 +42,19 @@ ADMIN_PASS=${INPUT_ADMIN_PASS:-nyx2026!}
 PANEL_PORT=${INPUT_PORT:-3000}
 
 # 3. Update System & Install Dependencies
-echo -e "${YELLOW}📦 Updating system packages & installing dependencies...${NC}"
-if command -v apt-get &> /dev/null; then
-  export DEBIAN_FRONTEND=noninteractive
-  apt-get update -y 2>/dev/null || true
-  apt-get install -y curl wget git unzip build-essential 2>/dev/null || true
-  apt-get install -y iptables 2>/dev/null || true
+echo -e "${YELLOW}📦 Checking system dependencies...${NC}"
+export DEBIAN_FRONTEND=noninteractive
 
-  if ! command -v node &> /dev/null; then
-    echo -e "${YELLOW}🟢 Installing Node.js LTS...${NC}"
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - 2>/dev/null || true
-    apt-get install -y nodejs 2>/dev/null || true
+for pkg in curl wget git unzip; do
+  if ! command -v $pkg &> /dev/null; then
+    echo -e "${YELLOW}Installing $pkg...${NC}"
+    (apt-get install -y $pkg || yum install -y $pkg || dnf install -y $pkg) 2>/dev/null || true
   fi
-elif command -v yum &> /dev/null; then
-  yum install -y curl wget git unzip gcc-c++ make nodejs iptables 2>/dev/null || true
-elif command -v dnf &> /dev/null; then
-  dnf install -y curl wget git unzip gcc-c++ make nodejs iptables 2>/dev/null || true
+done
+
+if ! command -v node &> /dev/null || ! command -v npm &> /dev/null; then
+  echo -e "${YELLOW}🟢 Installing Node.js LTS...${NC}"
+  (curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y nodejs) 2>/dev/null || true
 fi
 
 # 4. Setup Project Directory
