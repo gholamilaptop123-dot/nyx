@@ -498,11 +498,14 @@ app.get('/api/subinfo/:uuid', async (req, res) => {
 app.get('/api/settings', async (req, res) => {
   try {
     const botTokenSetting = await prisma.systemSetting.findUnique({ where: { key: 'BOT_TOKEN' } });
+    const adminChatIdSetting = await prisma.systemSetting.findUnique({ where: { key: 'ADMIN_CHAT_ID' } });
     const botToken = botTokenSetting?.value || process.env.BOT_TOKEN || '';
+    const adminChatId = adminChatIdSetting?.value || process.env.ADMIN_CHAT_ID || '';
     const botEnabled = Boolean(botToken && botToken.trim() !== '');
 
     res.json({
       botToken,
+      adminChatId,
       botEnabled,
       serverIp: SERVER_IP
     });
@@ -513,8 +516,9 @@ app.get('/api/settings', async (req, res) => {
 
 app.post('/api/settings', async (req, res) => {
   try {
-    const { botToken } = req.body;
+    const { botToken, adminChatId } = req.body;
     const cleanToken = (botToken || '').trim();
+    const cleanChatId = (adminChatId || '').trim();
 
     await prisma.systemSetting.upsert({
       where: { key: 'BOT_TOKEN' },
@@ -522,10 +526,17 @@ app.post('/api/settings', async (req, res) => {
       create: { key: 'BOT_TOKEN', value: cleanToken }
     });
 
+    await prisma.systemSetting.upsert({
+      where: { key: 'ADMIN_CHAT_ID' },
+      update: { value: cleanChatId },
+      create: { key: 'ADMIN_CHAT_ID', value: cleanChatId }
+    });
+
     process.env.BOT_TOKEN = cleanToken;
+    process.env.ADMIN_CHAT_ID = cleanChatId;
 
     if (cleanToken) {
-      initTelegramBot(cleanToken, SERVER_IP, reloadXrayService);
+      initTelegramBot(cleanToken, SERVER_IP, reloadXrayService, cleanChatId);
     } else {
       stopTelegramBot();
     }
@@ -646,9 +657,11 @@ async function start() {
 
     // Start Telegram Bot if BOT_TOKEN is present in DB or ENV
     const dbBotToken = await prisma.systemSetting.findUnique({ where: { key: 'BOT_TOKEN' } });
+    const dbAdminChatId = await prisma.systemSetting.findUnique({ where: { key: 'ADMIN_CHAT_ID' } });
     const activeToken = dbBotToken?.value || process.env.BOT_TOKEN || '';
+    const activeAdminChatId = dbAdminChatId?.value || process.env.ADMIN_CHAT_ID || '';
     if (activeToken) {
-      initTelegramBot(activeToken, SERVER_IP, reloadXrayService);
+      initTelegramBot(activeToken, SERVER_IP, reloadXrayService, activeAdminChatId);
     }
 
     app.listen(PORT, () => {

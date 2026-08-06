@@ -20,7 +20,7 @@ export function stopTelegramBot() {
   }
 }
 
-export function initTelegramBot(token: string, domainOrIp: string, reloadXrayCallback?: () => Promise<void>) {
+export function initTelegramBot(token: string, domainOrIp: string, reloadXrayCallback?: () => Promise<void>, configuredAdminChatId?: string) {
   stopTelegramBot();
 
   if (!token || token.trim() === '') {
@@ -34,7 +34,12 @@ export function initTelegramBot(token: string, domainOrIp: string, reloadXrayCal
   currentBotInstance = bot;
   console.log('[Telegram Bot] 🚀 Nyx Interactive Button Bot successfully started!');
 
-  const isAdmin = (chatId: number) => adminChatIds.has(chatId);
+  const isAdmin = (chatId: number) => {
+    if (configuredAdminChatId && configuredAdminChatId.trim() !== '' && chatId.toString() === configuredAdminChatId.trim()) {
+      return true;
+    }
+    return adminChatIds.has(chatId);
+  };
 
   // --- Main Reply Keyboards ---
   const getUserReplyKeyboard = (chatId: number) => {
