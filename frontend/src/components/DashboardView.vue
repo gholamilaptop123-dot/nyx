@@ -164,7 +164,7 @@
             </p>
             <div class="flex flex-wrap items-center gap-4 text-[11px] text-gray-400 pr-6 pt-1 border-t border-white/5">
               <span>⚡ تاخیر متوسط: <strong class="text-cyberYellow font-mono" dir="ltr">۱۶ ms</strong></span>
-              <span>🔒 گواهی SSL: <strong class="text-cyberGreen">بی‌نیار (Masked)</strong></span>
+              <span>🔒 گواهی SSL: <strong class="text-cyberGreen">بی‌نیازمند (Masked)</strong></span>
               <span>📱 پوشش اپراتور: <strong class="text-white">همراه اول، ایرانسل و رایتل</strong></span>
             </div>
           </div>
@@ -218,25 +218,86 @@
         </div>
       </div>
 
-      <!-- Quick ISP Advice & Real-Time Log Ticker -->
+      <!-- UPGRADED SMART OPERATOR RECOMMENDATIONS & ISP MATRIX -->
       <div class="space-y-6">
-        <div class="glass-panel p-6 rounded-3xl space-y-4 border border-cyberYellow/30">
-          <h3 class="text-lg font-extrabold text-cyberYellow glow-yellow flex items-center gap-2">
-            <Zap class="w-5 h-5 text-cyberYellow" />
-            توصیه هوشمند اپراتورها
-          </h3>
-          <div class="space-y-3 text-xs">
-            <div class="p-3.5 rounded-2xl bg-white/5 border border-white/5">
-              <span class="font-bold text-cyberYellow block mb-1">📱 همراه اول (MCI):</span>
-              <p class="text-gray-300 leading-relaxed">VLESS-REALITY با Fragment 100-200 روی SNI عمومی پایتون یا Let's Encrypt.</p>
+        <div class="glass-panel p-6 rounded-3xl space-y-4 border border-cyberYellow/40">
+          <div class="flex items-center justify-between border-b border-white/10 pb-3">
+            <h3 class="text-lg font-extrabold text-cyberYellow glow-yellow flex items-center gap-2">
+              <Zap class="w-5 h-5 text-cyberYellow" />
+              راهنمای هوشمند و مانیتورینگ اپراتورها
+            </h3>
+            <span class="text-[11px] text-gray-400 font-mono">ایران (ISP Matrix)</span>
+          </div>
+
+          <div class="space-y-3.5 text-xs">
+            <!-- MCI Operator Recommendation Card -->
+            <div class="p-4 rounded-2xl bg-white/5 border border-cyberYellow/30 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-extrabold text-cyberYellow flex items-center gap-1.5 text-sm">
+                  📱 همراه اول (MCI)
+                </span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30 font-bold">
+                  ۹۹.۵٪ باثبات
+                </span>
+              </div>
+              <p class="text-gray-300 leading-relaxed">
+                بهترین ترکیب: <strong class="text-white font-semibold">VLESS-REALITY + Packet Fragment</strong> روی پورت ۴۴۳.
+              </p>
+              <div class="p-2.5 rounded-xl bg-black/40 border border-white/10 font-mono text-[11px] text-gray-300 flex items-center justify-between" dir="ltr">
+                <span>Fragment: 100-200, length 10-20</span>
+                <button @click="copyText('length: 100-200, interval: 10-20', 'پارامترهای فرگمنت همراه اول کپی شد')" class="text-cyberYellow hover:underline text-[10px]">کپی</button>
+              </div>
+              <p class="text-[11px] text-gray-400">SNI پیشنهادی: <code class="text-cyberYellow">archive.ubuntu.com</code> یا <code class="text-cyberYellow">pypi.org</code></p>
             </div>
-            <div class="p-3.5 rounded-2xl bg-white/5 border border-white/5">
-              <span class="font-bold text-cyberRed block mb-1">📡 ایرانسل (Irancell):</span>
-              <p class="text-gray-300 leading-relaxed">ترکیب REALITY یا gRPC / WS با فینگرپرینت Chrome جهت بیشترین ثبات.</p>
+
+            <!-- Irancell Operator Recommendation Card -->
+            <div class="p-4 rounded-2xl bg-white/5 border border-cyberRed/30 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-extrabold text-cyberRed flex items-center gap-1.5 text-sm">
+                  📡 ایرانسل (Irancell)
+                </span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30 font-bold">
+                  ۹۹.۲٪ باثبات
+                </span>
+              </div>
+              <p class="text-gray-300 leading-relaxed">
+                بهترین ترکیب: <strong class="text-white font-semibold">REALITY با فینگرپرینت Chrome</strong> یا ترکیبی gRPC / WS.
+              </p>
+              <div class="p-2.5 rounded-xl bg-black/40 border border-white/10 font-mono text-[11px] text-gray-300 flex items-center justify-between" dir="ltr">
+                <span>Fingerprint: chrome, Port: 2083 / 443</span>
+                <button @click="copyText('ebanking.banksepah.ir', 'دامنه SNI سفید کپی شد')" class="text-cyberRed hover:underline text-[10px]">کپی SNI</button>
+              </div>
+              <p class="text-[11px] text-gray-400">SNI پیشنهادی: <code class="text-cyberRed">ebanking.banksepah.ir</code> یا <code class="text-cyberRed">download.microsoft.com</code></p>
             </div>
-            <div class="p-3.5 rounded-2xl bg-white/5 border border-white/5">
-              <span class="font-bold text-cyberYellow block mb-1">🌐 زمان قطعی اینترنت بین‌الملل:</span>
-              <p class="text-gray-300 leading-relaxed">استفاده از نود ایران (Relay) و هدر Gost WebSocket Tunnel.</p>
+
+            <!-- Fixed Broadband ADSL / RightTel Card -->
+            <div class="p-4 rounded-2xl bg-white/5 border border-cyberYellow/30 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-extrabold text-white flex items-center gap-1.5 text-sm">
+                  🌐 مخابرات، شاتل و فیبر نوری (ADSL/FTTH)
+                </span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30 font-bold">
+                  ۱۰۰٪ آنلاین
+                </span>
+              </div>
+              <p class="text-gray-300 leading-relaxed">
+                بهترین ترکیب: <strong class="text-white font-semibold">VLESS REALITY TCP / HTTP2</strong> روی پورت‌های عمومی ۸۰۸۰ یا ۸۴۴۳.
+              </p>
+            </div>
+
+            <!-- National Internet Blackout Emergency Card -->
+            <div class="p-4 rounded-2xl bg-cyberRed/10 border border-cyberRed/40 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-extrabold text-cyberRed flex items-center gap-1.5 text-sm">
+                  🛡️ زمان قطعی اینترنت بین‌الملل
+                </span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyberYellow/20 text-cyberYellow border border-cyberYellow/30 font-bold">
+                  حالت اضطراری
+                </span>
+              </div>
+              <p class="text-gray-200 leading-relaxed">
+                استفاده از <strong class="text-cyberYellow">نود ایران (Relay)</strong> و هدایت ترافیک از طریق <strong class="text-white">Gost WebSocket Encrypted Tunnel</strong>.
+              </p>
             </div>
           </div>
         </div>
@@ -300,6 +361,11 @@ async function fetchStats() {
   } catch (err) {
     console.error('Failed to load stats:', err);
   }
+}
+
+function copyText(text: string, msg: string) {
+  navigator.clipboard.writeText(text);
+  alert(msg);
 }
 
 onMounted(() => {
