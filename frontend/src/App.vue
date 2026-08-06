@@ -1,5 +1,9 @@
 <template>
-  <div v-if="authenticated" class="min-h-screen flex flex-col bg-darkBg text-gray-100 font-sans">
+  <div v-if="isSubInfoPage">
+    <SubUserView />
+  </div>
+
+  <div v-else-if="authenticated" class="min-h-screen flex flex-col bg-darkBg text-gray-100 font-sans">
     <!-- Toast Notification Overlay -->
     <ToastNotification ref="toastRef" />
 
@@ -88,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 import { Shield, LayoutDashboard, Users, Server, Zap, Network, Settings, LogOut } from 'lucide-vue-next';
 import DashboardView from './components/DashboardView.vue';
@@ -97,12 +101,17 @@ import InboundsView from './components/InboundsView.vue';
 import NodesView from './components/NodesView.vue';
 import TunnelsView from './components/TunnelsView.vue';
 import SettingsView from './components/SettingsView.vue';
+import SubUserView from './components/SubUserView.vue';
 import LoginView from './components/LoginView.vue';
 import ToastNotification from './components/ToastNotification.vue';
 
 const authenticated = ref(false);
 const activeTab = ref('dashboard');
 const toastRef = ref<any>(null);
+
+const isSubInfoPage = computed(() => {
+  return window.location.pathname.startsWith('/subinfo/');
+});
 
 const tabs = [
   { id: 'dashboard', name: 'داشبورد', icon: LayoutDashboard },
@@ -120,6 +129,8 @@ function showToast(message: string, type: 'success' | 'error' | 'info' = 'info')
 }
 
 async function checkAuth() {
+  if (isSubInfoPage.value) return;
+
   const token = localStorage.getItem('nyx_token');
   if (!token) {
     authenticated.value = false;

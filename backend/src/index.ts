@@ -39,6 +39,7 @@ const requireAuth = (req: express.Request, res: express.Response, next: express.
   // Exclude public endpoints
   if (
     req.path.startsWith('/api/sub/') ||
+    req.path.startsWith('/api/subinfo/') ||
     req.path === '/api/auth/login' ||
     req.path === '/api/sni/test'
   ) {
@@ -454,6 +455,45 @@ app.get('/api/sub/:uuid', async (req, res) => {
   }
 });
 
+// 5.1 Public User Web Subscription Info API
+app.get('/api/subinfo/:uuid', async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { uuid: req.params.uuid } });
+    if (!user) return res.status(404).json({ error: 'حساب کاربر یافت نشد.' });
+
+    const inbounds = await prisma.inbound.findMany({ where: { enabled: true } });
+    const hostIp = (req.headers.host ? req.headers.host.split(':')[0] : SERVER_IP);
+    const isp = (req.query.isp as string) || 'DEFAULT';
+
+    const vlessLinks = inbounds.map(inbound =>
+      SubscriptionService.generateVlessLink(user as any, inbound as any, hostIp, isp)
+    );
+    const base64Sub = SubscriptionService.generateBase64Sub(user as any, inbounds as any[], hostIp, isp);
+    const singboxJson = SubscriptionService.generateSingBoxJson(user as any, inbounds as any[], hostIp, isp);
+    const clashYaml = SubscriptionService.generateClashYaml(user as any, inbounds as any[], hostIp, isp);
+    const subUrl = `http://${hostIp}:${PORT}/api/sub/${user.uuid}?isp=${isp}`;
+
+    res.json({
+      user: {
+        username: user.username,
+        uuid: user.uuid,
+        status: user.status,
+        dataLimitGb: user.dataLimitGb,
+        usedDataBytes: user.usedDataBytes.toString(),
+        expireDate: user.expireDate
+      },
+      subUrl,
+      base64Sub,
+      vlessLinks,
+      singboxJson,
+      clashYaml,
+      serverIp: hostIp
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to fetch subscription info' });
+  }
+});
+
 // 6. System & Telegram Bot Settings APIs
 app.get('/api/settings', async (req, res) => {
   try {
@@ -485,7 +525,7 @@ app.post('/api/settings', async (req, res) => {
     process.env.BOT_TOKEN = cleanToken;
 
     if (cleanToken) {
-      initTelegramBot(cleanToken, SERVER_IP);
+      initTelegramBot(cleanToken, SERVER_IP, reloadXrayService);
     } else {
       stopTelegramBot();
     }
@@ -608,7 +648,7 @@ async function start() {
     const dbBotToken = await prisma.systemSetting.findUnique({ where: { key: 'BOT_TOKEN' } });
     const activeToken = dbBotToken?.value || process.env.BOT_TOKEN || '';
     if (activeToken) {
-      initTelegramBot(activeToken, SERVER_IP);
+      initTelegramBot(activeToken, SERVER_IP, reloadXrayService);
     }
 
     app.listen(PORT, () => {
