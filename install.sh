@@ -29,12 +29,12 @@ if [ -t 0 ]; then
   read -p "👤 نام کاربری ادمین (پیش‌فرض: admin): " INPUT_ADMIN_USER
   read -sp "🔐 کلمه عبور ادمین (پیش‌فرض: nyx2026!): " INPUT_ADMIN_PASS
   echo ""
-  read -p "🌐 پورت اجرای پنل (پیش‌فرض: 3000): " INPUT_PORT
+  read -p "🌐 پورت اجرای پنل (پیش‌فرض: 3080): " INPUT_PORT
 elif [ -e /dev/tty ]; then
   read -p "👤 نام کاربری ادمین (پیش‌فرض: admin): " INPUT_ADMIN_USER < /dev/tty
   read -sp "🔐 کلمه عبور ادمین (پیش‌فرض: nyx2026!): " INPUT_ADMIN_PASS < /dev/tty
   echo "" < /dev/tty
-  read -p "🌐 پورت اجرای پنل (پیش‌فرض: 3000): " INPUT_PORT < /dev/tty
+  read -p "🌐 پورت اجرای پنل (پیش‌فرض: 3080): " INPUT_PORT < /dev/tty
 fi
 
 ADMIN_USER=${INPUT_ADMIN_USER:-admin}
