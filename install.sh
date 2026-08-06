@@ -137,6 +137,16 @@ pkill -9 -f "node.*backend" 2>/dev/null || true
 pkill -9 -f "node.*index.js" 2>/dev/null || true
 sleep 1
 
+# Allow panel port and xray default ports in ufw and iptables
+echo -e "${YELLOW}🛡️ Configuring firewall rules for port ${PANEL_PORT}...${NC}"
+iptables -I INPUT -p tcp --dport ${PANEL_PORT} -j ACCEPT 2>/dev/null || true
+iptables -I INPUT -p tcp --dport 443 -j ACCEPT 2>/dev/null || true
+if command -v ufw &> /dev/null; then
+  ufw allow ${PANEL_PORT}/tcp 2>/dev/null || true
+  ufw allow 443/tcp 2>/dev/null || true
+  ufw reload 2>/dev/null || true
+fi
+
 systemctl daemon-reload
 systemctl enable nyx
 systemctl restart nyx

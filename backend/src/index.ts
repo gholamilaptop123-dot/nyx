@@ -731,8 +731,8 @@ async function start() {
       }
     });
 
-    app.listen(PORT, () => {
-      console.log(`🚀 [Nyx Panel] Server running smoothly on http://localhost:${PORT}`);
+    app.listen(Number(PORT), '0.0.0.0', () => {
+      console.log(`🚀 [Nyx Panel] Server running smoothly on http://0.0.0.0:${PORT}`);
     });
   } catch (error) {
     console.error('Failed to start Nyx Server:', error);
