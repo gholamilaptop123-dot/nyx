@@ -60,6 +60,9 @@ fi
 INSTALL_DIR="/opt/nyx"
 echo -e "${YELLOW}📂 Installing Nyx Panel to ${INSTALL_DIR}...${NC}"
 
+# Always navigate out of /opt/nyx before doing git operations or rm -rf
+cd /tmp
+
 git config --global --add safe.directory '*' 2>/dev/null || true
 
 # Force full update by fetching or re-cloning
