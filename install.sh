@@ -60,17 +60,20 @@ fi
 INSTALL_DIR="/opt/nyx"
 echo -e "${YELLOW}📂 Installing Nyx Panel to ${INSTALL_DIR}...${NC}"
 
+git config --global --add safe.directory '*' 2>/dev/null || true
+
+# Force full update by fetching or re-cloning
+UPDATE_SUCCESS=0
 if [ -d "${INSTALL_DIR}/.git" ]; then
   echo -e "${YELLOW}🔄 Updating existing Nyx installation from GitHub...${NC}"
-  git config --global --add safe.directory ${INSTALL_DIR} 2>/dev/null || true
-  cd ${INSTALL_DIR} && git fetch --all && git reset --hard origin/main || true
-else
+  (cd ${INSTALL_DIR} && git fetch --all && git reset --hard origin/main) && UPDATE_SUCCESS=1 || true
+fi
+
+if [ "$UPDATE_SUCCESS" -eq 0 ]; then
   rm -rf ${INSTALL_DIR}
-  echo -e "${YELLOW}🔄 Cloning repository from GitHub / Anti-Block Mirror...${NC}"
-  git clone --depth 1 https://github.com/icynetx/Nyx.git ${INSTALL_DIR} 2>/dev/null || \
-  git clone --depth 1 https://ghproxy.net/https://github.com/icynetx/Nyx.git ${INSTALL_DIR} 2>/dev/null || \
-  git clone --depth 1 https://mirror.ghproxy.com/https://github.com/icynetx/Nyx.git ${INSTALL_DIR} 2>/dev/null || \
-  (curl -sSL https://ghproxy.net/https://github.com/icynetx/Nyx/archive/refs/heads/main.zip -o /tmp/nyx.zip && unzip -q /tmp/nyx.zip -d /tmp && mv /tmp/Nyx-main ${INSTALL_DIR})
+  echo -e "${YELLOW}🔄 Performing fresh clone from GitHub...${NC}"
+  git clone --depth 1 https://github.com/icynetx/Nyx.git ${INSTALL_DIR} || \
+  (curl -sSL https://github.com/icynetx/Nyx/archive/refs/heads/main.zip -o /tmp/nyx.zip && unzip -qo /tmp/nyx.zip -d /tmp && rm -rf ${INSTALL_DIR} && mv /tmp/Nyx-main ${INSTALL_DIR})
 fi
 
 chmod +x ${INSTALL_DIR}/backend/bin/xray 2>/dev/null || true
