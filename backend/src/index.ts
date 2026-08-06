@@ -62,6 +62,11 @@ let xrayProcess: ChildProcess | null = null;
 app.use(cors());
 app.use(express.json());
 
+// Fix BigInt JSON serialization in Express (prevents "Do not know how to serialize a BigInt")
+(BigInt.prototype as any).toJSON = function () {
+  return this.toString();
+};
+
 // Serve static frontend build with no-cache headers so UI updates reflect immediately
 const frontendBuildPath = path.join(__dirname, '../../frontend/dist');
 app.use(express.static(frontendBuildPath, {
