@@ -46,14 +46,20 @@ PANEL_PORT=${INPUT_PORT:-3000}
 # 3. Update System & Install Dependencies
 echo -e "${YELLOW}📦 Updating system packages & installing dependencies...${NC}"
 if command -v apt-get &> /dev/null; then
-  apt-get update -y
-  apt-get install -y curl wget git unzip build-essential nodejs npm iptables
+  export DEBIAN_FRONTEND=noninteractive
+  apt-get update -y || true
+  apt-get install -y curl wget git unzip build-essential || true
+  apt-get install -y iptables || true
+
+  if ! command -v node &> /dev/null || ! command -v npm &> /dev/null; then
+    echo -e "${YELLOW}🟢 Installing Node.js LTS...${NC}"
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - || true
+    apt-get install -y nodejs || apt-get install -y npm || true
+  fi
 elif command -v yum &> /dev/null; then
-  yum update -y
-  yum install -y curl wget git unzip gcc-c++ make nodejs npm iptables
+  yum install -y curl wget git unzip gcc-c++ make nodejs npm iptables || true
 elif command -v dnf &> /dev/null; then
-  dnf update -y
-  dnf install -y curl wget git unzip gcc-c++ make nodejs npm iptables
+  dnf install -y curl wget git unzip gcc-c++ make nodejs npm iptables || true
 fi
 
 # 4. Setup Project Directory
