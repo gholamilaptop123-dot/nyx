@@ -176,17 +176,17 @@ const singboxJson = ref<any>(null);
 const subUrl = ref('');
 
 const configTabs = [
-  { id: 'sub', label: '🔗 لینک سابسکریپشن & QR' },
-  { id: 'vless', label: '⚡ لینک‌های VLESS' },
-  { id: 'clash', label: '📦 Clash Meta' },
-  { id: 'singbox', label: '💎 Sing-Box' },
+  { id: 'sub', label: 'لینک سابسکریپشن & QR' },
+  { id: 'vless', label: 'لینک‌های VLESS' },
+  { id: 'clash', label: 'Clash Meta' },
+  { id: 'singbox', label: 'Sing-Box' },
 ];
 
 const ispOptions = [
-  { id: 'DEFAULT', label: '🌐 عمومی', activeClass: 'bg-cyberViolet text-white' },
-  { id: 'MCI', label: '📱 همراه اول', activeClass: 'bg-cyberPink text-white' },
-  { id: 'IRANCELL', label: '📡 ایرانسل', activeClass: 'bg-cyberCyan text-black font-bold' },
-  { id: 'WHITE_SNI', label: '⚡ SNI سفید (زمان قطعی نت)', activeClass: 'bg-cyberGreen text-black font-bold' },
+  { id: 'DEFAULT', label: 'عمومی', activeClass: 'bg-cyberViolet text-white' },
+  { id: 'MCI', label: 'همراه اول', activeClass: 'bg-cyberPink text-white' },
+  { id: 'IRANCELL', label: 'ایرانسل', activeClass: 'bg-cyberCyan text-black font-bold' },
+  { id: 'WHITE_SNI', label: 'SNI سفید (زمان اختلال نت)', activeClass: 'bg-cyberGreen text-black font-bold' },
 ];
 
 const usedGb = computed(() => {

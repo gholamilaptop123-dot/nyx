@@ -21,11 +21,11 @@
             v-model="params.tunnelType"
             class="w-full bg-[#090d16] border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:border-cyberViolet outline-none"
           >
-            <option value="GOST">🔒 Gost v3 (تونل انکریپت‌شده WebSocket - پیشنهادی)</option>
-            <option value="ICMP_TUNNEL">⚡ ICMP Ping Tunnel (عبور از طریق پکت‌های پینگ)</option>
-            <option value="WHITE_DNS_TUNNEL">📡 White DNS Tunnel (پورت ۵۳ و دی‌ان‌اس‌های سفید)</option>
-            <option value="RATHOLE">🐀 Rathole (سبک و بسیار سریع)</option>
-            <option value="IPV6_RELAY">🌐 IPv6 / IP Forwarding (انتقال مستقیم پورت)</option>
+            <option value="GOST">Gost v3 (تونل انکریپت‌شده WebSocket - پیشنهادی)</option>
+            <option value="ICMP_TUNNEL">ICMP Ping Tunnel (عبور از طریق پکت‌های پینگ)</option>
+            <option value="WHITE_DNS_TUNNEL">White DNS Tunnel (پورت ۵۳ و دی‌ان‌اس‌های سفید)</option>
+            <option value="RATHOLE">Rathole (سبک و با سرعت بالا)</option>
+            <option value="IPV6_RELAY">IPv6 / IP Forwarding (انتقال مستقیم پورت)</option>
           </select>
         </div>
 

@@ -174,36 +174,36 @@
                 <option value="www.apple.com">www.apple.com — اپل</option>
                 <option value="github.com">github.com — گیت‌هاب</option>
               </optgroup>
-              <optgroup label="--- مخازن توسعه و نرم‌افزار (احتمال بالا در نت ملی) ---">
-                <option value="pypi.org">pypi.org — مخزن رسمی پایتون ⭐⭐</option>
-                <option value="archive.ubuntu.com">archive.ubuntu.com — مخزن بروزرسانی اوبونتو ⭐⭐</option>
-                <option value="security.ubuntu.com">security.ubuntu.com — امنیتی اوبونتو ★</option>
-                <option value="registry.npmjs.org">registry.npmjs.org — مخزن رسمی npm ⭐⭐</option>
+              <optgroup label="--- مخازن توسعه و نرم‌افزار (پایدار در شبکه ایران) ---">
+                <option value="pypi.org">pypi.org — مخزن رسمی پایتون</option>
+                <option value="archive.ubuntu.com">archive.ubuntu.com — مخزن بروزرسانی اوبونتو</option>
+                <option value="security.ubuntu.com">security.ubuntu.com — امنیتی اوبونتو</option>
+                <option value="registry.npmjs.org">registry.npmjs.org — مخزن رسمی npm</option>
                 <option value="files.pythonhosted.org">files.pythonhosted.org</option>
                 <option value="deb.debian.org">deb.debian.org — مخزن دبیان</option>
                 <option value="download.docker.com">download.docker.com — داکر</option>
               </optgroup>
-              <optgroup label="--- مراجع صدور گواهی SSL (ضروری و کمتر مسدود شونده) ---">
-                <option value="acme-v02.api.letsencrypt.org">acme-v02.api.letsencrypt.org — Let's Encrypt API ★★★</option>
-                <option value="r3.o.lencr.org">r3.o.lencr.org — OCSP Let's Encrypt ★★</option>
-                <option value="ocsp.digicert.com">ocsp.digicert.com — DigiCert ★★</option>
+              <optgroup label="--- مراجع صدور گواهی SSL ---">
+                <option value="acme-v02.api.letsencrypt.org">acme-v02.api.letsencrypt.org — Let's Encrypt API</option>
+                <option value="r3.o.lencr.org">r3.o.lencr.org — OCSP Let's Encrypt</option>
+                <option value="ocsp.digicert.com">ocsp.digicert.com — DigiCert</option>
                 <option value="ocsp.sectigo.com">ocsp.sectigo.com — Sectigo</option>
               </optgroup>
-              <optgroup label="--- بروزرسانی سیستم‌عامل‌ها (ترافیک مجاز زیرساختی) ---">
-                <option value="download.microsoft.com">download.microsoft.com — آپدیت ویندوز ★★</option>
-                <option value="windowsupdate.microsoft.com">windowsupdate.microsoft.com ★</option>
+              <optgroup label="--- بروزرسانی سیستم‌عامل‌ها ---">
+                <option value="download.microsoft.com">download.microsoft.com — آپدیت ویندوز</option>
+                <option value="windowsupdate.microsoft.com">windowsupdate.microsoft.com — آپدیت ویندوز</option>
                 <option value="mesu.apple.com">mesu.apple.com — آپدیت آیفون/مک</option>
                 <option value="downloads.kaspersky.com">downloads.kaspersky.com — آپدیت آنتی‌ویروس</option>
               </optgroup>
-              <optgroup label="--- دامنه‌های سفید داخلی (همیشه در دسترس) ---">
-                <option value="ebanking.banksepah.ir">ebanking.banksepah.ir — همراه بانک سپه ★★★</option>
-                <option value="bmi.ir">bmi.ir — بانک ملی ★★★</option>
-                <option value="arvancloud.ir">arvancloud.ir — ابر آروان ★★</option>
+              <optgroup label="--- دامنه‌های سفید داخلی ---">
+                <option value="ebanking.banksepah.ir">ebanking.banksepah.ir — همراه بانک سپه</option>
+                <option value="bmi.ir">bmi.ir — بانک ملی</option>
+                <option value="arvancloud.ir">arvancloud.ir — ابر آروان</option>
                 <option value="irancell.ir">irancell.ir — ایرانسل</option>
                 <option value="mci.ir">mci.ir — همراه اول</option>
                 <option value="divar.ir">divar.ir — دیوار</option>
               </optgroup>
-              <option value="custom">✏️ وارد کردن دستی دامنه دلخواه…</option>
+              <option value="custom">وارد کردن دستی دامنه دلخواه…</option>
             </select>
             <input v-if="form.sni === 'custom'" v-model="form.customSni" type="text" placeholder="mydomain.com" dir="ltr" class="mt-2 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm font-mono text-left text-white focus:border-cyberCyan outline-none" />
           </div>
@@ -212,7 +212,7 @@
             <div class="flex items-center justify-between">
               <p class="text-xs font-bold text-cyberViolet">کلیدهای اختصاصی REALITY (X25519)</p>
               <button @click="generateKeys" :disabled="keygenLoading" class="px-3 py-1 rounded-xl bg-cyberViolet/30 text-cyberViolet text-xs font-bold hover:bg-cyberViolet/50 transition-all disabled:opacity-50">
-                {{ keygenLoading ? 'در حال ساخت کلید…' : '⚡ تولید کلید جدید' }}
+                {{ keygenLoading ? 'در حال ساخت کلید…' : 'تولید کلید جدید' }}
               </button>
             </div>
             <div><label class="block text-xs text-gray-400 mb-1">Private Key</label><input v-model="form.privateKey" type="text" dir="ltr" class="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-1.5 text-xs font-mono text-left text-cyberGreen outline-none" /></div>
