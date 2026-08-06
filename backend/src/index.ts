@@ -9,7 +9,7 @@ import { generateXrayJsonConfig, saveXrayConfig, generateX25519Keypair } from '.
 import { SubscriptionService } from './services/subscriptionService';
 import { TunnelManager } from './services/tunnelManager';
 import { XrayStatsService } from './services/xrayStatsService';
-import { initTelegramBot } from './services/telegramBot';
+import { initTelegramBot, stopTelegramBot } from './services/telegramBot';
 import { execFile, ChildProcess } from 'child_process';
 import tls from 'tls';
 
