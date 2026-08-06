@@ -82,6 +82,9 @@ fi
 chmod +x ${INSTALL_DIR}/backend/bin/xray 2>/dev/null || true
 cd ${INSTALL_DIR}
 
+# Clean old dist builds to guarantee fresh compilation
+rm -rf ${INSTALL_DIR}/frontend/dist ${INSTALL_DIR}/backend/dist
+
 # 5. Install Backend Dependencies & Database Setup
 echo -e "${YELLOW}⚙️ Building Backend Service & Database...${NC}"
 cd ${INSTALL_DIR}/backend
