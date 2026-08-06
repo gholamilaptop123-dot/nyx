@@ -1,4 +1,4 @@
-<div align="center" dir="rtl">
+<div align="center">
 
 # 🛡️ Nyx Panel (نیکس پنل)
 ### سامانه مدیریت اتصالات Xray-core با تمرکز بر پایداری در شبکه ایران
@@ -9,10 +9,10 @@
 [![Vue 3](https://img.shields.io/badge/Frontend-Vue%203-4FC08D?style=for-the-badge&logo=vuedotjs)](https://vuejs.org/)
 [![Node.js](https://img.shields.io/badge/Backend-Node.js%20%2B%20Prisma-339933?style=for-the-badge&logo=nodedotjs)](https://nodejs.org/)
 
-<p align="center">
-  <b>طراحی‌شده برای شرایط اختلالات پویای شبکه، مسدودی SNI و انتقال ترافیک بین سرور داخل و خارج</b>
+<p align="center" dir="rtl">
+  طراحی‌شده برای شرایط اختلالات پویای شبکه، مسدودی SNI و انتقال ترافیک بین سرور داخل و خارج
   <br />
-  VLESS + REALITY (X25519) · Fragment سفارشی اپراتورها · ربات دکمه‌ای ادمین · وب‌صفحه اختصاصی مشترکین · تونل Gost v3 & ICMP
+  <code>VLESS + REALITY (X25519)</code> · <code>Packet Fragment</code> · ربات دکمه‌ای ادمین · وب‌صفحه اختصاصی مشترکین
 </p>
 
 [⚡ راهنمای نصب](#-راهنمای-نصب-سریع-روی-سرور-لینوکس) •
@@ -29,9 +29,9 @@
 
 ## 📌 چرا Nyx Panel؟
 
-در اختلالات شبکه در ایران، الگوریتم‌های تحلیل پکت (DPI) اپراتورها (همراه اول، ایرانسل و مخابرات) به صورت پویا تغییر می‌کنند. بسیاری از پنل‌های مدیریت به دلیل مصرف بالای منابع (رم بالای ۳۰۰ مگابایت)، پیچیدگی‌های ساختاری یا عدم پشتیبانی از ابزارهای پایش و تکنولوژی‌های جدید، هنگام اختلالات شدید دچار مشکل می‌شوند.
+در اختلالات شبکه در ایران، الگوریتم‌های تحلیل پکت (`DPI`) اپراتورها (همراه اول، ایرانسل و مخابرات) به صورت پویا تغییر می‌کنند. بسیاری از پنل‌های مدیریت به دلیل مصرف بالای منابع (رم بالای ۳۰۰ مگابایت)، پیچیدگی‌های ساختاری یا عدم پشتیبانی از ابزارهای پایش و تکنولوژی‌های جدید، هنگام اختلالات شدید دچار مشکل می‌شوند.
 
-**Nyx Panel** با هدف ارائه یک راهکار سبک، امن و متمرکز بر تکنولوژی‌های روز Xray توسعه داده شده است. مصرف رم این پنل تنها حدود **۷۰ تا ۱۰۰ مگابایت** است و امکاناتی نظیر **ربات دکمه‌ای ادمین**، **صفحه وب مجزا برای هر کاربر**، **سنجش زنده SNI** و **اسکریپت‌ساز اتوماتیک تونل** را در اختیارتان قرار می‌دهد.
+پروژه **Nyx Panel** با هدف ارائه یک راهکار سبک، امن و متمرکز بر تکنولوژی‌های روز `Xray` توسعه داده شده است. مصرف رم این پنل تنها حدود **۷۰ تا ۱۰۰ مگابایت** است و امکاناتی نظیر **ربات دکمه‌ای ادمین**، **صفحه وب مجزا برای هر کاربر**، **سنجش زنده SNI** و **اسکریپت‌ساز اتوماتیک تونل** را در اختیارتان قرار می‌دهد.
 
 </div>
 
@@ -41,16 +41,20 @@
 
 ## 📊 جدول مقایسه فنی Nyx Panel با سایر پنل‌ها
 
-| قابلیت / ویژگی | 🛡️ Nyx Panel v2.0 | 3x-ui (Sanaei) | Marzban |
+</div>
+
+<div dir="ltr" align="center">
+
+| Feature / Capability | 🛡️ Nyx Panel v2.0 | 3x-ui (Sanaei) | Marzban |
 |---|:---:|:---:|:---:|
-| **میزان مصرف رم (RAM Footprint)** | **فوق‌العاده سبک (~70 MB)** | متوسط (~250 MB) | نسبتاً سنگین (~400 MB+) |
-| **ورود امنیتی (Auth) و توکن** | **دارد (Token-based Auth)** | دارد | دارد |
-| **محاسبه ترافیک زنده از gRPC** | **مستقیم از هسته (هر ۲۰ ثانیه)** | دارد | دارد |
-| **تست زنده TLS SNI Handshake** | **ابزار سنجش زنده در پنل** | ندارد | ندارد |
-| **ربات تلگرام ادمین** | **۱۰۰٪ دکمه‌ای (بدون نیاز به تایپ)** | محدود | نیازمند تایپ دستور |
-| **صفحه وب اختصاصی کاربر** | **دارد (`/subinfo/UUID`)** | ندارد | ساده |
-| **اسکریپت‌ساز اتوماتیک تونل** | **دارد (Gost, Rathole, ICMP, DNS)** | ندارد | ندارد |
-| **عدم نیاز به دامنه/SSL برای کلاینت** | **پشتیبانی کامل VLESS + REALITY** | دارد | دارد |
+| **RAM Footprint (Memory)** | **Lightweight (~70 MB)** | Moderate (~250 MB) | Heavy (~400 MB+) |
+| **Token-based Authentication** | **Yes (Secure Auth)** | Yes | Yes |
+| **Live Traffic Sync via gRPC** | **Yes (Every 20 seconds)** | Yes | Yes |
+| **Live TLS SNI Handshake Tester** | **Built-in Panel Tool** | No | No |
+| **100% Button-driven Telegram Bot** | **Yes (Step-by-step Wizard)** | Limited | Command-based |
+| **Standalone User Web Page** | **Yes (`/subinfo/UUID`)** | No | Basic |
+| **Intranet Tunnel Generator** | **Yes (Gost v3 / ICMP / DNS)** | No | No |
+| **VLESS + REALITY Support** | **Yes (X25519 Keypair)** | Yes | Yes |
 
 </div>
 
@@ -60,23 +64,23 @@
 
 ## 🧩 توضیحات تفصیلی امکانات پنل
 
-### 🔒 ۱. VLESS + REALITY با تولید کلیدهای رمزشده X25519
+### 🔒 ۱. پروتکل `VLESS + REALITY` با کلیدهای اختصاصی `X25519`
 - **عدم نیاز به دامنه یا گواهی SSL:** شبیه‌سازی دست‌تکانی TLS به سمت دامنه‌های معتبر جهانی بدون نیاز به ثبت دامنه.
 - **دسته‌بندی هوشمند دامنه‌های وانمودی (SNI):**
-  - **مخازن نرم‌افزاری و توسعه:** `archive.ubuntu.com`, `pypi.org`, `registry.npmjs.org`, `download.docker.com` 👈 *(احتمال دسترسی بالا در اختلالات شبکه)*
+  - **مخازن نرم‌افزاری و توسعه:** `archive.ubuntu.com`, `pypi.org`, `registry.npmjs.org`, `download.docker.com`
   - **مراجع صدور گواهی SSL:** `acme-v02.api.letsencrypt.org`, `r3.o.lencr.org`, `ocsp.digicert.com`
   - **دامنه‌های زیرساختی و بانکی:** `ebanking.banksepah.ir`, `bmi.ir`, `arvancloud.ir`
 - **کلیدهای اختصاصی X25519:** تولید اتوماتیک کلیدهای رمزشده اختصاصی برای هر اینباند (بدون استفاده از کلیدهای ثابت).
 
-### ⚡ ۲. تکه‌تکه‌سازی پکت‌ها (Xray Packet Fragment)
-- **عبور از سیستم‌های تحلیل پکت (DPI):** خرد کردن پکت‌های `TLS Client Hello` جهت کاهش حساسیت فیلترینگ.
+### ⚡ ۲. تکه‌تکه‌سازی پکت‌ها (`Xray Packet Fragment`)
+- **عبور از سیستم‌های تحلیل پکت (`DPI`):** خرد کردن پکت‌های `TLS Client Hello` جهت کاهش حساسیت فیلترینگ.
 - **تنظیمات اختصاصی بر اساس اپراتور:**
   - 📱 **همراه اول (MCI):** الگوی پکت `100-200,10-20,tlshello`
   - 📡 **ایرانسل (IRANCELL):** الگوی پکت `50-150,5-15,tlshello`
   - ⚡ **ترافیک شبکه استانی (WHITE_SNI):** الگوی پکت `10-100,2-10,tlshello`
 
 ### 🤖 ۳. ربات تلگرام ادمین (۱۰۰٪ دکمه‌ای و بدون نیاز به تایپ)
-- **شناسایی هوشمند ادمین بر اساس Chat ID:** بدون نیاز به وارد کردن کلمه عبور در هر بار استفاده.
+- **شناسایی هوشمند ادمین بر اساس `Chat ID`:** بدون نیاز به وارد کردن کلمه عبور در هر بار استفاده.
 - **ساخت کاربر جدید مرحله‌به‌مرحله (Wizard):**
   1. لمس دکمه «➕ ساخت کاربر جدید»
   2. تایپ نام کاربر (مثلاً `ali`)
@@ -94,8 +98,8 @@
 - **کپی ۱-کلیکه کدهای اتصال:** دریافت کدهای VLESS, Clash Meta YAML, Sing-Box JSON و Base64.
 - **بارکد QR هوشمند:** اسکن مستقیم با دوربین گوشی توسط تمام نرم‌افزارهای کلاینت.
 
-### 🧪 ۵. ابزار تست زنده دست‌تکانی TLS (SNI Tester)
-- **ارزیابی زنده باز بودن SNI:** انجام دست‌تکانی TLS زنده از روی سرور روی پورت ۴۴۳ به همراه نمایش میزان تأخیر (ms) و مشخصات گواهی.
+### 🧪 ۵. ابزار تست زنده دست‌تکانی TLS (`SNI Tester`)
+- **ارزیابی زنده باز بودن SNI:** انجام دست‌تکانی TLS زنده از روی سرور روی پورت ۴۴۳ به همراه نمایش میزان تأخیر (`ms`) و مشخصات گواهی.
 - **دستورات تست ترمینالی:** ارائه دستورات `curl` و `openssl` جهت تست دستی ادمین.
 
 </div>
@@ -175,14 +179,18 @@ graph LR
 
 ## 📱 راهنمای استفاده در نرم‌افزارهای کلاینت
 
-| اپلیکیشن کلاینت | پلتفرم | نوع کانفیگ ورودی | نحوه افزودن |
+</div>
+
+<div dir="ltr" align="center">
+
+| Client Application | Platform | Input Configuration | How to Add |
 |---|---|---|---|
-| **Sing-Box** | اندروید / iOS / ویندوز | لینک سابسکریپشن یا JSON | افزودن لینک سابسکریپشن |
-| **V2rayN** | ویندوز | لینک VLESS یا سابسکریپشن | `Ctrl+V` یا افزودن Subscription |
-| **MahsaNG** | اندروید | لینک VLESS / ساب | کپی لینک و لمس دکمه + |
-| **Shadowrocket** | iOS (آیفون/آیپد) | لینک VLESS یا QR Code | اسکن بارکد QR یا کپی لینک |
-| **Hiddify** | تمام پلتفرم‌ها | لینک سابسکریپشن | کپی لینک سابسکریپشن و لمس افزودن |
-| **Clash Meta / Stash** | ویندوز / مک / iOS | فایل YAML | کپی فایل YAML یا لینک ساب |
+| **Sing-Box** | Android / iOS / Windows | Subscription URL or JSON | Add Subscription / Remote |
+| **V2rayN** | Windows | VLESS Link or Subscription | `Ctrl+V` or Add Subscription |
+| **MahsaNG** | Android | VLESS Link / Subscription | Copy link and tap + |
+| **Shadowrocket** | iOS (iPhone / iPad) | VLESS Link or QR Code | Scan QR Code or Paste Link |
+| **Hiddify** | All Platforms | Subscription URL | Paste Subscription Link |
+| **Clash Meta / Stash** | Windows / macOS / iOS | YAML File / Sub | Import YAML or Remote Sub |
 
 </div>
 
