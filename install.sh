@@ -119,6 +119,16 @@ Environment=ADMIN_PASS=${ADMIN_PASS}
 WantedBy=multi-user.target
 EOF
 
+# Kill any stale node processes on port
+echo -e "${YELLOW}🧹 Terminating any stale processes on port ${PANEL_PORT}...${NC}"
+fuser -k -9 ${PANEL_PORT}/tcp 2>/dev/null || true
+pkill -9 -f "node.*backend" 2>/dev/null || true
+pkill -9 -f "node.*index.js" 2>/dev/null || true
+sleep 1
+
+# Clean old dist builds to guarantee fresh compilation
+rm -rf ${INSTALL_DIR}/frontend/dist ${INSTALL_DIR}/backend/dist
+
 systemctl daemon-reload
 systemctl enable nyx
 systemctl restart nyx
