@@ -327,11 +327,16 @@ async function fetchUsers() {
 async function createUser() {
   if (!newUser.value.username) return;
   try {
-    await axios.post('/api/users', newUser.value);
+    const res = await axios.post('/api/users', newUser.value);
     showCreateModal.value = false;
+    const createdUser = res.data;
     newUser.value = { username: '', dataLimitGb: 0, expireDays: 30 };
     props.toast?.('کاربر جدید با موفقیت ساخته شد', 'success');
-    fetchUsers();
+    await fetchUsers();
+    // Immediately open Config & QR Code modal for the new user
+    if (createdUser) {
+      openConfigModal(createdUser);
+    }
   } catch (err: any) { props.toast?.(err?.response?.data?.error || 'خطا در ساخت کاربر جدید', 'error'); }
 }
 
