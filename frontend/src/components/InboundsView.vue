@@ -4,7 +4,7 @@
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div>
         <h2 class="text-2xl font-extrabold text-cyberYellow glow-yellow">ساخت و مدیریت اینباندها و کانفیگ‌ها</h2>
-        <p class="text-sm text-gray-400">تعریف ساختار VPN، محدودیت حجم، انقضا، حد کاربر همزمان و دریافت تک‌کلیکی کانفیگ‌ها</p>
+        <p class="text-sm text-gray-400">تعریف پروتکل، رمزنگاری REALITY، دامنه SNI، محدودیت حجم، انقضا و تعداد کاربر همزمان</p>
       </div>
       <button 
         @click="showCreateModal = true"
@@ -47,6 +47,7 @@
           <!-- Technical Specs Badges -->
           <div class="flex flex-wrap gap-2 text-[11px] font-mono">
             <span class="px-2.5 py-1 rounded-xl bg-white/5 border border-white/10 text-gray-300">SNI: {{ inbound.sni || 'yahoo.com' }}</span>
+            <span class="px-2.5 py-1 rounded-xl bg-white/5 border border-white/10 text-gray-300">Network: {{ inbound.network.toUpperCase() }}</span>
             <span v-if="inbound.enableFragment" class="px-2.5 py-1 rounded-xl bg-cyberYellow/10 border border-cyberYellow/30 text-cyberYellow font-semibold">⚡ Packet Fragment</span>
             <span class="px-2.5 py-1 rounded-xl bg-white/5 border border-white/10 text-gray-300">{{ inbound.maxDevices || 2 }} کاربر همزمان</span>
           </div>
@@ -112,16 +113,35 @@
 
           <div class="grid grid-cols-2 gap-3">
             <div>
+              <label class="block text-gray-400 mb-1">پروتکل ارتباطی</label>
+              <select v-model="form.protocol" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none">
+                <option value="vless">VLESS (پیش‌نهادی)</option>
+                <option value="vmess">VMess</option>
+                <option value="trojan">Trojan</option>
+                <option value="hysteria2">Hysteria 2</option>
+              </select>
+            </div>
+            <div>
               <label class="block text-gray-400 mb-1">پورت اینباند</label>
               <input v-model.number="form.port" type="number" placeholder="443" dir="ltr" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberYellow outline-none" />
             </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-gray-400 mb-1">تعداد دستگاه/کاربر همزمان</label>
-              <select v-model="form.maxDevices" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none">
-                <option :value="1">۱ کاربره</option>
-                <option :value="2">۲ کاربره (پیش‌فرض)</option>
-                <option :value="3">۳ کاربره</option>
-                <option :value="5">۵ کاربره</option>
+              <label class="block text-gray-400 mb-1">نوع شبکه (Transport)</label>
+              <select v-model="form.network" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none">
+                <option value="tcp">TCP (پیش‌فرض)</option>
+                <option value="grpc">gRPC</option>
+                <option value="ws">WebSocket (WS)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-gray-400 mb-1">نوع رمزنگاری (Security)</label>
+              <select v-model="form.security" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none">
+                <option value="reality">REALITY (بالاترین امنیت ضد فیلترینگ)</option>
+                <option value="tls">TLS</option>
+                <option value="none">None (بدون رمزنگاری)</option>
               </select>
             </div>
           </div>
@@ -138,13 +158,43 @@
           </div>
 
           <div>
+            <label class="block text-gray-400 mb-1">تعداد دستگاه/کاربر همزمان (IP Limit)</label>
+            <select v-model="form.maxDevices" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none">
+              <option :value="1">۱ کاربره</option>
+              <option :value="2">۲ کاربره (پیش‌فرض)</option>
+              <option :value="3">۳ کاربره</option>
+              <option :value="5">۵ کاربره</option>
+              <option :value="10">۱۰ کاربره</option>
+            </select>
+          </div>
+
+          <div>
             <label class="block text-gray-400 mb-1">انتخاب دامنه وانمودی (SNI)</label>
-            <select v-model="form.sni" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none">
+            <select v-model="selectedSniPreset" @change="handleSniPresetChange" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none mb-2">
               <option value="yahoo.com">yahoo.com — دامنه عمومی بسیار باثبات</option>
+              <option value="www.google.com">www.google.com — گوگل</option>
+              <option value="dl.google.com">dl.google.com — دانلود گوگل</option>
               <option value="www.microsoft.com">www.microsoft.com — مایکروسافت</option>
               <option value="speed.cloudflare.com">speed.cloudflare.com — کلادفلر</option>
+              <option value="www.amazon.com">www.amazon.com — آمازون</option>
+              <option value="www.apple.com">www.apple.com — اپل</option>
+              <option value="archive.ubuntu.com">archive.ubuntu.com — مخازن اوبونتو</option>
+              <option value="pypi.org">pypi.org — مخازن پایتون</option>
+              <option value="registry.npmjs.org">registry.npmjs.org — مخازن نودJS</option>
+              <option value="acme-v02.api.letsencrypt.org">acme-v02.api.letsencrypt.org — گواهی SSL</option>
               <option value="ebanking.banksepah.ir">ebanking.banksepah.ir — ⚡ SNI سفید بانکی (زمان قطعی نت)</option>
+              <option value="bmi.ir">bmi.ir — بانک ملی</option>
+              <option value="custom">✏️ وارد کردن دامنه دلخواه (Custom SNI)</option>
             </select>
+
+            <input 
+              v-if="selectedSniPreset === 'custom'"
+              v-model="form.sni"
+              type="text"
+              placeholder="مثال: mydomain.com"
+              dir="ltr"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberYellow outline-none"
+            />
           </div>
 
           <div class="p-3 bg-cyberYellow/10 border border-cyberYellow/30 rounded-2xl flex items-center justify-between">
@@ -177,6 +227,11 @@
           <div>
             <label class="block text-gray-400 mb-1">عنوان اینباند</label>
             <input v-model="editForm.remark" type="text" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:border-cyberYellow outline-none" />
+          </div>
+
+          <div>
+            <label class="block text-gray-400 mb-1">دامنه وانمودی (SNI)</label>
+            <input v-model="editForm.sni" type="text" dir="ltr" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberYellow outline-none" />
           </div>
 
           <div class="grid grid-cols-2 gap-3">
@@ -275,6 +330,7 @@ const editingInbound = ref<any>(null);
 const selectedInboundForConfig = ref<any>(null);
 const inboundConfigs = ref<any>(null);
 const configLoading = ref(false);
+const selectedSniPreset = ref('yahoo.com');
 
 const props = defineProps<{ toast?: (msg: string, type?: 'success' | 'error' | 'info') => void }>();
 
@@ -293,10 +349,17 @@ const form = ref({
 
 const editForm = ref({
   remark: '',
+  sni: 'yahoo.com',
   dataLimitGb: 0,
   expireDays: 0,
   maxDevices: 2
 });
+
+function handleSniPresetChange() {
+  if (selectedSniPreset.value !== 'custom') {
+    form.value.sni = selectedSniPreset.value;
+  }
+}
 
 async function fetchInbounds() {
   try {
@@ -324,6 +387,7 @@ function openEditModal(inbound: any) {
   editingInbound.value = inbound;
   editForm.value = {
     remark: inbound.remark,
+    sni: inbound.sni || 'yahoo.com',
     dataLimitGb: inbound.dataLimitGb || 0,
     expireDays: 0,
     maxDevices: inbound.maxDevices || 2
