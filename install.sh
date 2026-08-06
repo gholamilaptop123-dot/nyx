@@ -4,8 +4,6 @@
 # Tailored for Iran Anti-Censorship & National Internet Blackout Bypass
 # ==============================================================================
 
-set -e
-
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 CYAN='\033[0;36m'
@@ -18,11 +16,11 @@ echo -e "${CYAN}====================================================${NC}"
 
 # 1. Check Root Privileges
 if [ "$EUID" -ne 0 ]; then
-  echo -e "${RED}❌ Please run as root (use sudo or su).${NC}"
+  echo -e "${RED}❌ Error: Please run as root (use sudo bash install.sh).${NC}"
   exit 1
 fi
 
-# 2. Interactive Admin Credentials & Port Setup
+# 2. Interactive Credentials Setup
 echo -e "${CYAN}----------------------------------------------------${NC}"
 echo -e "${YELLOW}🔑 تنظیم اطلاعات ورود به پنل مدیریتی (Admin Setup):${NC}"
 echo -e "${CYAN}----------------------------------------------------${NC}"
@@ -47,19 +45,19 @@ PANEL_PORT=${INPUT_PORT:-3000}
 echo -e "${YELLOW}📦 Updating system packages & installing dependencies...${NC}"
 if command -v apt-get &> /dev/null; then
   export DEBIAN_FRONTEND=noninteractive
-  apt-get update -y || true
-  apt-get install -y curl wget git unzip build-essential || true
-  apt-get install -y iptables || true
+  apt-get update -y 2>/dev/null || true
+  apt-get install -y curl wget git unzip build-essential 2>/dev/null || true
+  apt-get install -y iptables 2>/dev/null || true
 
-  if ! command -v node &> /dev/null || ! command -v npm &> /dev/null; then
+  if ! command -v node &> /dev/null; then
     echo -e "${YELLOW}🟢 Installing Node.js LTS...${NC}"
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - || true
-    apt-get install -y nodejs || apt-get install -y npm || true
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - 2>/dev/null || true
+    apt-get install -y nodejs 2>/dev/null || true
   fi
 elif command -v yum &> /dev/null; then
-  yum install -y curl wget git unzip gcc-c++ make nodejs npm iptables || true
+  yum install -y curl wget git unzip gcc-c++ make nodejs iptables 2>/dev/null || true
 elif command -v dnf &> /dev/null; then
-  dnf install -y curl wget git unzip gcc-c++ make nodejs npm iptables || true
+  dnf install -y curl wget git unzip gcc-c++ make nodejs iptables 2>/dev/null || true
 fi
 
 # 4. Setup Project Directory
