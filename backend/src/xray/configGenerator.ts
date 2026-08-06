@@ -61,9 +61,12 @@ export function generateXrayJsonConfig(inbounds: InboundConfig[], users: UserCon
   ];
 
   for (const inbound of inbounds) {
+    const isReality = inbound.security === 'reality';
+
     const clients = users.map(u => ({
       id: u.uuid,
-      flow: inbound.security === 'reality' ? 'xtls-rprx-vision' : '',
+      // flow is only valid for REALITY+TCP, empty string causes error in other modes
+      ...(isReality && inbound.network === 'tcp' ? { flow: 'xtls-rprx-vision' } : {}),
       email: u.username
     }));
 
@@ -72,24 +75,49 @@ export function generateXrayJsonConfig(inbounds: InboundConfig[], users: UserCon
       security: inbound.security || 'reality'
     };
 
-    if (inbound.security === 'reality') {
+    if (isReality) {
+      if (!inbound.privateKey) {
+        console.warn(`[Nyx Config] ⚠️ Inbound ${inbound.remark} has no privateKey! Skipping REALITY config for this inbound.`);
+      }
       streamSettings.realitySettings = {
         show: false,
         dest: `${inbound.sni || 'yahoo.com'}:443`,
         xver: 0,
         serverNames: [inbound.sni || 'yahoo.com'],
-        privateKey: inbound.privateKey || 'OPSM7JJgD7LWJxufOAT_rrte0LwD-luo2_63gDl70Fs',
-        minClientVer: "",
-        maxClientVer: "",
+        privateKey: inbound.privateKey || '',
+        minClientVer: '',
+        maxClientVer: '',
         maxTimeDiff: 0,
         shortIds: [inbound.shortId || '6ba7b810']
       };
+    } else if (inbound.security === 'tls') {
+      streamSettings.tlsSettings = {
+        serverName: inbound.sni || '',
+        alpn: ['http/1.1']
+      };
     }
 
-    if (inbound.enableFragment) {
+    // Fragment sockopt — enables kernel-level packet fragmentation on the server
+    if (inbound.enableFragment && inbound.network === 'tcp') {
       streamSettings.sockopt = {
-        tcpKeepAliveInterval: 15,
-        mark: 255
+        tcpKeepAliveIdle: 100,
+        fragment: {
+          packets: 'tlshello',
+          length: '100-200',
+          interval: '10-20'
+        }
+      };
+    }
+
+    // Add network-specific settings
+    if (inbound.network === 'ws') {
+      streamSettings.wsSettings = {
+        path: '/nyx',
+        headers: { Host: inbound.sni || '' }
+      };
+    } else if (inbound.network === 'grpc') {
+      streamSettings.grpcSettings = {
+        serviceName: 'nyx'
       };
     }
 
@@ -98,13 +126,13 @@ export function generateXrayJsonConfig(inbounds: InboundConfig[], users: UserCon
       port: inbound.port,
       protocol: inbound.protocol || 'vless',
       settings: {
-        clients: clients,
-        decryption: "none"
+        clients,
+        decryption: 'none'
       },
-      streamSettings: streamSettings,
+      streamSettings,
       sniffing: {
         enabled: true,
-        destOverride: ["http", "tls", "quic"]
+        destOverride: ['http', 'tls', 'quic']
       }
     });
   }
