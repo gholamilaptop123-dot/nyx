@@ -72,6 +72,29 @@
         </div>
       </div>
 
+      <!-- Metadata Row (Creation Date & Max Devices / IP Limit) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="glass-panel p-5 rounded-3xl border border-white/10 flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-cyberYellow/10 border border-cyberYellow/30 text-cyberYellow flex items-center justify-center shrink-0">
+            <Calendar class="w-5 h-5" />
+          </div>
+          <div>
+            <span class="text-gray-400 block text-[11px]">تاریخ ایجاد / خرید اشتراک</span>
+            <span class="text-white font-bold text-xs">{{ createdAtText }}</span>
+          </div>
+        </div>
+
+        <div class="glass-panel p-5 rounded-3xl border border-white/10 flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-cyberCyan/10 border border-cyberCyan/30 text-cyberCyan flex items-center justify-center shrink-0">
+            <Users class="w-5 h-5" />
+          </div>
+          <div>
+            <span class="text-gray-400 block text-[11px]">محدودیت دستگاه همزمان (IP Limit)</span>
+            <span class="text-cyberCyan font-bold text-xs">{{ maxDevicesText }}</span>
+          </div>
+        </div>
+      </div>
+
       <!-- ISP Selector Bar -->
       <div class="glass-panel p-4 rounded-3xl border border-white/10 space-y-3">
         <label class="block text-xs font-semibold text-gray-300">تنظیم اتوماتیک ترفندها بر اساس اپراتور شبکه شما:</label>
@@ -160,7 +183,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
-import { Shield, Clock, AlertTriangle, Copy } from 'lucide-vue-next';
+import { Shield, Clock, AlertTriangle, Copy, Calendar, Users } from 'lucide-vue-next';
 import QrcodeVue from 'qrcode.vue';
 import ToastNotification from './ToastNotification.vue';
 import { copyToClipboard } from '../utils/clipboard';
@@ -224,6 +247,16 @@ const daysLeftText = computed(() => {
   const diff = new Date(userData.value.expireDate).getTime() - new Date().getTime();
   const days = Math.ceil(diff / (1000 * 3600 * 24));
   return days > 0 ? `${days} روز باقی‌مانده` : 'منقضی شده';
+});
+
+const createdAtText = computed(() => {
+  if (!userData.value || !userData.value.createdAt) return 'ثبت شده در سیستم';
+  return new Date(userData.value.createdAt).toLocaleDateString('fa-IR');
+});
+
+const maxDevicesText = computed(() => {
+  if (!userData.value || !userData.value.maxDevices) return '۲ کاربره همزمان (پیش‌فرض)';
+  return `${userData.value.maxDevices} دستگاه همزمان (محدودیت IP)`;
 });
 
 async function loadUserData() {

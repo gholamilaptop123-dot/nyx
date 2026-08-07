@@ -79,7 +79,12 @@ app.use(express.static(frontendBuildPath, {
 
 // --- AUTHENTICATION MIDDLEWARE ---
 const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  // Exclude public endpoints
+  // Only protect /api/ routes! Non-API routes are public frontend SPA pages or static assets.
+  if (!req.path.startsWith('/api/')) {
+    return next();
+  }
+
+  // Exclude public API endpoints
   if (
     req.path.startsWith('/api/sub/') ||
     req.path.startsWith('/api/subinfo/') ||
@@ -589,7 +594,9 @@ app.get('/api/subinfo/:uuid', async (req, res) => {
           status: user.status,
           dataLimitGb: user.dataLimitGb,
           usedDataBytes: user.usedDataBytes.toString(),
-          expireDate: user.expireDate
+          expireDate: user.expireDate,
+          createdAt: user.createdAt,
+          maxDevices: user.maxDevices || 2
         },
         subUrl,
         base64Sub,
@@ -621,7 +628,9 @@ app.get('/api/subinfo/:uuid', async (req, res) => {
         status: inbound.enabled ? 'ACTIVE' : 'DISABLED',
         dataLimitGb: inbound.dataLimitGb,
         usedDataBytes: inbound.usedDataBytes.toString(),
-        expireDate: inbound.expireDate
+        expireDate: inbound.expireDate,
+        createdAt: inbound.createdAt,
+        maxDevices: inbound.maxDevices || 2
       },
       subUrl,
       base64Sub,
