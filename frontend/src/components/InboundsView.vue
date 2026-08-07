@@ -479,6 +479,7 @@ import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 import { Plus, Trash2, Download, Network, Edit3, ExternalLink, Activity, Play, RefreshCw, AlertTriangle, ShieldAlert, Zap, Info } from 'lucide-vue-next';
 import QrcodeVue from 'qrcode.vue';
+import { copyToClipboard } from '../utils/clipboard';
 
 const inbounds = ref<any[]>([]);
 const showCreateModal = ref(false);
@@ -646,14 +647,14 @@ async function openConfigModal(inbound: any) {
 function copyInboundInfoPage(inbound: any) {
   const host = window.location.host;
   const link = `http://${host}/subinfo/${inbound.uuid || inbound.id}`;
-  navigator.clipboard.writeText(link);
+  copyToClipboard(link);
   window.open(link, '_blank');
   props.toast?.('صفحه وب کانفیگ در تب جدید باز شد و لینک کپی گردید.', 'success');
 }
 
 function copy(text: string) {
-  navigator.clipboard.writeText(text);
-  props.toast?.('محتوا کپی شد.', 'success');
+  copyToClipboard(text);
+  props.toast?.('محتوا با موفقیت کپی شد.', 'success');
 }
 
 onMounted(fetchInbounds);

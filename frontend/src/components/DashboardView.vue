@@ -332,6 +332,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
 import { Users, CheckCircle, Activity, Server, ShieldAlert, Zap, Cpu, HardDrive, Clock, Terminal } from 'lucide-vue-next';
+import { copyToClipboard } from '../utils/clipboard';
 
 const stats = ref({
   totalUsers: 0,
@@ -364,7 +365,7 @@ async function fetchStats() {
 }
 
 function copyText(text: string, msg: string) {
-  navigator.clipboard.writeText(text);
+  copyToClipboard(text);
   alert(msg);
 }
 

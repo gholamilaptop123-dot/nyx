@@ -173,6 +173,7 @@
 import { ref } from 'vue';
 import axios from 'axios';
 import { Zap, Copy, Check, Terminal, FileText, ArrowLeftRight, Code, BookOpen } from 'lucide-vue-next';
+import { copyToClipboard } from '../utils/clipboard';
 
 const props = defineProps<{ toast?: (msg: string, type?: 'success' | 'error' | 'info') => void }>();
 
@@ -206,7 +207,7 @@ async function generateScripts() {
 }
 
 function copyText(text: string) {
-  navigator.clipboard.writeText(text);
+  copyToClipboard(text);
   props.toast?.('اسکریپت در حافظه کپی شد.', 'success');
 }
 </script>

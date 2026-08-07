@@ -163,6 +163,7 @@ import axios from 'axios';
 import { Shield, Clock, AlertTriangle, Copy } from 'lucide-vue-next';
 import QrcodeVue from 'qrcode.vue';
 import ToastNotification from './ToastNotification.vue';
+import { copyToClipboard } from '../utils/clipboard';
 
 const props = defineProps<{ uuid?: string }>();
 
@@ -262,7 +263,7 @@ async function loadConfigs() {
 }
 
 function copy(text: string, msg: string) {
-  navigator.clipboard.writeText(text);
+  copyToClipboard(text);
   if (toastRef.value) {
     toastRef.value.addToast(msg, 'success');
   }

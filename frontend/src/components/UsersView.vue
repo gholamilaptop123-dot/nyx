@@ -338,6 +338,7 @@ import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { UserPlus, Trash2, QrCode, Copy, Download, Edit3, ExternalLink } from 'lucide-vue-next';
 import QrcodeVue from 'qrcode.vue';
+import { copyToClipboard } from '../utils/clipboard';
 
 const users = ref<any[]>([]);
 const showCreateModal = ref(false);
@@ -442,7 +443,7 @@ async function loadConfigs() {
 }
 
 function copy(text: string) {
-  navigator.clipboard.writeText(text);
+  copyToClipboard(text);
   props.toast?.('محتوا در حافظه کپی شد.', 'success');
 }
 
@@ -456,13 +457,9 @@ function getSubUrl(uuid: string, isp: string) {
 function copyUserInfoLink(user: any) {
   const host = window.location.host;
   const link = `http://${host}/subinfo/${user.uuid}`;
-  navigator.clipboard.writeText(link);
-  props.toast?.('لینک صفحه وب اختصاصی کاربر کپی شد.', 'success');
-}
-
-function copyToClipboard(text: string) {
-  navigator.clipboard.writeText(text);
-  props.toast?.('لینک سابسکریپشن کپی شد.', 'success');
+  copyToClipboard(link);
+  window.open(link, '_blank');
+  props.toast?.('صفحه وب اختصاصی کاربر باز شد و لینک کپی گردید.', 'success');
 }
 
 onMounted(fetchUsers);
