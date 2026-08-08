@@ -34,13 +34,16 @@ fi
 if [ -e /dev/tty ]; then
   echo -e "${YELLOW}🔑 Interactive Setup (Press Enter to use default values):${NC}"
   
-  read -r -p "👤 Admin Username [default: admin]: " input_user </dev/tty 2>/dev/null || true
+  printf "${CYAN}👤 Admin Username [default: admin]: ${NC}" > /dev/tty 2>/dev/null || printf "👤 Admin Username [default: admin]: "
+  read -r input_user < /dev/tty 2>/dev/null || read -r input_user || true
   ADMIN_USER=${input_user:-${ADMIN_USER:-admin}}
 
-  read -r -p "🔐 Admin Password [default: nyx2026!]: " input_pass </dev/tty 2>/dev/null || true
+  printf "${CYAN}🔐 Admin Password [default: nyx2026!]: ${NC}" > /dev/tty 2>/dev/null || printf "🔐 Admin Password [default: nyx2026!]: "
+  read -r input_pass < /dev/tty 2>/dev/null || read -r input_pass || true
   ADMIN_PASS=${input_pass:-${ADMIN_PASS:-nyx2026!}}
 
-  read -r -p "🌐 Web Panel Port [default: 3080]: " input_port </dev/tty 2>/dev/null || true
+  printf "${CYAN}🌐 Web Panel Port [default: 3080]: ${NC}" > /dev/tty 2>/dev/null || printf "🌐 Web Panel Port [default: 3080]: "
+  read -r input_port < /dev/tty 2>/dev/null || read -r input_port || true
   PANEL_PORT=${input_port:-${PORT:-3080}}
 else
   ADMIN_USER=${ADMIN_USER:-admin}
