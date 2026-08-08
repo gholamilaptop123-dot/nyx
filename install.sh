@@ -137,18 +137,24 @@ cp -r ${INSTALL_DIR}/frontend/dist/* ${INSTALL_DIR}/backend/dist/public/ 2>/dev/
 
 # 7. Setup Systemd Service
 echo -e "${YELLOW}🚀 Creating Systemd Service (nyx.service)...${NC}"
+NODE_BIN=$(command -v node || echo "/usr/bin/node")
+
 cat <<EOF > /etc/systemd/system/nyx.service
 [Unit]
 Description=Nyx Panel Next-Gen Server Manager
-After=network.target
+After=network.target network-online.target
+Wants=network-online.target
 
 [Service]
 Type=simple
 User=root
 WorkingDirectory=${INSTALL_DIR}/backend
-ExecStart=/usr/bin/npm start
+ExecStart=${NODE_BIN} ${INSTALL_DIR}/backend/dist/index.js
 Restart=always
-RestartSec=5
+RestartSec=3
+SendSIGHUP=no
+IgnoreSIGPIPE=true
+KillMode=mixed
 Environment=NODE_ENV=production
 Environment=PORT=${PANEL_PORT}
 Environment=ADMIN_USER=${ADMIN_USER}
@@ -157,6 +163,8 @@ Environment=ADMIN_PASS=${ADMIN_PASS}
 [Install]
 WantedBy=multi-user.target
 EOF
+
+loginctl enable-linger root 2>/dev/null || true
 
 echo -e "${YELLOW}🧹 Terminating any stale processes on port ${PANEL_PORT} and freeing port 443 if occupied by Nginx/Apache/Caddy...${NC}"
 fuser -k -9 ${PANEL_PORT}/tcp 2>/dev/null || true
