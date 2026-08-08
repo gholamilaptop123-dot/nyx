@@ -24,7 +24,7 @@ curl -s https://raw.githubusercontent.com/go-gost/gost/master/install.sh | bash 
 
 echo "=== Launching Encrypted Tunnel to Kharej (${kharejIp}) ==="
 # Forwarding Iran inbound port ${targetInboundPort} to Kharej Server
-nohup gost -L=tcp://:${targetInboundPort}/:${targetInboundPort} -F="relay+mws://${kharejIp}:${tunnelPort}?secrets=${secret}" > /var/log/gost_iran.log 2>&1 &
+nohup gost -L="tcp://:${targetInboundPort}/127.0.0.1:${targetInboundPort}" -F="relay+mws://${kharejIp}:${tunnelPort}?secrets=${secret}" > /var/log/gost_iran.log 2>&1 &
 echo "✅ Nyx Gost Relay Tunnel is active on port ${targetInboundPort}!"
 `;
     }
@@ -83,13 +83,15 @@ echo "✅ DNS Tunnel Client active!"
 `;
     }
 
-    // Default Fallback: Native IPv6 Forwarding
+    // Default Fallback: Native IPv6 / IPv4 Forwarding
     return `#!/bin/bash
 # Nyx Panel - Native IPv6 / Intranet Relay Setup
 sysctl -w net.ipv4.ip_forward=1
 iptables -t nat -A PREROUTING -p tcp --dport ${targetInboundPort} -j DNAT --to-destination ${kharejIp}:${targetInboundPort}
 iptables -t nat -A POSTROUTING -p tcp -d ${kharejIp} --dport ${targetInboundPort} -j MASQUERADE
-echo "✅ Native IP Forwarding configured from Iran to Kharej!"
+iptables -t nat -A PREROUTING -p udp --dport ${targetInboundPort} -j DNAT --to-destination ${kharejIp}:${targetInboundPort}
+iptables -t nat -A POSTROUTING -p udp -d ${kharejIp} --dport ${targetInboundPort} -j MASQUERADE
+echo "✅ Native IP Forwarding (TCP & UDP) configured from Iran to Kharej!"
 `;
   }
 
@@ -108,6 +110,29 @@ curl -s https://raw.githubusercontent.com/go-gost/gost/master/install.sh | bash 
 echo "=== Starting Gost Listener on Port ${tunnelPort} ==="
 nohup gost -L="relay+mws://:${tunnelPort}?secrets=${secret}" > /var/log/gost_kharej.log 2>&1 &
 echo "✅ Kharej Gost Listener active on port ${tunnelPort}!"
+`;
+    }
+
+    if (tunnelType === 'RATHOLE') {
+      return `#!/bin/bash
+# Nyx Panel - Kharej Server Tunnel Listener (Rathole Server)
+echo "=== Installing Rathole on Kharej Server ==="
+mkdir -p /opt/rathole && cd /opt/rathole
+wget -O rathole.zip https://github.com/rapiz1/rathole/releases/latest/download/rathole-x86_64-unknown-linux-gnu.zip
+unzip -o rathole.zip && chmod +x rathole
+
+cat <<EOF > server.toml
+[server]
+bind_addr = "0.0.0.0:${tunnelPort}"
+default_token = "${secret}"
+
+[server.services.nyx_v2ray]
+type = "tcp"
+bind_addr = "0.0.0.0:${targetInboundPort}"
+EOF
+
+nohup ./rathole server.toml > /var/log/rathole_kharej.log 2>&1 &
+echo "✅ Nyx Rathole Server Listener active on port ${tunnelPort}!"
 `;
     }
 
@@ -135,6 +160,11 @@ echo "=== Installing dnstt-server on Kharej Server ==="
 mkdir -p /opt/dnstt && cd /opt/dnstt
 wget -O dnstt-server https://www.bamsoftware.com/software/dnstt/dnstt-server-linux-amd64
 chmod +x dnstt-server
+
+echo "=== Generating DNS Keypair if missing ==="
+if [ ! -f key.priv ]; then
+  ./dnstt-server -gen-key -privkey-file key.priv -pubkey-file key.pub
+fi
 
 echo "=== Starting dnstt DNS Server Listener ==="
 nohup ./dnstt-server -udp :53 -privkey-file key.priv ${domain} 127.0.0.1:${targetInboundPort} > /var/log/dnstt_kharej.log 2>&1 &
