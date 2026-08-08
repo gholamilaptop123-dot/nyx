@@ -19,9 +19,7 @@
       <!-- Header Info Banner -->
       <div class="glass-panel p-6 rounded-3xl border border-cyberViolet/30 relative overflow-hidden flex flex-col sm:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-3">
-          <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyberViolet to-cyberCyan flex items-center justify-center shadow-lg shadow-cyberViolet/30 shrink-0">
-            <Shield class="w-7 h-7 text-white" />
-          </div>
+          <img src="/logo_trans.png" alt="Nyx Panel Logo" class="w-12 h-12 object-contain drop-shadow-[0_0_15px_rgba(234,179,8,0.4)] shrink-0" />
           <div>
             <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-cyberCyan">
               اشتراک: {{ userData.username }}

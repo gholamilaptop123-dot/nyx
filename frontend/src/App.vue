@@ -10,9 +10,7 @@
     <!-- Header Navbar -->
     <header class="glass-panel sticky top-0 z-50 border-b border-white/10 px-6 py-4 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyberYellow via-red-600 to-cyberRed flex items-center justify-center shadow-lg shadow-cyberYellow/30 border border-cyberYellow/40">
-          <Shield class="w-6 h-6 text-black font-bold" />
-        </div>
+        <img src="/logo_trans.png" alt="Nyx Panel Logo" class="w-10 h-10 object-contain drop-shadow-[0_0_12px_rgba(234,179,8,0.4)] hover:scale-105 transition-transform" />
         <div>
           <h1 class="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-cyberYellow via-red-400 to-cyberRed glow-yellow tracking-wider">
             Nyx Panel

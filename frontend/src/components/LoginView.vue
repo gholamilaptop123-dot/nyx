@@ -5,10 +5,8 @@
       <div class="absolute -top-20 -right-20 w-40 h-40 bg-cyberYellow/20 blur-3xl rounded-full"></div>
       <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-cyberRed/20 blur-3xl rounded-full"></div>
 
-      <div class="text-center space-y-2 relative z-10">
-        <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-cyberYellow via-red-600 to-cyberRed flex items-center justify-center shadow-lg shadow-cyberYellow/30 border border-cyberYellow/40">
-          <Shield class="w-8 h-8 text-black font-bold" />
-        </div>
+      <div class="text-center space-y-3 relative z-10">
+        <img src="/logo_trans.png" alt="Nyx Panel Logo" class="w-20 h-20 mx-auto object-contain drop-shadow-[0_0_20px_rgba(234,179,8,0.5)] animate-pulse" />
         <h2 class="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-cyberYellow via-red-400 to-cyberRed glow-yellow">
           ورود به Nyx Panel
         </h2>
