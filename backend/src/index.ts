@@ -746,18 +746,32 @@ async function reloadXrayService() {
 
     // Restart Xray-core child process safely
     if (xrayBinaryPath) {
-      if (xrayProcess) {
-        console.log('[Nyx Server] Terminating previous Xray process...');
-        xrayProcess.kill('SIGTERM');
-        xrayProcess = null;
-        // Wait 300ms for OS to free sockets
-        await new Promise(r => setTimeout(r, 300));
+      if (process.platform !== 'win32') {
+        const { execSync } = require('child_process');
+        try {
+          execSync('pkill -9 -f "xray" 2>/dev/null || true');
+          execSync('fuser -k -9 10085/tcp 2>/dev/null || true');
+        } catch (e) {}
       }
-      xrayProcess = execFile(xrayBinaryPath, ['run', '-config', configPath], (err) => {
+      if (xrayProcess) {
+        try { xrayProcess.kill('SIGKILL'); } catch (e) {}
+        xrayProcess = null;
+      }
+      await new Promise(r => setTimeout(r, 400));
+
+      xrayProcess = execFile(xrayBinaryPath, ['run', '-config', configPath], (err, stdout, stderr) => {
         if (err && !err.killed) {
-          console.error('[Nyx Server] Xray process exited with error:', err.message);
+          console.error('[Nyx Server] ❌ Xray process exited with error:', err.message);
+          if (stderr) console.error('[Nyx Server] Xray stderr:', stderr);
         }
       });
+
+      if (xrayProcess.stdout) {
+        xrayProcess.stdout.on('data', (data) => console.log(`[Xray] ${data.toString().trim()}`));
+      }
+      if (xrayProcess.stderr) {
+        xrayProcess.stderr.on('data', (data) => console.warn(`[Xray Log] ${data.toString().trim()}`));
+      }
       console.log('[Nyx Server] Xray-core child process running smoothly.');
     }
   } catch (error) {

@@ -122,16 +122,9 @@ export function generateXrayJsonConfig(inbounds: InboundConfig[], users: UserCon
       };
     }
 
-    if (inbound.enableFragment && inbound.network === 'tcp') {
-      streamSettings.sockopt = {
-        tcpKeepAliveIdle: 100,
-        fragment: {
-          packets: 'tlshello',
-          length: '100-200',
-          interval: '10-20'
-        }
-      };
-    }
+    streamSettings.sockopt = {
+      tcpKeepAliveIdle: 100
+    };
 
     if (inbound.network === 'ws') {
       streamSettings.wsSettings = {
