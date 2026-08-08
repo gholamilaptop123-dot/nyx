@@ -755,6 +755,7 @@ async function reloadXrayService() {
         try {
           execSync('pkill -9 -f "xray" 2>/dev/null || true');
           execSync('fuser -k -9 10085/tcp 2>/dev/null || true');
+          execSync('systemctl stop nginx 2>/dev/null || true');
         } catch (e) {}
       }
       if (xrayProcess) {

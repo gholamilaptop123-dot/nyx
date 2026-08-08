@@ -158,12 +158,17 @@ Environment=ADMIN_PASS=${ADMIN_PASS}
 WantedBy=multi-user.target
 EOF
 
-echo -e "${YELLOW}🧹 Terminating any stale processes on port ${PANEL_PORT} and freeing port 443 if occupied by default webservers...${NC}"
+echo -e "${YELLOW}🧹 Terminating any stale processes on port ${PANEL_PORT} and freeing port 443 if occupied by Nginx/Apache/Caddy...${NC}"
 fuser -k -9 ${PANEL_PORT}/tcp 2>/dev/null || true
 pkill -9 -f "node.*backend" 2>/dev/null || true
 pkill -9 -f "node.*index.js" 2>/dev/null || true
+systemctl stop nginx 2>/dev/null || true
+systemctl disable nginx 2>/dev/null || true
 systemctl stop apache2 2>/dev/null || true
 systemctl disable apache2 2>/dev/null || true
+systemctl stop caddy 2>/dev/null || true
+systemctl disable caddy 2>/dev/null || true
+fuser -k -9 443/tcp 2>/dev/null || true
 sysctl -w net.ipv4.ip_forward=1 2>/dev/null || true
 echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf 2>/dev/null || true
 sleep 1
