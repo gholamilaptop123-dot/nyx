@@ -1,5 +1,9 @@
 <div align="center">
 
+<p align="center">
+  <img src="mainlogo.png" alt="Nyx Panel Main Banner" width="100%" />
+</p>
+
 # 🛡️ Nyx Panel (نیکس پنل)
 ### سامانه مدیریت اتصالات Xray-core متمرکز بر شبکه ایران
 #### 🔐 توسعه‌داده‌شده توسط تیم امنیتی ساینت (Cynet Security Team)
