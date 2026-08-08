@@ -1,6 +1,6 @@
 #!/bin/bash
 # ==============================================================================
-# 🛡️ Nyx Panel - One-Line Auto Installer for Any Linux Distribution
+# 🛡️ Nyx Panel - One-Line Auto Installer by Cynet Security Team
 # Tailored for Iran Anti-Censorship & National Internet Blackout Bypass
 # ==============================================================================
 
@@ -8,10 +8,20 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 CYAN='\033[0;36m'
 YELLOW='\033[1;33m'
+PURPLE='\033[0;35m'
 NC='\033[0m' # No Color
 
 echo -e "${CYAN}====================================================${NC}"
-echo -e "${CYAN}🚀 Starting Nyx Panel Automated Installation...${NC}"
+echo -e "${PURPLE}"
+echo "  ██████╗██╗   ██╗███╗   ██╗███████╗████████╗"
+echo " ██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝╚══██╔══╝"
+echo " ██║      ╚████╔╝ ██╔██╗ ██║█████╗     ██║   "
+echo " ██║       ╚██╔╝  ██║╚██╗██║██╔══╝     ██║   "
+echo " ╚██████╗   ██║   ██║ ╚████║███████╗   ██║   "
+echo "  ╚═════╝   ╚═╝   ╚═╝  ╚═══╝╚══════╝   ╚═╝   "
+echo -e "${NC}"
+echo -e "${YELLOW}       🔥 CYNET SECURITY TEAM PRESENTS 🔥${NC}"
+echo -e "${CYAN}       🚀 NYX PANEL v2.0 - NEXT-GEN VPN 🚀${NC}"
 echo -e "${CYAN}====================================================${NC}"
 
 # 1. Check Root Privileges
@@ -20,26 +30,16 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
-# 2. Interactive Credentials Setup
-echo -e "${CYAN}----------------------------------------------------${NC}"
-echo -e "${YELLOW}🔑 تنظیم اطلاعات ورود به پنل مدیریتی (Admin Setup):${NC}"
-echo -e "${CYAN}----------------------------------------------------${NC}"
+# 2. Non-interactive Credentials Setup (Fixed Port 3080 & Default Admin)
+ADMIN_USER=${ADMIN_USER:-admin}
+ADMIN_PASS=${ADMIN_PASS:-nyx2026!}
+PANEL_PORT=${PORT:-3080}
 
-if [ -t 0 ]; then
-  read -p "👤 نام کاربری ادمین (پیش‌فرض: admin): " INPUT_ADMIN_USER
-  read -sp "🔐 کلمه عبور ادمین (پیش‌فرض: nyx2026!): " INPUT_ADMIN_PASS
-  echo ""
-  read -p "🌐 پورت اجرای پنل (پیش‌فرض: 3080): " INPUT_PORT
-elif [ -e /dev/tty ]; then
-  read -p "👤 نام کاربری ادمین (پیش‌فرض: admin): " INPUT_ADMIN_USER < /dev/tty
-  read -sp "🔐 کلمه عبور ادمین (پیش‌فرض: nyx2026!): " INPUT_ADMIN_PASS < /dev/tty
-  echo "" < /dev/tty
-  read -p "🌐 پورت اجرای پنل (پیش‌فرض: 3080): " INPUT_PORT < /dev/tty
-fi
-
-ADMIN_USER=${INPUT_ADMIN_USER:-admin}
-ADMIN_PASS=${INPUT_ADMIN_PASS:-nyx2026!}
-PANEL_PORT=${INPUT_PORT:-3080}
+echo -e "${YELLOW}🔑 Default Admin Credentials:${NC}"
+echo -e "   👤 Username: ${CYAN}${ADMIN_USER}${NC}"
+echo -e "   🔐 Password: ${CYAN}${ADMIN_PASS}${NC}"
+echo -e "   🌐 Fixed Port: ${CYAN}${PANEL_PORT}${NC}"
+echo -e "${CYAN}----------------------------------------------------${NC}"
 
 # 3. Check & Prepare System Dependencies
 echo -e "${YELLOW}📦 Checking system dependencies...${NC}"
@@ -62,12 +62,10 @@ fi
 INSTALL_DIR="/opt/nyx"
 echo -e "${YELLOW}📂 Installing Nyx Panel to ${INSTALL_DIR}...${NC}"
 
-# Always navigate out of /opt/nyx before doing git operations or rm -rf
 cd /tmp
 
 git config --global --add safe.directory '*' 2>/dev/null || true
 
-# Force full update by fetching or re-cloning
 UPDATE_SUCCESS=0
 if [ -d "${INSTALL_DIR}/.git" ]; then
   echo -e "${YELLOW}🔄 Updating existing Nyx installation from GitHub...${NC}"
@@ -84,7 +82,6 @@ fi
 chmod +x ${INSTALL_DIR}/backend/bin/xray 2>/dev/null || true
 cd ${INSTALL_DIR}
 
-# Clean old dist builds to guarantee fresh compilation
 rm -rf ${INSTALL_DIR}/frontend/dist ${INSTALL_DIR}/backend/dist
 
 # 5. Install Backend Dependencies & Database Setup
@@ -94,24 +91,28 @@ npm install
 npx prisma db push
 npm run build
 
-# Create .env file with chosen credentials
 cat <<EOF > ${INSTALL_DIR}/backend/.env
 PORT=${PANEL_PORT}
 ADMIN_USER=${ADMIN_USER}
 ADMIN_PASS=${ADMIN_PASS}
+NODE_ENV=production
 EOF
 
-# 6. Install & Build Frontend
-echo -e "${YELLOW}🎨 Building Modern Frontend Dashboard...${NC}"
+# 6. Build Frontend Assets
+echo -e "${YELLOW}🎨 Building Frontend Vue 3 Production App...${NC}"
 cd ${INSTALL_DIR}/frontend
 npm install
 npm run build
 
-# 7. Create Systemd Service for Nyx
-echo -e "${YELLOW}⚙️ Configuring Systemd Background Service...${NC}"
+# Copy build to dist fallback inside backend
+mkdir -p ${INSTALL_DIR}/backend/dist/public
+cp -r ${INSTALL_DIR}/frontend/dist/* ${INSTALL_DIR}/backend/dist/public/ 2>/dev/null || true
+
+# 7. Setup Systemd Service
+echo -e "${YELLOW}🚀 Creating Systemd Service (nyx.service)...${NC}"
 cat <<EOF > /etc/systemd/system/nyx.service
 [Unit]
-Description=Nyx Anti-Censorship Xray Management Panel
+Description=Nyx Panel Next-Gen Server Manager
 After=network.target
 
 [Service]
@@ -130,14 +131,12 @@ Environment=ADMIN_PASS=${ADMIN_PASS}
 WantedBy=multi-user.target
 EOF
 
-# Kill any stale node processes on port
 echo -e "${YELLOW}🧹 Terminating any stale processes on port ${PANEL_PORT}...${NC}"
 fuser -k -9 ${PANEL_PORT}/tcp 2>/dev/null || true
 pkill -9 -f "node.*backend" 2>/dev/null || true
 pkill -9 -f "node.*index.js" 2>/dev/null || true
 sleep 1
 
-# Allow panel port, SSH port 22, and xray default ports in ufw and iptables safely
 echo -e "${YELLOW}🛡️ Configuring firewall rules for port ${PANEL_PORT} (preserving SSH port 22)...${NC}"
 iptables -I INPUT -p tcp --dport 22 -j ACCEPT 2>/dev/null || true
 iptables -I INPUT -p tcp --dport ${PANEL_PORT} -j ACCEPT 2>/dev/null || true
@@ -161,9 +160,12 @@ echo -e "${GREEN}====================================================${NC}"
 echo -e "${CYAN}🌐 Dashboard Web UI:${NC} http://${SERVER_IP}:${PANEL_PORT}"
 echo -e "${CYAN}👤 Admin Username:${NC}  ${YELLOW}${ADMIN_USER}${NC}"
 echo -e "${CYAN}🔐 Admin Password:${NC}  ${YELLOW}${ADMIN_PASS}${NC}"
+echo -e "${CYAN}⚡ Default Inbound:${NC}  ${GREEN}VLESS REALITY Port 443 (Created Automatically)${NC}"
 echo -e "${CYAN}🔒 Status:${NC} Active & Systemd Enabled (nyx.service)"
-echo -e "${CYAN}📌 Commands:${NC}"
-echo -e "   - Check Status: ${YELLOW}systemctl status nyx${NC}"
-echo -e "   - Restart Panel: ${YELLOW}systemctl restart nyx${NC}"
-echo -e "   - View Logs:    ${YELLOW}journalctl -u nyx -f${NC}"
+echo -e "${CYAN}----------------------------------------------------${NC}"
+echo -e "${YELLOW}💬 پشتیبانی، فیدبک، نظرات و انتقادات تیم ساینت (Cynet):${NC}"
+echo -e "   هرگونه سوال، باگ، پیشنهاد یا انتقادی داشتید در خدمت شما هستیم:"
+echo -e "   📢 ${CYAN}کانال تلگرام:${NC} https://t.me/cynetx"
+echo -e "   🌐 ${CYAN}وب‌سایت رسمی:${NC} https://cynetx.ir"
+echo -e "   🎥 ${CYAN}یوتیوب:${NC}      https://www.youtube.com/@cynetxir"
 echo -e "${GREEN}====================================================${NC}"
