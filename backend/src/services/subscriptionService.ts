@@ -59,10 +59,10 @@ export class SubscriptionService {
       const sid = inbound?.shortId || '6ba7b810';
       const flow = 'xtls-rprx-vision';
 
-      return `vless://${uuid}@${serverIp}:${port}?encryption=none&type=${inbound?.network || 'tcp'}&security=reality&pbk=${pbk}&fp=chrome&sni=${sni}&sid=${sid}&flow=${flow}#${remark}`;
+      return `vless://${uuid}@${serverIp}:${port}?encryption=none&type=${inbound?.network || 'tcp'}&security=reality&pbk=${pbk}&fp=chrome&sni=${sni}&sid=${sid}&flow=${flow}&headerType=none#${remark}`;
     }
 
-    return `vless://${uuid}@${serverIp}:${port}?encryption=none&type=${inbound?.network || 'tcp'}&security=${inbound?.security || 'none'}&sni=${sni}#${remark}`;
+    return `vless://${uuid}@${serverIp}:${port}?encryption=none&type=${inbound?.network || 'tcp'}&security=${inbound?.security || 'none'}&sni=${sni}&headerType=none#${remark}`;
   }
 
   /**
