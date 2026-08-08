@@ -6,8 +6,8 @@
       <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-cyberRed/20 blur-3xl rounded-full"></div>
 
       <div class="text-center space-y-3 relative z-10">
-        <img src="/logo_trans.png" alt="Nyx Panel Logo" class="w-20 h-20 mx-auto object-contain drop-shadow-[0_0_20px_rgba(234,179,8,0.5)] animate-pulse" />
-        <h2 class="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-cyberYellow via-red-400 to-cyberRed glow-yellow">
+        <img src="/logo_trans.png" alt="Nyx Panel Logo" class="w-32 h-32 md:w-36 md:h-36 mx-auto object-contain drop-shadow-[0_0_25px_rgba(234,179,8,0.6)] hover:scale-105 transition-all duration-300 animate-pulse" />
+        <h2 class="text-2xl md:text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-cyberYellow via-red-400 to-cyberRed glow-yellow">
           ورود به Nyx Panel
         </h2>
         <p class="text-xs text-gray-400 font-mono">سامانه مدیریت ضد فیلترینگ و شبکه ملی</p>

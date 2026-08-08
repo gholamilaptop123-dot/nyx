@@ -18,8 +18,8 @@
     <div v-else-if="userData" class="max-w-2xl w-full space-y-6">
       <!-- Header Info Banner -->
       <div class="glass-panel p-6 rounded-3xl border border-cyberViolet/30 relative overflow-hidden flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div class="flex items-center gap-3">
-          <img src="/logo_trans.png" alt="Nyx Panel Logo" class="w-12 h-12 object-contain drop-shadow-[0_0_15px_rgba(234,179,8,0.4)] shrink-0" />
+        <div class="flex items-center gap-3 md:gap-4">
+          <img src="/logo_trans.png" alt="Nyx Panel Logo" class="w-16 h-16 md:w-20 md:h-20 object-contain drop-shadow-[0_0_20px_rgba(234,179,8,0.5)] shrink-0 hover:scale-105 transition-all" />
           <div>
             <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-cyberCyan">
               اشتراک: {{ userData.username }}

@@ -9,10 +9,10 @@
 
     <!-- Header Navbar -->
     <header class="glass-panel sticky top-0 z-50 border-b border-white/10 px-6 py-4 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <img src="/logo_trans.png" alt="Nyx Panel Logo" class="w-10 h-10 object-contain drop-shadow-[0_0_12px_rgba(234,179,8,0.4)] hover:scale-105 transition-transform" />
+      <div class="flex items-center gap-3 md:gap-4">
+        <img src="/logo_trans.png" alt="Nyx Panel Logo" class="w-14 h-14 md:w-16 md:h-16 object-contain drop-shadow-[0_0_16px_rgba(234,179,8,0.5)] hover:scale-105 transition-all shrink-0" />
         <div>
-          <h1 class="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-cyberYellow via-red-400 to-cyberRed glow-yellow tracking-wider">
+          <h1 class="text-xl md:text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-cyberYellow via-red-400 to-cyberRed glow-yellow tracking-wider">
             Nyx Panel
           </h1>
           <p class="text-xs text-gray-400 font-mono">سامانه مدیریت VPN و شبکه اختصاصی</p>
