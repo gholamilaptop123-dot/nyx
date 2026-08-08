@@ -20,7 +20,8 @@
 [🧩 توضیحات کامل امکانات](#-توضیحات-تفصیلی-امکانات-پنل) •
 [🤖 راهنمای ربات تلگرام ادمین](#-راهنمای-کامل-پیکربندی-و-استفاده-از-ربات-تلگرام) •
 [📱 راهنمای اتصال در کلاینت‌ها](#-راهنمای-استفاده-در-نرم‌افزارهای-کلاینت) •
-[🌐 راهنمای تونل لینوکس](#-راهنمای-راه‌اندازی-تونل-انتقال-ترافیک-سرور-ایران-به-خارج)
+[🌐 راهنمای تونل لینوکس](#-راهنمای-راه‌اندازی-تونل-انتقال-ترافیک-سرور-ایران-به-خارج) •
+[🗑️ راهنمای حذف کامل](#-راهنمای-حذف-کامل-و-پاکسازی-پنل-uninstallation-guide)
 
 </div>
 
@@ -271,6 +272,49 @@ flowchart LR
 - **راه‌اندازی مجدد سرویس (Restart):** `systemctl restart nyx`
 - **مشاهده لاگ‌های زنده سیستم:** `journalctl -u nyx -f`
 - **توقف سرویس:** `systemctl stop nyx`
+
+---
+
+## 🗑️ راهنمای حذف کامل و پاکسازی پنل (Uninstallation Guide)
+
+در صورت نیاز به حذف کامل پنل و تمامی فایل‌های وابسته، از دستورات زیر استفاده کنید:
+
+### 🐧 ۱. حذف کامل روی سرور لینوکس (Linux):
+دستور زیر را با دسترسی **root** در ترمینال لینوکس اجرا کنید:
+
+</div>
+
+<div dir="ltr">
+
+```bash
+curl -sSL "https://raw.githubusercontent.com/icynetx/Nyx/main/uninstall.sh" | sudo bash
+```
+
+</div>
+
+<div dir="rtl">
+
+این اسکریپت موارد زیر را به صورت ۱۰۰٪ استاندارد پاکسازی می‌کند:
+- توقف و حذف سرویس `nyx.service` از systemd
+- آزاد کردن پورت‌های ۳۰۸۰، ۳۰۰۰ و ۱۰۰۸۵ و متوقف کردن پروسه‌های Node.js و Xray
+- پاکسازی کامل دایرکتوری `/opt/nyx` و فایل‌های موقت `/tmp`
+
+---
+
+### 🪟 ۲. حذف کامل روی ویندوز سرور (Windows Server):
+ترمینال **PowerShell** را به صورت **Run as Administrator** باز کرده و دستورات زیر را اجرا کنید:
+
+</div>
+
+<div dir="ltr">
+
+```powershell
+Unregister-ScheduledTask -TaskName "NyxPanelService" -Confirm:$false -ErrorAction SilentlyContinue
+Get-Process -Name "node", "xray" -ErrorAction SilentlyContinue | Stop-Process -Force
+Remove-Item -Path "C:\Nyx" -Recurse -Force -ErrorAction SilentlyContinue
+```
+
+</div>
 
 ---
 
