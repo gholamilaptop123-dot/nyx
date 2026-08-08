@@ -24,26 +24,49 @@ export interface UserConfig {
 }
 
 export function generateX25519Keypair(xrayExecPath?: string): { privateKey: string; publicKey: string } {
-  if (xrayExecPath && fs.existsSync(xrayExecPath)) {
-    try {
-      const output = require('child_process').execSync(`"${xrayExecPath}" x25519`).toString();
-      const privMatch = output.match(/Private key:\s*([^\s]+)/i);
-      const pubMatch = output.match(/Public key:\s*([^\s]+)/i);
-      if (privMatch && pubMatch) {
-        return { privateKey: privMatch[1], publicKey: pubMatch[1] };
+  const candidatePaths = [
+    xrayExecPath,
+    path.join(__dirname, '../../bin/xray'),
+    path.join(__dirname, '../bin/xray'),
+    '/opt/nyx/backend/bin/xray',
+    '/usr/local/bin/xray',
+    '/usr/bin/xray'
+  ].filter(Boolean) as string[];
+
+  for (const binPath of candidatePaths) {
+    if (fs.existsSync(binPath)) {
+      try {
+        const output = require('child_process').execSync(`"${binPath}" x25519`).toString();
+        const privMatch = output.match(/Private key:\s*([^\s]+)/i);
+        const pubMatch = output.match(/Public key:\s*([^\s]+)/i);
+        if (privMatch && pubMatch) {
+          return { privateKey: privMatch[1].trim(), publicKey: pubMatch[1].trim() };
+        }
+      } catch (e) {
+        // Continue fallback
       }
-    } catch (e) {
-      // Exec error fallback
     }
   }
 
-  const crypto = require('crypto');
-  const randBytes = crypto.randomBytes(32).toString('base64url');
-  const pubBytes = crypto.randomBytes(32).toString('base64url');
-  return {
-    privateKey: randBytes,
-    publicKey: pubBytes
-  };
+  // Fallback using Node.js crypto native x25519 keypair generation
+  try {
+    const crypto = require('crypto');
+    const { privateKey, publicKey } = crypto.generateKeyPairSync('x25519');
+    const privDer = privateKey.export({ type: 'pkcs8', format: 'der' });
+    const pubDer = publicKey.export({ type: 'spki', format: 'der' });
+    const privRaw = privDer.subarray(privDer.length - 32);
+    const pubRaw = pubDer.subarray(pubDer.length - 32);
+    return {
+      privateKey: privRaw.toString('base64url'),
+      publicKey: pubRaw.toString('base64url')
+    };
+  } catch (e) {
+    const crypto = require('crypto');
+    return {
+      privateKey: crypto.randomBytes(32).toString('base64url'),
+      publicKey: crypto.randomBytes(32).toString('base64url')
+    };
+  }
 }
 
 export function generateXrayJsonConfig(inbounds: InboundConfig[], users: UserConfig[]) {

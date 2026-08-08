@@ -732,6 +732,18 @@ async function reloadXrayService() {
     const configPath = saveXrayConfig(jsonConfig);
     console.log(`[Nyx Server] Saved updated Xray configuration to: ${configPath}`);
 
+    // Unblock firewall ports for all active inbounds automatically
+    if (process.platform !== 'win32') {
+      const { execSync } = require('child_process');
+      for (const inb of inbounds) {
+        try {
+          execSync(`iptables -I INPUT -p tcp --dport ${inb.port} -j ACCEPT 2>/dev/null || true`);
+          execSync(`iptables -I INPUT -p udp --dport ${inb.port} -j ACCEPT 2>/dev/null || true`);
+          execSync(`ufw allow ${inb.port}/tcp 2>/dev/null || true`);
+        } catch (e) {}
+      }
+    }
+
     // Restart Xray-core child process safely
     if (xrayBinaryPath) {
       if (xrayProcess) {
@@ -780,26 +792,24 @@ async function start() {
       const keys = generateX25519Keypair(xrayBinaryPath);
       await prisma.inbound.create({
         data: {
-          remark: 'VLESS-REALITY-Default',
+          remark: '⚡ Cynet-Default-VIP',
           protocol: 'vless', port: 443, network: 'tcp', security: 'reality',
-          sni: 'yahoo.com', privateKey: keys.privateKey, publicKey: keys.publicKey,
-          shortId: '6ba7b810', enableFragment: true
+          sni: 'ebanking.banksepah.ir', privateKey: keys.privateKey, publicKey: keys.publicKey,
+          shortId: '6ba7b810', enableFragment: true, maxDevices: 2
         }
       });
-    } else {
-      // Fix any inbounds with invalid static keys from older installs
-      const invalidInbounds = await (prisma as any).inbound.findMany({
-        where: { OR: [
-          { privateKey: { contains: '...' } },
-          { privateKey: { contains: 'Sample' } },
-          { privateKey: { contains: 'KEY' } },
-          { privateKey: { contains: 'OPSM7JJgD7LW' } }
-        ] }
-      });
-      for (const inbound of invalidInbounds) {
+    }
+
+    // Refresh and guarantee valid X25519 keys for all inbounds
+    const allInbounds = await prisma.inbound.findMany();
+    for (const inbound of allInbounds) {
+      if (!inbound.privateKey || !inbound.publicKey || inbound.privateKey.length !== 43) {
         const keys = generateX25519Keypair(xrayBinaryPath);
-        await prisma.inbound.update({ where: { id: inbound.id }, data: { privateKey: keys.privateKey, publicKey: keys.publicKey } });
-        console.log(`[Nyx Server] ✅ Automatically replaced static REALITY keys for inbound: ${inbound.remark}`);
+        await prisma.inbound.update({
+          where: { id: inbound.id },
+          data: { privateKey: keys.privateKey, publicKey: keys.publicKey }
+        });
+        console.log(`[Nyx Server] ✅ Refreshed valid X25519 REALITY keys for inbound: ${inbound.remark}`);
       }
     }
 
