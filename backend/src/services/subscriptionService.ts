@@ -54,25 +54,12 @@ export class SubscriptionService {
       sni = this.WHITE_IRAN_SNIS[0];
     }
 
-    let fragmentParams = '';
-    if (inbound?.enableFragment) {
-      if (isp === 'MCI') {
-        fragmentParams = '&fragment=100-200,10-20,tlshello';
-      } else if (isp === 'IRANCELL') {
-        fragmentParams = '&fragment=50-150,5-15,tlshello';
-      } else if (isp === 'WHITE_SNI') {
-        fragmentParams = '&fragment=10-100,2-10,tlshello';
-      } else {
-        fragmentParams = '&fragment=100-200,10-20,tlshello';
-      }
-    }
-
     if (inbound?.security === 'reality') {
       const pbk = inbound?.publicKey || '';
       const sid = inbound?.shortId || '6ba7b810';
       const flow = 'xtls-rprx-vision';
 
-      return `vless://${uuid}@${serverIp}:${port}?type=${inbound?.network || 'tcp'}&security=reality&pbk=${pbk}&fp=chrome&sni=${sni}&sid=${sid}&flow=${flow}${fragmentParams}#${remark}`;
+      return `vless://${uuid}@${serverIp}:${port}?type=${inbound?.network || 'tcp'}&security=reality&pbk=${pbk}&fp=chrome&sni=${sni}&sid=${sid}&flow=${flow}#${remark}`;
     }
 
     return `vless://${uuid}@${serverIp}:${port}?type=${inbound?.network || 'tcp'}&security=${inbound?.security || 'none'}&sni=${sni}#${remark}`;

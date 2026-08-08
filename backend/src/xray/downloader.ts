@@ -11,12 +11,22 @@ export async function ensureXrayBinary(): Promise<string> {
     fs.mkdirSync(XRAY_DIR, { recursive: true });
   }
 
-  // 1. Check if binary already exists locally
-  if (fs.existsSync(XRAY_EXEC)) {
-    if (process.platform !== 'win32') {
-      try { fs.chmodSync(XRAY_EXEC, '755'); } catch (e) {}
+  const testExecution = (execPath: string): boolean => {
+    if (!fs.existsSync(execPath)) return false;
+    try {
+      if (process.platform !== 'win32') {
+        fs.chmodSync(execPath, '755');
+      }
+      const verOutput = execSync(`"${execPath}" version`).toString();
+      return verOutput.includes('Xray');
+    } catch (e) {
+      return false;
     }
-    console.log(`[Xray Downloader] ✅ Using local Xray binary at: ${XRAY_EXEC}`);
+  };
+
+  // 1. Check if binary already exists locally & functions correctly
+  if (testExecution(XRAY_EXEC)) {
+    console.log(`[Xray Downloader] ✅ Confirmed working Xray binary at: ${XRAY_EXEC}`);
     return XRAY_EXEC;
   }
 
@@ -30,7 +40,7 @@ export async function ensureXrayBinary(): Promise<string> {
       } else {
         execSync(`unzip -o "${zipPath}" -d "${XRAY_DIR}" && chmod +x "${XRAY_EXEC}"`);
       }
-      if (fs.existsSync(XRAY_EXEC)) {
+      if (testExecution(XRAY_EXEC)) {
         console.log(`[Xray Downloader] ✅ Extracted local binary to: ${XRAY_EXEC}`);
         return XRAY_EXEC;
       }
@@ -39,9 +49,9 @@ export async function ensureXrayBinary(): Promise<string> {
     }
   }
 
-  console.log('[Xray Downloader] Binary not found. Fetching release info from GitHub...');
+  console.log('[Xray Downloader] Binary not found or invalid. Fetching release info from GitHub...');
   
-  const platform = process.platform === 'win32' ? 'windows-64' : 'linux-64';
+  const platform = process.platform === 'win32' ? 'windows-64' : (process.arch === 'arm64' ? 'linux-arm64-v8a' : 'linux-64');
   const assetFilename = `Xray-${platform}.zip`;
 
   let latestTag = 'v24.11.30'; // Hardcoded safe fallback version
@@ -104,9 +114,10 @@ export async function ensureXrayBinary(): Promise<string> {
   }
 
   if (!downloadedSuccessfully) {
-    console.error('[Xray Downloader] ⚠️ Automatic download failed due to network restriction/404.');
-    console.log(`📌 [Manual Setup Hint]: You can manually copy 'xray' (for Linux) or 'xray.exe' (for Windows) into: ${XRAY_DIR}`);
-    return XRAY_EXEC;
+    if (fs.existsSync(XRAY_EXEC)) {
+      return XRAY_EXEC;
+    }
+    throw new Error(`[Xray Downloader] ❌ Failed to download Xray-core binary. Please manually place 'xray' or 'xray.exe' in ${XRAY_DIR}`);
   }
 
   // 5. Extract Archive
@@ -122,10 +133,14 @@ export async function ensureXrayBinary(): Promise<string> {
       fs.unlinkSync(zipPath);
     }
 
-    console.log(`[Xray Downloader] ✅ Xray-core binary successfully installed at: ${XRAY_EXEC}`);
-  } catch (extractErr) {
-    console.error('[Xray Downloader] Failed to extract archive:', extractErr);
+    if (testExecution(XRAY_EXEC)) {
+      console.log(`[Xray Downloader] ✅ Xray-core binary successfully installed and verified at: ${XRAY_EXEC}`);
+      return XRAY_EXEC;
+    } else {
+      throw new Error(`Binary extracted at ${XRAY_EXEC} failed execution test`);
+    }
+  } catch (extractErr: any) {
+    console.error('[Xray Downloader] Failed to extract or verify archive:', extractErr.message || extractErr);
+    throw extractErr;
   }
-
-  return XRAY_EXEC;
 }

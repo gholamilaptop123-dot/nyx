@@ -58,6 +58,8 @@ const activeTokens = new Set<string>();
 
 let xrayBinaryPath: string = '';
 let xrayProcess: ChildProcess | null = null;
+let isXrayRunning: boolean = false;
+let xrayLastError: string = '';
 
 app.use(cors());
 app.use(express.json());
@@ -169,10 +171,10 @@ app.get('/api/stats/dashboard', async (req, res) => {
         ramUsageGb: `${usedMemGb} / ${totalMemGb} GB`,
         ramPercent,
         uptimeText,
-        xrayStatus: 'فعال و آنلاین (ONLINE 🟢)',
+        xrayStatus: isXrayRunning ? 'فعال و آنلاین (ONLINE 🟢)' : `غیرفعال / خطا (OFFLINE 🔴 ${xrayLastError ? '- ' + xrayLastError : ''})`,
         pingMs: Math.floor(Math.random() * 8) + 14,
         networkSpeedMb: (Math.random() * 2.5 + 4.2).toFixed(1),
-        bypassEfficiency: '۹۹.۸٪ باثبات'
+        bypassEfficiency: isXrayRunning ? '۹۹.۸٪ باثبات' : 'غیرفعال 🔴'
       }
     });
   } catch (error) {
@@ -709,6 +711,7 @@ async function reloadXrayService() {
 
     const formattedInbounds = inbounds.map(i => ({
       id: i.id,
+      uuid: i.uuid,
       remark: i.remark,
       protocol: i.protocol,
       port: i.port,
@@ -740,6 +743,7 @@ async function reloadXrayService() {
           execSync(`iptables -I INPUT -p tcp --dport ${inb.port} -j ACCEPT 2>/dev/null || true`);
           execSync(`iptables -I INPUT -p udp --dport ${inb.port} -j ACCEPT 2>/dev/null || true`);
           execSync(`ufw allow ${inb.port}/tcp 2>/dev/null || true`);
+          execSync(`ufw allow ${inb.port}/udp 2>/dev/null || true`);
         } catch (e) {}
       }
     }
@@ -761,6 +765,8 @@ async function reloadXrayService() {
 
       xrayProcess = execFile(xrayBinaryPath, ['run', '-config', configPath], (err, stdout, stderr) => {
         if (err && !err.killed) {
+          isXrayRunning = false;
+          xrayLastError = stderr || err.message;
           console.error('[Nyx Server] ❌ Xray process exited with error:', err.message);
           if (stderr) console.error('[Nyx Server] Xray stderr:', stderr);
         }
@@ -772,9 +778,21 @@ async function reloadXrayService() {
       if (xrayProcess.stderr) {
         xrayProcess.stderr.on('data', (data) => console.warn(`[Xray Log] ${data.toString().trim()}`));
       }
-      console.log('[Nyx Server] Xray-core child process running smoothly.');
+
+      setTimeout(() => {
+        if (xrayProcess && xrayProcess.exitCode === null && !xrayProcess.killed) {
+          isXrayRunning = true;
+          xrayLastError = '';
+          console.log(`[Nyx Server] ✅ Xray-core child process running smoothly on PID: ${xrayProcess.pid}`);
+        } else {
+          isXrayRunning = false;
+          console.error('[Nyx Server] ❌ Xray-core process failed to start or crashed.');
+        }
+      }, 1000);
     }
-  } catch (error) {
+  } catch (error: any) {
+    isXrayRunning = false;
+    xrayLastError = error.message || 'Unknown configuration error';
     console.error('[Nyx Server] Error reloading Xray configuration:', error);
   }
 }

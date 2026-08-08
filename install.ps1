@@ -73,6 +73,21 @@ DATABASE_URL=file:./dev.db
 Set-Location "$installDir\backend"
 $envContent | Out-File -FilePath ".env" -Encoding utf8
 
+# Download Xray-core for Windows if missing
+$xrayBinDir = "$installDir\backend\bin"
+if (-not (Test-Path "$xrayBinDir\xray.exe")) {
+    Write-Host "Downloading Xray-core engine for Windows..." -ForegroundColor Yellow
+    New-Item -ItemType Directory -Path $xrayBinDir -Force | Out-Null
+    $xrayZip = "$env:TEMP\xray_win.zip"
+    try {
+        Invoke-WebRequest -Uri "https://github.com/XTLS/Xray-core/releases/download/v24.11.30/Xray-windows-64.zip" -OutFile $xrayZip
+        Expand-Archive -Path $xrayZip -DestinationPath $xrayBinDir -Force
+        Remove-Item -Path $xrayZip -Force -ErrorAction SilentlyContinue
+    } catch {
+        Write-Host "Xray engine will be auto-downloaded on backend startup." -ForegroundColor Yellow
+    }
+}
+
 Write-Host "Installing backend packages..." -ForegroundColor Yellow
 cmd.exe /c "npm install --loglevel=error && npx prisma db push --skip-generate && npx prisma generate && npm run build"
 

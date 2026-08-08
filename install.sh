@@ -79,9 +79,36 @@ if [ "$UPDATE_SUCCESS" -eq 0 ]; then
   (curl -sSL https://github.com/icynetx/Nyx/archive/refs/heads/main.zip -o /tmp/nyx.zip && unzip -qo /tmp/nyx.zip -d /tmp && rm -rf ${INSTALL_DIR} && mv /tmp/Nyx-main ${INSTALL_DIR})
 fi
 
-chmod +x ${INSTALL_DIR}/backend/bin/xray 2>/dev/null || true
-cd ${INSTALL_DIR}
+# 4.5 Pre-download and install Xray-core Binary
+echo -e "${YELLOW}⚡ Downloading & Installing Xray-core Engine...${NC}"
+mkdir -p ${INSTALL_DIR}/backend/bin
+XRAY_BIN="${INSTALL_DIR}/backend/bin/xray"
 
+ARCH=$(uname -m)
+XRAY_ARCH="linux-64"
+if [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
+  XRAY_ARCH="linux-arm64-v8a"
+fi
+
+XRAY_TAG="v24.11.30"
+XRAY_URL="https://github.com/XTLS/Xray-core/releases/download/${XRAY_TAG}/Xray-${XRAY_ARCH}.zip"
+MIRROR_URL="https://ghproxy.net/${XRAY_URL}"
+
+curl -sSL "$MIRROR_URL" -o /tmp/xray.zip || curl -sSL "$XRAY_URL" -o /tmp/xray.zip || true
+if [ -f "/tmp/xray.zip" ]; then
+  unzip -qo /tmp/xray.zip -d ${INSTALL_DIR}/backend/bin/ || true
+  rm -f /tmp/xray.zip
+fi
+
+chmod +x ${INSTALL_DIR}/backend/bin/xray 2>/dev/null || true
+
+if [ -f "$XRAY_BIN" ]; then
+  echo -e "${GREEN}✅ Xray-core engine successfully installed at ${XRAY_BIN}!${NC}"
+else
+  echo -e "${YELLOW}⚠️ Xray binary will be auto-downloaded on backend startup.${NC}"
+fi
+
+cd ${INSTALL_DIR}
 rm -rf ${INSTALL_DIR}/frontend/dist ${INSTALL_DIR}/backend/dist
 
 # 5. Install Backend Dependencies & Database Setup
@@ -131,10 +158,14 @@ Environment=ADMIN_PASS=${ADMIN_PASS}
 WantedBy=multi-user.target
 EOF
 
-echo -e "${YELLOW}🧹 Terminating any stale processes on port ${PANEL_PORT}...${NC}"
+echo -e "${YELLOW}🧹 Terminating any stale processes on port ${PANEL_PORT} and freeing port 443 if occupied by default webservers...${NC}"
 fuser -k -9 ${PANEL_PORT}/tcp 2>/dev/null || true
 pkill -9 -f "node.*backend" 2>/dev/null || true
 pkill -9 -f "node.*index.js" 2>/dev/null || true
+systemctl stop apache2 2>/dev/null || true
+systemctl disable apache2 2>/dev/null || true
+sysctl -w net.ipv4.ip_forward=1 2>/dev/null || true
+echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf 2>/dev/null || true
 sleep 1
 
 # Safely detect SSH port from running sshd or default to 22
@@ -152,11 +183,19 @@ if [ -n "$SSH_PORT" ] && [ "$SSH_PORT" -ne 22 ] 2>/dev/null; then
 fi
 iptables -I INPUT 1 -p tcp --dport ${PANEL_PORT} -j ACCEPT 2>/dev/null || true
 iptables -I INPUT 1 -p tcp --dport 443 -j ACCEPT 2>/dev/null || true
+iptables -I INPUT 1 -p udp --dport 443 -j ACCEPT 2>/dev/null || true
+iptables -I INPUT 1 -p tcp --dport 8080 -j ACCEPT 2>/dev/null || true
+iptables -I INPUT 1 -p tcp --dport 8443 -j ACCEPT 2>/dev/null || true
+iptables -I INPUT 1 -p tcp --dport 2083 -j ACCEPT 2>/dev/null || true
+iptables -I INPUT 1 -p tcp --dport 1010 -j ACCEPT 2>/dev/null || true
 if command -v ufw &> /dev/null; then
   ufw allow 22/tcp 2>/dev/null || true
   if [ -n "$SSH_PORT" ] && [ "$SSH_PORT" -ne 22 ] 2>/dev/null; then
     ufw allow ${SSH_PORT}/tcp 2>/dev/null || true
   fi
+  ufw allow ${PANEL_PORT}/tcp 2>/dev/null || true
+  ufw allow 443/tcp 2>/dev/null || true
+  ufw allow 443/udp 2>/dev/null || true
   ufw disable 2>/dev/null || true
 fi
 

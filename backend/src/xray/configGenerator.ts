@@ -84,16 +84,31 @@ export function generateXrayJsonConfig(inbounds: InboundConfig[], users: UserCon
 
   for (const inbound of inbounds) {
     const isReality = inbound.security === 'reality';
+    const clientList: any[] = [];
+    const addedUuids = new Set<string>();
 
-    const clients = users.length > 0 ? users.map(u => ({
-      id: u.uuid,
-      ...(isReality && inbound.network === 'tcp' ? { flow: 'xtls-rprx-vision' } : {}),
-      email: u.username
-    })) : [{
-      id: inbound.uuid || inbound.id,
-      ...(isReality && inbound.network === 'tcp' ? { flow: 'xtls-rprx-vision' } : {}),
-      email: inbound.remark
-    }];
+    // 1. Always add Inbound's own UUID as a client
+    const inboundUuid = inbound.uuid || inbound.id;
+    if (inboundUuid) {
+      clientList.push({
+        id: inboundUuid,
+        ...(isReality && (!inbound.network || inbound.network === 'tcp') ? { flow: 'xtls-rprx-vision' } : {}),
+        email: inbound.remark
+      });
+      addedUuids.add(inboundUuid);
+    }
+
+    // 2. Add all active user UUIDs
+    for (const u of users) {
+      if (u.uuid && !addedUuids.has(u.uuid)) {
+        clientList.push({
+          id: u.uuid,
+          ...(isReality && (!inbound.network || inbound.network === 'tcp') ? { flow: 'xtls-rprx-vision' } : {}),
+          email: u.username
+        });
+        addedUuids.add(u.uuid);
+      }
+    }
 
     const streamSettings: any = {
       network: inbound.network || 'tcp',
@@ -104,11 +119,12 @@ export function generateXrayJsonConfig(inbounds: InboundConfig[], users: UserCon
       if (!inbound.privateKey) {
         console.warn(`[Nyx Config] ⚠️ Inbound ${inbound.remark} has no privateKey!`);
       }
+      const targetSni = inbound.sni || 'yahoo.com';
       streamSettings.realitySettings = {
         show: false,
-        dest: `${inbound.sni || 'yahoo.com'}:443`,
+        dest: `${targetSni}:443`,
         xver: 0,
-        serverNames: [inbound.sni || 'yahoo.com'],
+        serverNames: [targetSni],
         privateKey: inbound.privateKey || '',
         minClientVer: '',
         maxClientVer: '',
@@ -138,11 +154,12 @@ export function generateXrayJsonConfig(inbounds: InboundConfig[], users: UserCon
     }
 
     xrayInbounds.push({
+      listen: "0.0.0.0",
       tag: `inbound-${inbound.id}`,
       port: inbound.port,
       protocol: inbound.protocol || 'vless',
       settings: {
-        clients,
+        clients: clientList,
         decryption: 'none'
       },
       streamSettings,
