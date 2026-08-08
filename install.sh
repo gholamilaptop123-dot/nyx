@@ -137,12 +137,26 @@ pkill -9 -f "node.*backend" 2>/dev/null || true
 pkill -9 -f "node.*index.js" 2>/dev/null || true
 sleep 1
 
-echo -e "${YELLOW}🛡️ Disabling restrictive UFW and setting iptables default ACCEPT...${NC}"
+# Safely detect SSH port from running sshd or default to 22
+DETECTED_SSH_PORT=$(ss -tulpn 2>/dev/null | grep sshd | awk '{print $5}' | awk -F':' '{print $NF}' | head -n1)
+SSH_PORT=${DETECTED_SSH_PORT:-22}
+
+echo -e "${YELLOW}🛡️ Protecting SSH port (${SSH_PORT}) & opening traffic ports safely...${NC}"
 iptables -P INPUT ACCEPT 2>/dev/null || true
 iptables -P FORWARD ACCEPT 2>/dev/null || true
-iptables -I INPUT -p tcp --dport 22 -j ACCEPT 2>/dev/null || true
-iptables -I INPUT -p tcp --dport ${PANEL_PORT} -j ACCEPT 2>/dev/null || true
+iptables -P OUTPUT ACCEPT 2>/dev/null || true
+iptables -I INPUT 1 -m state --state ESTABLISHED,RELATED -j ACCEPT 2>/dev/null || true
+iptables -I INPUT 1 -p tcp --dport 22 -j ACCEPT 2>/dev/null || true
+if [ -n "$SSH_PORT" ] && [ "$SSH_PORT" -ne 22 ] 2>/dev/null; then
+  iptables -I INPUT 1 -p tcp --dport ${SSH_PORT} -j ACCEPT 2>/dev/null || true
+fi
+iptables -I INPUT 1 -p tcp --dport ${PANEL_PORT} -j ACCEPT 2>/dev/null || true
+iptables -I INPUT 1 -p tcp --dport 443 -j ACCEPT 2>/dev/null || true
 if command -v ufw &> /dev/null; then
+  ufw allow 22/tcp 2>/dev/null || true
+  if [ -n "$SSH_PORT" ] && [ "$SSH_PORT" -ne 22 ] 2>/dev/null; then
+    ufw allow ${SSH_PORT}/tcp 2>/dev/null || true
+  fi
   ufw disable 2>/dev/null || true
 fi
 
