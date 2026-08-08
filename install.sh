@@ -30,12 +30,26 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
-# 2. Non-interactive Credentials Setup (Fixed Port 3080 & Default Admin)
-ADMIN_USER=${ADMIN_USER:-admin}
-ADMIN_PASS=${ADMIN_PASS:-nyx2026!}
-PANEL_PORT=${PORT:-3080}
+# 2. Interactive Credentials Setup (Admin Username, Password & Web Port)
+if [ -e /dev/tty ]; then
+  echo -e "${YELLOW}🔑 Interactive Setup (Press Enter to use default values):${NC}"
+  
+  read -r -p "👤 Admin Username [default: admin]: " input_user </dev/tty 2>/dev/null || true
+  ADMIN_USER=${input_user:-${ADMIN_USER:-admin}}
 
-echo -e "${YELLOW}🔑 Default Admin Credentials:${NC}"
+  read -r -p "🔐 Admin Password [default: nyx2026!]: " input_pass </dev/tty 2>/dev/null || true
+  ADMIN_PASS=${input_pass:-${ADMIN_PASS:-nyx2026!}}
+
+  read -r -p "🌐 Web Panel Port [default: 3080]: " input_port </dev/tty 2>/dev/null || true
+  PANEL_PORT=${input_port:-${PORT:-3080}}
+else
+  ADMIN_USER=${ADMIN_USER:-admin}
+  ADMIN_PASS=${ADMIN_PASS:-nyx2026!}
+  PANEL_PORT=${PORT:-3080}
+fi
+
+echo -e "${CYAN}----------------------------------------------------${NC}"
+echo -e "${GREEN}✅ Configured Credentials & Port:${NC}"
 echo -e "   👤 Username: ${CYAN}${ADMIN_USER}${NC}"
 echo -e "   🔐 Password: ${CYAN}${ADMIN_PASS}${NC}"
 echo -e "   🌐 Fixed Port: ${CYAN}${PANEL_PORT}${NC}"
