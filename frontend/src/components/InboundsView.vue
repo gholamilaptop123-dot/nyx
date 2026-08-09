@@ -156,7 +156,7 @@
               @click="toggleInbound(inbound)"
               :class="['px-3 py-1 rounded-full text-xs font-bold transition-all', inbound.enabled ? 'bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30' : 'bg-gray-500/20 text-gray-400 border border-gray-500/30']"
             >
-              {{ inbound.enabled ? '🟢 فعال' : '🔴 غیرفعال' }}
+              {{ inbound.enabled ? t('activeStatus') : t('disabledStatus') }}
             </button>
           </div>
 
@@ -165,15 +165,15 @@
             <span class="px-2.5 py-1 rounded-xl bg-white/5 border border-white/10 text-gray-300">SNI: {{ inbound.sni || 'yahoo.com' }}</span>
             <span class="px-2.5 py-1 rounded-xl bg-white/5 border border-white/10 text-gray-300">Network: {{ inbound.network.toUpperCase() }}</span>
             <span v-if="inbound.enableFragment" class="px-2.5 py-1 rounded-xl bg-cyberYellow/10 border border-cyberYellow/30 text-cyberYellow font-semibold">⚡ Packet Fragment</span>
-            <span class="px-2.5 py-1 rounded-xl bg-white/5 border border-white/10 text-gray-300">{{ inbound.maxDevices || 2 }} کاربر همزمان</span>
+            <span class="px-2.5 py-1 rounded-xl bg-white/5 border border-white/10 text-gray-300">{{ inbound.maxDevices || 2 }} Devices</span>
           </div>
 
           <!-- Volume & Expiration Usage Progress -->
           <div class="p-3 bg-black/40 rounded-2xl border border-white/5 space-y-2 text-xs">
             <div class="flex items-center justify-between text-gray-300 font-mono">
-              <span>مصرف حجم:</span>
+              <span>{{ t('trafficHeader') }}:</span>
               <span class="text-cyberYellow font-bold" dir="ltr">
-                {{ (Number(inbound.usedDataBytes || 0) / (1024*1024*1024)).toFixed(2) }} GB / {{ inbound.dataLimitGb > 0 ? inbound.dataLimitGb + ' GB' : 'نامحدود' }}
+                {{ (Number(inbound.usedDataBytes || 0) / (1024*1024*1024)).toFixed(2) }} GB / {{ inbound.dataLimitGb > 0 ? inbound.dataLimitGb + ' GB' : t('unlimited') }}
               </span>
             </div>
             <div class="w-full bg-white/10 h-2 rounded-full overflow-hidden">
@@ -183,8 +183,8 @@
               ></div>
             </div>
             <div class="flex items-center justify-between text-[11px] text-gray-400">
-              <span>تاریخ انقضا:</span>
-              <span>{{ inbound.expireDate ? new Date(inbound.expireDate).toLocaleDateString('fa-IR') : 'بدون انقضا' }}</span>
+              <span>{{ t('expiryHeader') }}:</span>
+              <span>{{ inbound.expireDate ? new Date(inbound.expireDate).toLocaleDateString() : t('unlimited') }}</span>
             </div>
           </div>
         </div>
@@ -193,23 +193,23 @@
         <div class="pt-3 border-t border-white/10 flex flex-wrap items-center gap-2">
           <button @click="openConfigModal(inbound)" class="flex-1 py-2 px-3 rounded-xl bg-cyberYellow/20 border border-cyberYellow/40 text-cyberYellow hover:bg-cyberYellow/30 text-xs font-extrabold flex items-center justify-center gap-1 transition-all">
             <Download class="w-3.5 h-3.5" />
-            دریافت لینک کانفیگ
+            Get Config Link
           </button>
-          <button @click="copyInboundInfoPage(inbound)" class="py-2 px-3 rounded-xl bg-cyberGreen/20 border border-cyberGreen/40 text-cyberGreen hover:bg-cyberGreen/30 text-xs font-extrabold flex items-center justify-center gap-1 transition-all" title="لینک صفحه وب اختصاصی کانفیگ جهت مشاهده میزان مصرف و بارکد">
+          <button @click="copyInboundInfoPage(inbound)" class="py-2 px-3 rounded-xl bg-cyberGreen/20 border border-cyberGreen/40 text-cyberGreen hover:bg-cyberGreen/30 text-xs font-extrabold flex items-center justify-center gap-1 transition-all" title="User Info Web Page">
             <ExternalLink class="w-3.5 h-3.5" />
-            صفحه وب
+            Web Portal
           </button>
-          <button @click="openEditModal(inbound)" class="p-2 rounded-xl bg-white/10 text-gray-300 hover:text-white transition-all" title="ویرایش اینباند">
+          <button @click="openEditModal(inbound)" class="p-2 rounded-xl bg-white/10 text-gray-300 hover:text-white transition-all" title="Edit Inbound">
             <Edit3 class="w-4 h-4" />
           </button>
-          <button @click="deleteInbound(inbound.id)" class="p-2 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all" title="حذف اینباند">
+          <button @click="deleteInbound(inbound.id)" class="p-2 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all" title="Delete Inbound">
             <Trash2 class="w-4 h-4" />
           </button>
         </div>
       </div>
 
       <div v-if="inbounds.length === 0" class="col-span-full glass-panel rounded-3xl p-12 text-center text-gray-400">
-        هیچ اینباندی هنوز تعریف نشده است. با زدن دکمه «ساخت اینباند / کانفیگ جدید» اولین اینباند را ایجاد کنید.
+        No inbounds created yet. Click "Create Inbound / Config" to create the first inbound.
       </div>
     </div>
 
@@ -218,136 +218,125 @@
       <div class="glass-panel max-w-lg w-full rounded-3xl p-6 border border-cyberYellow/40 space-y-4 max-h-[90vh] overflow-y-auto">
         <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
           <Plus class="w-5 h-5 text-cyberYellow" />
-          <span>افزودن اینباند / کانفیگ جدید</span>
+          <span>{{ t('createInboundBtn') }}</span>
         </h3>
 
         <div class="space-y-3 text-xs">
           <div>
-            <label class="block text-gray-400 mb-1">عنوان یا نام اینباند</label>
-            <input v-model="form.remark" type="text" placeholder="مثال: VLESS-Reality-443" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:border-cyberYellow outline-none" />
+            <label class="block text-gray-400 mb-1">Inbound Title / Remark</label>
+            <input v-model="form.remark" type="text" placeholder="e.g. VLESS-Reality-443" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:border-cyberYellow outline-none" />
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-gray-400 mb-1">پروتکل ارتباطی</label>
+              <label class="block text-gray-400 mb-1">Protocol</label>
               <select v-model="form.protocol" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none">
-                <option value="vless">VLESS (پیش‌نهادی)</option>
+                <option value="vless">VLESS (Recommended)</option>
                 <option value="vmess">VMess</option>
                 <option value="trojan">Trojan</option>
                 <option value="hysteria2">Hysteria 2</option>
               </select>
             </div>
             <div>
-              <label class="block text-gray-400 mb-1">پورت اینباند</label>
+              <label class="block text-gray-400 mb-1">Inbound Port</label>
               <input v-model.number="form.port" type="number" placeholder="443" dir="ltr" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberYellow outline-none" />
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-gray-400 mb-1">نوع شبکه (Transport)</label>
+              <label class="block text-gray-400 mb-1">Transport Network</label>
               <select v-model="form.network" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none">
-                <option value="tcp">TCP (پیش‌فرض)</option>
+                <option value="tcp">TCP (Default)</option>
                 <option value="grpc">gRPC</option>
                 <option value="ws">WebSocket (WS)</option>
               </select>
             </div>
             <div>
-              <label class="block text-gray-400 mb-1">نوع رمزنگاری (Security)</label>
+              <label class="block text-gray-400 mb-1">Security Encryption</label>
               <select v-model="form.security" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none">
-                <option value="reality">REALITY (بالاترین امنیت ضد فیلترینگ)</option>
+                <option value="reality">REALITY (Anti-Censorship)</option>
                 <option value="tls">TLS</option>
-                <option value="none">None (بدون رمزنگاری)</option>
+                <option value="none">None</option>
               </select>
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-gray-400 mb-1">سقف حجم (گیگابایت)</label>
-              <input v-model.number="form.dataLimitGb" type="number" placeholder="0 برای نامحدود" dir="ltr" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberYellow outline-none" />
+              <label class="block text-gray-400 mb-1">{{ t('selectTraffic') }} (GB)</label>
+              <input v-model.number="form.dataLimitGb" type="number" placeholder="0 for unlimited" dir="ltr" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberYellow outline-none" />
             </div>
             <div>
-              <label class="block text-gray-400 mb-1">مدت اعتبار (روز)</label>
+              <label class="block text-gray-400 mb-1">{{ t('selectExpiry') }} ({{ t('daysCount') }})</label>
               <input v-model.number="form.expireDays" type="number" placeholder="30" dir="ltr" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberYellow outline-none" />
             </div>
           </div>
 
           <div>
-            <label class="block text-gray-400 mb-1">تعداد دستگاه/کاربر همزمان (IP Limit)</label>
+            <label class="block text-gray-400 mb-1">{{ t('maxDevices') }} (IP Limit)</label>
             <select v-model="form.maxDevices" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none">
-              <option :value="1">۱ کاربره</option>
-              <option :value="2">۲ کاربره (پیش‌فرض)</option>
-              <option :value="3">۳ کاربره</option>
-              <option :value="5">۵ کاربره</option>
-              <option :value="10">۱۰ کاربره</option>
+              <option :value="1">1 Device</option>
+              <option :value="2">2 Devices (Default)</option>
+              <option :value="3">3 Devices</option>
+              <option :value="5">5 Devices</option>
+              <option :value="10">10 Devices</option>
             </select>
           </div>
 
           <div>
-            <label class="block text-gray-400 mb-1">انتخاب دامنه وانمودی (SNI)</label>
+            <label class="block text-gray-400 mb-1">SNI Camouflage Domain</label>
             <select v-model="selectedSniPreset" @change="handleSniPresetChange" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none mb-2">
-              <optgroup label="☁️ ابر و CDNهای داخلی (احتمال دسترسی بالا در قطعی نت)">
-                <option value="arvancloud.ir">arvancloud.ir — ابر آروان</option>
-                <option value="n2a.arvancloud.ir">n2a.arvancloud.ir — شبکه توزیع آروان</option>
-                <option value="iran.liara.run">iran.liara.run — پلتفرم ابری لیارا</option>
-                <option value="derak.cloud">derak.cloud — ابر دراک</option>
-                <option value="asiatech.ir">asiatech.ir — آسیا تک CDN</option>
+              <optgroup label="☁️ Cloud & CDNs">
+                <option value="arvancloud.ir">arvancloud.ir</option>
+                <option value="n2a.arvancloud.ir">n2a.arvancloud.ir</option>
+                <option value="iran.liara.run">iran.liara.run</option>
+                <option value="derak.cloud">derak.cloud</option>
+                <option value="asiatech.ir">asiatech.ir</option>
               </optgroup>
 
-              <optgroup label="💳 شبکه پرداخت و شاپرک (درگاه‌های بانکی همیشه فعال)">
-                <option value="shaparak.ir">shaparak.ir — شبکه مرکزی شاپرک</option>
-                <option value="pep.shaparak.ir">pep.shaparak.ir — درگاه بانک پاسارگاد</option>
-                <option value="bpm.shaparak.ir">bpm.shaparak.ir — درگاه به پرداخت ملت</option>
-                <option value="sadad.shaparak.ir">sadad.shaparak.ir — درگاه سداد بانک ملی</option>
-                <option value="zarinpal.com">zarinpal.com — درگاه پرداخت زرین‌پال</option>
-                <option value="ebanking.banksepah.ir">ebanking.banksepah.ir — بانک سپه</option>
-                <option value="bmi.ir">bmi.ir — بانک ملی ایران</option>
+              <optgroup label="💳 Financial & Gateways">
+                <option value="shaparak.ir">shaparak.ir</option>
+                <option value="pep.shaparak.ir">pep.shaparak.ir</option>
+                <option value="bpm.shaparak.ir">bpm.shaparak.ir</option>
+                <option value="sadad.shaparak.ir">sadad.shaparak.ir</option>
+                <option value="zarinpal.com">zarinpal.com</option>
+                <option value="ebanking.banksepah.ir">ebanking.banksepah.ir</option>
+                <option value="bmi.ir">bmi.ir</option>
               </optgroup>
 
-              <optgroup label="🚗 سوپر اپ‌ها و خدمات ضروری کشور">
-                <option value="snapp.ir">snapp.ir — اسنپ</option>
-                <option value="tapsi.ir">tapsi.ir — تپسی</option>
-                <option value="digikala.com">digikala.com — دیجی‌کالا</option>
-                <option value="torob.com">torob.com — موتور جستجوی ترب</option>
-                <option value="divar.ir">divar.ir — دیوار</option>
+              <optgroup label="🚗 Essential Services">
+                <option value="snapp.ir">snapp.ir</option>
+                <option value="tapsi.ir">tapsi.ir</option>
+                <option value="digikala.com">digikala.com</option>
+                <option value="torob.com">torob.com</option>
+                <option value="divar.ir">divar.ir</option>
               </optgroup>
 
-              <optgroup label="🏛️ پنجره ملی خدمات دولت و احراز هویت">
-                <option value="my.gov.ir">my.gov.ir — پنجره ملی خدمات دولت</option>
-                <option value="eservices.gov.ir">eservices.gov.ir — درگاه خدمات الکترونیک</option>
-                <option value="tamin.ir">tamin.ir — سازمان تأمین اجتماعی</option>
+              <optgroup label="🌐 Global Domains">
+                <option value="yahoo.com">yahoo.com</option>
+                <option value="www.google.com">www.google.com</option>
+                <option value="dl.google.com">dl.google.com</option>
+                <option value="www.microsoft.com">www.microsoft.com</option>
+                <option value="speed.cloudflare.com">speed.cloudflare.com</option>
+                <option value="www.amazon.com">www.amazon.com</option>
+                <option value="www.apple.com">www.apple.com</option>
               </optgroup>
 
-              <optgroup label="🌐 دامنه‌های بین‌المللی عمومی باثبات">
-                <option value="yahoo.com">yahoo.com — یاهو</option>
-                <option value="www.google.com">www.google.com — گوگل</option>
-                <option value="dl.google.com">dl.google.com — دانلود گوگل</option>
-                <option value="www.microsoft.com">www.microsoft.com — مایکروسافت</option>
-                <option value="speed.cloudflare.com">speed.cloudflare.com — کلادفلر</option>
-                <option value="www.amazon.com">www.amazon.com — آمازون</option>
-                <option value="www.apple.com">www.apple.com — اپل</option>
+              <optgroup label="📦 OS Repositories">
+                <option value="archive.ubuntu.com">archive.ubuntu.com</option>
+                <option value="pypi.org">pypi.org</option>
+                <option value="registry.npmjs.org">registry.npmjs.org</option>
               </optgroup>
 
-              <optgroup label="📦 مخازن نرم‌افزاری و OS (احتمال ۹۰٪ استثنا در نت ملی)">
-                <option value="archive.ubuntu.com">archive.ubuntu.com — مخازن اوبونتو</option>
-                <option value="pypi.org">pypi.org — مخازن پایتون</option>
-                <option value="registry.npmjs.org">registry.npmjs.org — مخازن نودJS</option>
-              </optgroup>
-
-              <optgroup label="🔒 مراجع صدور گواهی SSL (ضروری برای کل اینترنت)">
-                <option value="acme-v02.api.letsencrypt.org">acme-v02.api.letsencrypt.org — Let's Encrypt</option>
-                <option value="ocsp.digicert.com">ocsp.digicert.com — DigiCert</option>
-              </optgroup>
-
-              <option value="custom">✏️ وارد کردن دامنه دلخواه (Custom SNI)</option>
+              <option value="custom">✏️ Custom SNI</option>
             </select>
 
             <input 
               v-if="selectedSniPreset === 'custom'"
               v-model="form.sni"
               type="text"
-              placeholder="مثال: mydomain.com"
+              placeholder="e.g. mydomain.com"
               dir="ltr"
               class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberYellow outline-none"
             />
@@ -355,17 +344,17 @@
 
           <div class="p-3 bg-cyberYellow/10 border border-cyberYellow/30 rounded-2xl flex items-center justify-between">
             <div>
-              <span class="font-bold text-white block">تکنولوژی Packet Fragment</span>
-              <span class="text-[10px] text-gray-300">تکه‌تکه‌سازی پکت‌های اولیه جهت عبور از DPI زیرساخت</span>
+              <span class="font-bold text-white block">Packet Fragment Technology</span>
+              <span class="text-[10px] text-gray-300">Packet fragmentation trick to bypass DPI inspection</span>
             </div>
             <input type="checkbox" v-model="form.enableFragment" class="w-5 h-5 accent-cyberYellow" />
           </div>
         </div>
 
         <div class="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
-          <button @click="showCreateModal = false" class="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white">انصراف</button>
+          <button @click="showCreateModal = false" class="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white">{{ t('cancel') }}</button>
           <button @click="createInbound" class="px-5 py-2 rounded-xl bg-cyberYellow text-black text-xs font-bold shadow-lg shadow-cyberYellow/30 hover:opacity-90">
-            ذخیره و ایجاد اینباند
+            {{ t('save') }}
           </button>
         </div>
       </div>
@@ -376,46 +365,46 @@
       <div class="glass-panel max-w-md w-full rounded-3xl p-6 border border-cyberYellow/40 space-y-4">
         <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
           <Edit3 class="w-5 h-5 text-cyberYellow" />
-          <span>ویرایش اینباند: {{ editingInbound.remark }}</span>
+          <span>{{ t('edit') }}: {{ editingInbound.remark }}</span>
         </h3>
 
         <div class="space-y-3 text-xs">
           <div>
-            <label class="block text-gray-400 mb-1">عنوان اینباند</label>
+            <label class="block text-gray-400 mb-1">Inbound Title</label>
             <input v-model="editForm.remark" type="text" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:border-cyberYellow outline-none" />
           </div>
 
           <div>
-            <label class="block text-gray-400 mb-1">دامنه وانمودی (SNI)</label>
+            <label class="block text-gray-400 mb-1">SNI Domain</label>
             <input v-model="editForm.sni" type="text" dir="ltr" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberYellow outline-none" />
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-gray-400 mb-1">سقف حجم (گیگابایت)</label>
+              <label class="block text-gray-400 mb-1">{{ t('selectTraffic') }} (GB)</label>
               <input v-model.number="editForm.dataLimitGb" type="number" dir="ltr" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberYellow outline-none" />
             </div>
             <div>
-              <label class="block text-gray-400 mb-1">تمدید اعتبار (روز)</label>
-              <input v-model.number="editForm.expireDays" type="number" placeholder="روزهای جدید" dir="ltr" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberYellow outline-none" />
+              <label class="block text-gray-400 mb-1">Renew Expiry (Days)</label>
+              <input v-model.number="editForm.expireDays" type="number" placeholder="Days to extend" dir="ltr" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberYellow outline-none" />
             </div>
           </div>
 
           <div>
-            <label class="block text-gray-400 mb-1">تعداد کاربر/دستگاه همزمان</label>
+            <label class="block text-gray-400 mb-1">{{ t('maxDevices') }}</label>
             <select v-model="editForm.maxDevices" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none">
-              <option :value="1">۱ کاربره</option>
-              <option :value="2">۲ کاربره</option>
-              <option :value="3">۳ کاربره</option>
-              <option :value="5">۵ کاربره</option>
+              <option :value="1">1 Device</option>
+              <option :value="2">2 Devices</option>
+              <option :value="3">3 Devices</option>
+              <option :value="5">5 Devices</option>
             </select>
           </div>
         </div>
 
         <div class="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
-          <button @click="editingInbound = null" class="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white">انصراف</button>
+          <button @click="editingInbound = null" class="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white">{{ t('cancel') }}</button>
           <button @click="saveInboundEdit" class="px-5 py-2 rounded-xl bg-cyberYellow text-black text-xs font-bold shadow-lg shadow-cyberYellow/30 hover:opacity-90">
-            ذخیره تغییرات
+            {{ t('save') }}
           </button>
         </div>
       </div>
@@ -426,22 +415,22 @@
       <div class="glass-panel max-w-2xl w-full rounded-3xl p-6 border border-cyberYellow/40 space-y-4 max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between">
           <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
-            <span>🔑 کانفیگ‌های خروجی: {{ selectedInboundForConfig.remark }}</span>
+            <span>🔑 Output Configs: {{ selectedInboundForConfig.remark }}</span>
           </h3>
           <button @click="selectedInboundForConfig = null" class="text-gray-400 hover:text-white text-xl">✕</button>
         </div>
 
         <div v-if="configLoading" class="flex items-center justify-center py-8">
           <div class="w-6 h-6 border-2 border-cyberYellow border-t-transparent rounded-full animate-spin"></div>
-          <span class="mr-3 text-gray-400 text-sm">در حال تولید لینک‌ها...</span>
+          <span class="mr-3 text-gray-400 text-sm">Generating config links…</span>
         </div>
 
         <div v-if="inboundConfigs && !configLoading" class="space-y-4">
           <!-- Direct VLESS Link -->
           <div class="bg-black/50 rounded-2xl p-3.5 border border-cyberYellow/20 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-xs text-cyberYellow font-extrabold">لینک مستقیم VLESS REALITY</span>
-              <button @click="copy(inboundConfigs.vlessLink)" class="px-3 py-1 rounded-lg bg-cyberYellow/20 text-cyberYellow border border-cyberYellow/30 text-xs font-bold">کپی VLESS</button>
+              <span class="text-xs text-cyberYellow font-extrabold">VLESS REALITY Direct Link</span>
+              <button @click="copy(inboundConfigs.vlessLink)" class="px-3 py-1 rounded-lg bg-cyberYellow/20 text-cyberYellow border border-cyberYellow/30 text-xs font-bold">{{ t('copy') }} VLESS</button>
             </div>
             <pre dir="ltr" class="text-[11px] font-mono text-gray-200 break-all whitespace-pre-wrap text-left p-3 bg-black/70 rounded-xl border border-white/10 leading-relaxed">{{ inboundConfigs.vlessLink }}</pre>
           </div>
@@ -449,21 +438,21 @@
           <!-- Base64 Subscription -->
           <div class="p-3.5 bg-white/5 rounded-2xl border border-white/5 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-xs text-cyberGreen font-extrabold">لینک سابسکریپشن مستقیم (Base64)</span>
-              <button @click="copy(inboundConfigs.base64Sub)" class="px-3 py-1 rounded-lg bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30 text-xs font-bold">کپی سابسکریپشن</button>
+              <span class="text-xs text-cyberGreen font-extrabold">Base64 Subscription Link</span>
+              <button @click="copy(inboundConfigs.base64Sub)" class="px-3 py-1 rounded-lg bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30 text-xs font-bold">{{ t('copy') }} Sub</button>
             </div>
             <input readonly :value="inboundConfigs.subUrl" dir="ltr" class="w-full bg-black/60 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-left text-cyberYellow outline-none" />
           </div>
 
           <!-- Dedicated Web Info Page Link -->
           <div class="p-3.5 bg-cyberYellow/10 rounded-2xl border border-cyberYellow/30 flex items-center justify-between gap-3 text-xs">
-            <span class="text-gray-200">صفحه وب اختصاصی مشاهده مشخصات و حجم:</span>
-            <button @click="copy(inboundConfigs.userInfoUrl)" class="px-3 py-1 rounded-xl bg-cyberYellow text-black font-bold">کپی لینک صفحه وب</button>
+            <span class="text-gray-200">Standalone User Info Web Page:</span>
+            <button @click="copy(inboundConfigs.userInfoUrl)" class="px-3 py-1 rounded-xl bg-cyberYellow text-black font-bold">{{ t('openUserPage') }}</button>
           </div>
 
           <!-- QR Code -->
           <div class="flex flex-col items-center gap-2 pt-2">
-            <p class="text-xs text-gray-300 font-bold">اسکن بارکد QR</p>
+            <p class="text-xs text-gray-300 font-bold">Scan QR Code</p>
             <div class="bg-white p-4 rounded-2xl shadow-2xl">
               <QrcodeVue :value="inboundConfigs.vlessLink" :size="180" />
             </div>

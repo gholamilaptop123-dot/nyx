@@ -100,7 +100,7 @@ const requireAuth = (req: express.Request, res: express.Response, next: express.
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token || !activeTokens.has(token)) {
-    return res.status(401).json({ error: 'عدم دسترسی: لطفاً ابتدا وارد حساب کاربری خود شوید.' });
+    return res.status(401).json({ error: 'Unauthorized: Please log in first.' });
   }
 
   next();
@@ -118,7 +118,7 @@ app.post('/api/auth/login', (req, res) => {
     return res.json({ success: true, token, username });
   }
 
-  return res.status(401).json({ error: 'نام کاربری یا کلمه عبور اشتباه است.' });
+  return res.status(401).json({ error: 'Invalid username or password.' });
 });
 
 app.get('/api/auth/me', (req, res) => {
@@ -156,7 +156,7 @@ app.get('/api/stats/dashboard', async (req, res) => {
     const uptimeSec = os.uptime();
     const uptimeDays = Math.floor(uptimeSec / (3600 * 24));
     const uptimeHours = Math.floor((uptimeSec % (3600 * 24)) / 3600);
-    const uptimeText = uptimeDays > 0 ? `${uptimeDays} روز و ${uptimeHours} ساعت` : `${uptimeHours} ساعت`;
+    const uptimeText = uptimeDays > 0 ? `${uptimeDays} Days ${uptimeHours} Hours` : `${uptimeHours} Hours`;
 
     res.json({
       totalUsers,
@@ -171,10 +171,10 @@ app.get('/api/stats/dashboard', async (req, res) => {
         ramUsageGb: `${usedMemGb} / ${totalMemGb} GB`,
         ramPercent,
         uptimeText,
-        xrayStatus: isXrayRunning ? 'فعال و آنلاین (ONLINE 🟢)' : `غیرفعال / خطا (OFFLINE 🔴 ${xrayLastError ? '- ' + xrayLastError : ''})`,
+        xrayStatus: isXrayRunning ? 'Active & Online (ONLINE 🟢)' : `Inactive / Error (OFFLINE 🔴 ${xrayLastError ? '- ' + xrayLastError : ''})`,
         pingMs: Math.floor(Math.random() * 8) + 14,
         networkSpeedMb: (Math.random() * 2.5 + 4.2).toFixed(1),
-        bypassEfficiency: isXrayRunning ? '۹۹.۸٪ باثبات' : 'غیرفعال 🔴'
+        bypassEfficiency: isXrayRunning ? '99.8% Stable' : 'Inactive 🔴'
       }
     });
   } catch (error) {
@@ -203,12 +203,12 @@ app.post('/api/users', async (req, res) => {
     const { username, dataLimitGb, expireDays, maxDevices } = req.body;
     
     if (!username || username.trim() === '') {
-      return res.status(400).json({ error: 'نام کاربری الزامی است.' });
+      return res.status(400).json({ error: 'Username is required.' });
     }
 
     const existing = await prisma.user.findFirst({ where: { username: username.trim() } });
     if (existing) {
-      return res.status(400).json({ error: 'کاربری با این نام هم‌اکنون وجود دارد.' });
+      return res.status(400).json({ error: 'A user with this username already exists.' });
     }
 
     let expireDate: Date | null = null;
@@ -234,7 +234,7 @@ app.post('/api/users', async (req, res) => {
       usedDataBytes: newUser.usedDataBytes.toString()
     });
   } catch (error: any) {
-    res.status(500).json({ error: error.message || 'خطا در ثبت کاربر جدید' });
+    res.status(500).json({ error: error.message || 'Failed to create user' });
   }
 });
 
@@ -321,7 +321,7 @@ app.post('/api/inbounds', async (req, res) => {
     const parsedPort = parseInt(port);
 
     if (isNaN(parsedPort) || parsedPort < 1 || parsedPort > 65535) {
-      return res.status(400).json({ error: 'شماره پورت نامعتبر است (بین ۱ تا ۶۵۵۳۵).' });
+      return res.status(400).json({ error: 'Invalid port number (Must be between 1 and 65535).' });
     }
 
     const generatedKeys = generateX25519Keypair(xrayBinaryPath);
@@ -352,7 +352,7 @@ app.post('/api/inbounds', async (req, res) => {
     await reloadXrayService();
     res.status(201).json(newInbound);
   } catch (error: any) {
-    res.status(500).json({ error: error.message || 'خطا در ثبت اینباند' });
+    res.status(500).json({ error: error.message || 'Failed to create inbound' });
   }
 });
 
@@ -390,7 +390,7 @@ app.get('/api/inbounds/:id/configs', async (req, res) => {
       where: { OR: [{ id: req.params.id }, { uuid: req.params.id }] }
     });
     if (!inbound) {
-      return res.status(404).json({ error: 'اینباند یافت نشد.' });
+      return res.status(404).json({ error: 'Inbound not found.' });
     }
 
     const hostIp = getPublicHost(req);
@@ -408,7 +408,7 @@ app.get('/api/inbounds/:id/configs', async (req, res) => {
       userInfoUrl
     });
   } catch (error: any) {
-    res.status(500).json({ error: error.message || 'خطا در تولید کانفیگ‌های اینباند' });
+    res.status(500).json({ error: error.message || 'Failed to generate inbound configs' });
   }
 });
 
@@ -432,8 +432,8 @@ app.get('/api/sni/test', async (req, res) => {
         success: true,
         domain,
         latencyMs: latency,
-        issuer: cert.issuer?.O || cert.issuer?.CN || 'معتبر',
-        message: `اتصال موفقیت‌آمیز (تأخیر: ${latency} میلی‌ثانیه)`
+        issuer: cert.issuer?.O || cert.issuer?.CN || 'Valid',
+        message: `Connection Successful (Latency: ${latency} ms)`
       });
     });
 
@@ -444,7 +444,7 @@ app.get('/api/sni/test', async (req, res) => {
         domain,
         latencyMs: Date.now() - startTime,
         error: err.message,
-        message: 'خطا در دست‌تکانی TLS (احتمال مسدودی یا اختلال)'
+        message: 'TLS Handshake Error (Possible Blocking or Filtering)'
       });
     });
 
@@ -455,7 +455,7 @@ app.get('/api/sni/test', async (req, res) => {
         domain,
         latencyMs: 4000,
         error: 'Timeout',
-        message: 'زمان پاسخ‌دهی به پایان رسید (دریافت پکت تا ۴ ثانیه انجام نشد)'
+        message: 'Response Timeout (No packet received within 4 seconds)'
       });
     });
   } catch (err: any) {
@@ -614,7 +614,7 @@ app.get('/api/subinfo/:uuid', async (req, res) => {
       where: { OR: [{ uuid: req.params.uuid }, { id: req.params.uuid }] }
     });
     if (!inbound) {
-      return res.status(404).json({ error: 'اشتراک یا اینباند یافت نشد.' });
+      return res.status(404).json({ error: 'Subscription or inbound not found.' });
     }
 
     const vlessLink = SubscriptionService.generateVlessLink(inbound as any, hostIp, isp);
@@ -695,7 +695,7 @@ app.post('/api/settings', async (req, res) => {
 
     res.json({
       success: true,
-      message: cleanToken ? 'ربات تلگرام با موفقیت فعال و راه‌اندازی شد.' : 'ربات تلگرام غیرفعال گردید.',
+      message: cleanToken ? 'Telegram Bot successfully activated and started.' : 'Telegram Bot disabled.',
       botEnabled: Boolean(cleanToken)
     });
   } catch (error: any) {

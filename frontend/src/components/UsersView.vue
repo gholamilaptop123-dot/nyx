@@ -97,16 +97,16 @@
       <div class="glass-panel max-w-md w-full rounded-3xl p-6 border border-cyberYellow/40 space-y-4">
         <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
           <UserPlus class="w-5 h-5 text-cyberYellow" />
-          <span>افزودن کاربر جدید</span>
+          <span>{{ t('createUserWizard') }}</span>
         </h3>
 
         <div class="space-y-3 text-xs">
           <div>
-            <label class="block text-gray-400 mb-1">نام کاربر (انگلیسی)</label>
+            <label class="block text-gray-400 mb-1">{{ t('usernameHeader') }}</label>
             <input 
               v-model="newUser.username"
               type="text" 
-              placeholder="مثال: ali_user"
+              placeholder="e.g. ali_user"
               dir="ltr"
               class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberYellow outline-none"
             />
@@ -114,17 +114,17 @@
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-gray-400 mb-1">سقف حجم (گیگابایت)</label>
+              <label class="block text-gray-400 mb-1">{{ t('selectTraffic') }} (GB)</label>
               <input 
                 v-model="newUser.dataLimitGb"
                 type="number" 
-                placeholder="0 برای نامحدود"
+                placeholder="0 for unlimited"
                 dir="ltr"
                 class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberYellow outline-none"
               />
             </div>
             <div>
-              <label class="block text-gray-400 mb-1">مدت اعتبار (روز)</label>
+              <label class="block text-gray-400 mb-1">{{ t('selectExpiry') }} ({{ t('daysCount') }})</label>
               <input 
                 v-model="newUser.expireDays"
                 type="number" 
@@ -136,21 +136,21 @@
           </div>
 
           <div>
-            <label class="block text-gray-400 mb-1">تعداد کاربر / دستگاه همزمان (IP Limit)</label>
+            <label class="block text-gray-400 mb-1">{{ t('maxDevices') }} (IP Limit)</label>
             <select v-model="newUser.maxDevices" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none">
-              <option :value="1">۱ کاربره (تک کاربره)</option>
-              <option :value="2">۲ کاربره (پیش‌فرض)</option>
-              <option :value="3">۳ کاربره</option>
-              <option :value="5">۵ کاربره</option>
-              <option :value="10">۱۰ کاربره (گروهی)</option>
+              <option :value="1">1 Device (Single)</option>
+              <option :value="2">2 Devices (Default)</option>
+              <option :value="3">3 Devices</option>
+              <option :value="5">5 Devices</option>
+              <option :value="10">10 Devices (Group)</option>
             </select>
           </div>
         </div>
 
         <div class="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
-          <button @click="showCreateModal = false" class="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white">انصراف</button>
+          <button @click="showCreateModal = false" class="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white">{{ t('cancel') }}</button>
           <button @click="createUser" class="px-5 py-2 rounded-xl bg-cyberYellow text-black text-xs font-bold shadow-lg shadow-cyberYellow/30 hover:opacity-90">
-            ذخیره و ساخت اتصال
+            {{ t('save') }}
           </button>
         </div>
       </div>
@@ -161,45 +161,45 @@
       <div class="glass-panel max-w-md w-full rounded-3xl p-6 border border-cyberYellow/40 space-y-4">
         <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
           <Edit3 class="w-5 h-5 text-cyberYellow" />
-          <span>ویرایش مشخصات کاربر: {{ editingUser.username }}</span>
+          <span>{{ t('edit') }}: {{ editingUser.username }}</span>
         </h3>
 
         <div class="space-y-3 text-xs">
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-gray-400 mb-1">سقف حجم (گیگابایت)</label>
+              <label class="block text-gray-400 mb-1">{{ t('selectTraffic') }} (GB)</label>
               <input v-model="editForm.dataLimitGb" type="number" dir="ltr" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberYellow outline-none" />
             </div>
             <div>
-              <label class="block text-gray-400 mb-1">تمدید اعتبار (روز)</label>
-              <input v-model="editForm.expireDays" type="number" placeholder="روزهای تمدید" dir="ltr" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberYellow outline-none" />
+              <label class="block text-gray-400 mb-1">Renew Expiry (Days)</label>
+              <input v-model="editForm.expireDays" type="number" placeholder="Days to extend" dir="ltr" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberYellow outline-none" />
             </div>
           </div>
 
           <div>
-            <label class="block text-gray-400 mb-1">تعداد کاربر / دستگاه همزمان</label>
+            <label class="block text-gray-400 mb-1">{{ t('maxDevices') }}</label>
             <select v-model="editForm.maxDevices" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none">
-              <option :value="1">۱ کاربره</option>
-              <option :value="2">۲ کاربره</option>
-              <option :value="3">۳ کاربره</option>
-              <option :value="5">۵ کاربره</option>
-              <option :value="10">۱۰ کاربره</option>
+              <option :value="1">1 Device</option>
+              <option :value="2">2 Devices</option>
+              <option :value="3">3 Devices</option>
+              <option :value="5">5 Devices</option>
+              <option :value="10">10 Devices</option>
             </select>
           </div>
 
           <div>
-            <label class="block text-gray-400 mb-1">وضعیت اکانت</label>
+            <label class="block text-gray-400 mb-1">{{ t('statusHeader') }}</label>
             <select v-model="editForm.status" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none">
-              <option value="ACTIVE">🟢 فعال (ACTIVE)</option>
-              <option value="DISABLED">🔴 غیرفعال (DISABLED)</option>
+              <option value="ACTIVE">🟢 {{ t('activeStatus') }} (ACTIVE)</option>
+              <option value="DISABLED">🔴 {{ t('disabledStatus') }} (DISABLED)</option>
             </select>
           </div>
         </div>
 
         <div class="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
-          <button @click="editingUser = null" class="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white">انصراف</button>
+          <button @click="editingUser = null" class="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white">{{ t('cancel') }}</button>
           <button @click="saveUserEdit" class="px-5 py-2 rounded-xl bg-cyberYellow text-black text-xs font-bold shadow-lg shadow-cyberYellow/30 hover:opacity-90">
-            ذخیره تغییرات
+            {{ t('save') }}
           </button>
         </div>
       </div>
@@ -210,7 +210,7 @@
       <div class="glass-panel max-w-2xl w-full rounded-3xl p-6 border border-cyberYellow/40 space-y-4 max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between">
           <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
-            <span>🔑 دریافت کامل کانفیگ‌ها: {{ selectedUserForConfig.username }}</span>
+            <span>🔑 Get Configs: {{ selectedUserForConfig.username }}</span>
           </h3>
           <button @click="selectedUserForConfig = null" class="text-gray-400 hover:text-white text-xl">✕</button>
         </div>
@@ -219,16 +219,16 @@
         <div class="p-3.5 rounded-2xl bg-cyberGreen/10 border border-cyberGreen/30 flex items-center justify-between gap-3 text-xs">
           <div class="flex items-center gap-2">
             <ExternalLink class="w-4 h-4 text-cyberGreen shrink-0" />
-            <span class="text-gray-200">صفحه وب اختصاصی مشاهده حجم و انقضای کاربر:</span>
+            <span class="text-gray-200">Standalone User Info Web Page:</span>
           </div>
           <button @click="copyUserInfoLink(selectedUserForConfig)" class="px-3 py-1 rounded-xl bg-cyberGreen text-black font-bold hover:opacity-90 transition-all shrink-0">
-            کپی لینک صفحه کاربر
+            {{ t('openUserPage') }}
           </button>
         </div>
 
         <!-- ISP Selector -->
         <div class="flex flex-wrap items-center gap-2 p-3 bg-white/5 rounded-2xl border border-white/5">
-          <span class="text-xs text-gray-400">تنظیم خودکار برای اپراتور:</span>
+          <span class="text-xs text-gray-400">Target ISP:</span>
           <button v-for="isp in ispOptions" :key="isp.id" @click="selectedConfigIsp = isp.id; loadConfigs()" :class="['px-3 py-1.5 rounded-xl text-xs font-medium transition-all', selectedConfigIsp === isp.id ? isp.activeClass : 'bg-white/5 text-gray-400 hover:text-white']">
             {{ isp.label }}
           </button>
@@ -236,7 +236,7 @@
 
         <div v-if="configLoading" class="flex items-center justify-center py-8">
           <div class="w-6 h-6 border-2 border-cyberYellow border-t-transparent rounded-full animate-spin"></div>
-          <span class="mr-3 text-gray-400 text-sm">در حال ساخت لینک‌های خروجی VLESS…</span>
+          <span class="mr-3 text-gray-400 text-sm">Generating VLESS links…</span>
         </div>
 
         <div v-if="userConfigs && !configLoading" class="space-y-4">
@@ -251,15 +251,15 @@
           <div v-if="activeConfigTab === 'vless'" class="space-y-3">
             <div v-for="(link, i) in userConfigs.vlessLinks" :key="i" class="bg-black/50 rounded-2xl p-3.5 border border-cyberYellow/20">
               <div class="flex items-center justify-between mb-2">
-                <span class="text-xs text-cyberYellow font-extrabold">لینک مستقیم VLESS (درگاه {{ i + 1 }})</span>
-                <button @click="copy(link)" class="px-3 py-1 rounded-lg bg-cyberYellow/20 text-cyberYellow border border-cyberYellow/30 hover:bg-cyberYellow/30 text-xs font-bold transition-all">کپی لینک VLESS</button>
+                <span class="text-xs text-cyberYellow font-extrabold">VLESS REALITY Link (Gateway {{ i + 1 }})</span>
+                <button @click="copy(link)" class="px-3 py-1 rounded-lg bg-cyberYellow/20 text-cyberYellow border border-cyberYellow/30 hover:bg-cyberYellow/30 text-xs font-bold transition-all">{{ t('copy') }} VLESS</button>
               </div>
               <pre dir="ltr" class="text-[11px] font-mono text-gray-200 break-all whitespace-pre-wrap text-left p-3 bg-black/70 rounded-xl border border-white/10 leading-relaxed">{{ link }}</pre>
             </div>
             <div class="p-3.5 bg-white/5 rounded-2xl border border-white/5 space-y-2">
               <div class="flex items-center justify-between">
-                <span class="text-xs text-cyberGreen font-extrabold">لینک سابسکریپشن کدگذاری شده (Base64)</span>
-                <button @click="copy(userConfigs.base64Sub)" class="px-3 py-1 rounded-lg bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30 hover:bg-cyberGreen/30 text-xs font-bold transition-all">کپی سابسکریپشن</button>
+                <span class="text-xs text-cyberGreen font-extrabold">Base64 Encoded Subscription</span>
+                <button @click="copy(userConfigs.base64Sub)" class="px-3 py-1 rounded-lg bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30 hover:bg-cyberGreen/30 text-xs font-bold transition-all">{{ t('copy') }} Sub</button>
               </div>
               <input readonly :value="userConfigs.subUrl" dir="ltr" class="w-full bg-black/60 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-left text-cyberYellow outline-none" />
             </div>
@@ -268,8 +268,8 @@
           <!-- Clash YAML -->
           <div v-if="activeConfigTab === 'clash'" class="space-y-3">
             <div class="flex items-center justify-between">
-              <p class="text-xs text-gray-400">فایل تنظیمات کامل آماده برای Clash Meta / Stash / Mihomo</p>
-              <button @click="copy(userConfigs.clashYaml)" class="px-3 py-1 rounded-xl bg-cyberYellow text-black text-xs font-bold">کپی کامل فایل YAML</button>
+              <p class="text-xs text-gray-400">Full YAML configuration file for Clash Meta / Stash / Mihomo</p>
+              <button @click="copy(userConfigs.clashYaml)" class="px-3 py-1 rounded-xl bg-cyberYellow text-black text-xs font-bold">{{ t('copy') }} YAML File</button>
             </div>
             <pre dir="ltr" class="bg-black/70 p-4 rounded-2xl text-[11px] font-mono text-cyberGreen text-left overflow-x-auto border border-white/10 max-h-72 leading-relaxed">{{ userConfigs.clashYaml }}</pre>
           </div>
@@ -277,8 +277,8 @@
           <!-- Sing-Box JSON -->
           <div v-if="activeConfigTab === 'singbox'" class="space-y-3">
             <div class="flex items-center justify-between">
-              <p class="text-xs text-gray-400">فایل تنظیمات JSON کامل برای Sing-Box / NekoBox / Hiddify</p>
-              <button @click="copy(JSON.stringify(userConfigs.singboxJson, null, 2))" class="px-3 py-1 rounded-xl bg-cyberYellow text-black text-xs font-bold">کپی کامل JSON</button>
+              <p class="text-xs text-gray-400">Full JSON configuration file for Sing-Box / NekoBox / Hiddify</p>
+              <button @click="copy(JSON.stringify(userConfigs.singboxJson, null, 2))" class="px-3 py-1 rounded-xl bg-cyberYellow text-black text-xs font-bold">{{ t('copy') }} JSON File</button>
             </div>
             <pre dir="ltr" class="bg-black/70 p-4 rounded-2xl text-[11px] font-mono text-cyberYellow text-left overflow-x-auto border border-white/10 max-h-72 leading-relaxed">{{ JSON.stringify(userConfigs.singboxJson, null, 2) }}</pre>
           </div>
@@ -286,7 +286,7 @@
           <!-- QR Code -->
           <div v-if="activeConfigTab === 'qr'" class="flex flex-col items-center gap-4 py-2">
             <div v-for="(link, i) in userConfigs.vlessLinks" :key="i" class="flex flex-col items-center gap-2">
-              <p class="text-xs text-gray-300 font-bold">اسکن بارکد لینک VLESS درگاه {{ i + 1 }}</p>
+              <p class="text-xs text-gray-300 font-bold">Scan QR Code for VLESS Link Gateway {{ i + 1 }}</p>
               <div class="bg-white p-4 rounded-2xl shadow-2xl">
                 <QrcodeVue :value="link" :size="180" />
               </div>
@@ -300,25 +300,25 @@
     <div v-if="selectedUserForSub" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
       <div class="glass-panel max-w-lg w-full rounded-3xl p-6 border border-cyberYellow/40 space-y-4">
         <div class="flex items-center justify-between">
-          <h3 class="text-lg font-bold text-white">لینک سابسکریپشن: {{ selectedUserForSub.username }}</h3>
+          <h3 class="text-lg font-bold text-white">{{ t('subLinkHeader') }}: {{ selectedUserForSub.username }}</h3>
           <button @click="selectedUserForSub = null" class="text-gray-400 hover:text-white">✕</button>
         </div>
 
         <div class="bg-white/5 p-4 rounded-2xl border border-white/10 space-y-3 text-xs">
-          <label class="block text-gray-400">انتخاب اپراتور (جهت تنظیم خودکار ترفند Fragment):</label>
+          <label class="block text-gray-400">Target Operator Preset:</label>
           <div class="flex flex-wrap items-center gap-2">
-            <button @click="selectedIsp = 'MCI'" :class="['px-3 py-1.5 rounded-xl font-medium transition-all', selectedIsp === 'MCI' ? 'bg-cyberYellow text-black font-bold' : 'bg-white/5 text-gray-400']">همراه اول</button>
-            <button @click="selectedIsp = 'IRANCELL'" :class="['px-3 py-1.5 rounded-xl font-medium transition-all', selectedIsp === 'IRANCELL' ? 'bg-cyberRed text-white font-bold' : 'bg-white/5 text-gray-400']">ایرانسل</button>
-            <button @click="selectedIsp = 'WHITE_SNI'" :class="['px-3 py-1.5 rounded-xl font-medium transition-all', selectedIsp === 'WHITE_SNI' ? 'bg-cyberGreen text-black font-bold' : 'bg-white/5 text-gray-400']">⚡ SNI سفید</button>
+            <button @click="selectedIsp = 'MCI'" :class="['px-3 py-1.5 rounded-xl font-medium transition-all', selectedIsp === 'MCI' ? 'bg-cyberYellow text-black font-bold' : 'bg-white/5 text-gray-400']">MCI</button>
+            <button @click="selectedIsp = 'IRANCELL'" :class="['px-3 py-1.5 rounded-xl font-medium transition-all', selectedIsp === 'IRANCELL' ? 'bg-cyberRed text-white font-bold' : 'bg-white/5 text-gray-400']">Irancell</button>
+            <button @click="selectedIsp = 'WHITE_SNI'" :class="['px-3 py-1.5 rounded-xl font-medium transition-all', selectedIsp === 'WHITE_SNI' ? 'bg-cyberGreen text-black font-bold' : 'bg-white/5 text-gray-400']">⚡ White SNI</button>
           </div>
 
           <div class="space-y-2 pt-2">
-            <label class="block text-gray-400">لینک سابسکریپشن مستقیم:</label>
+            <label class="block text-gray-400">Direct Subscription URL:</label>
             <div class="flex items-center gap-2">
               <input readonly :value="getSubUrl(selectedUserForSub.uuid, selectedIsp)" dir="ltr" class="flex-1 bg-black/60 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-left text-cyberYellow outline-none" />
               <button @click="copyToClipboard(getSubUrl(selectedUserForSub.uuid, selectedIsp))" class="px-4 py-2 rounded-xl bg-cyberYellow text-black font-bold text-xs flex items-center gap-1">
                 <Copy class="w-3.5 h-3.5" />
-                کپی
+                {{ t('copy') }}
               </button>
             </div>
           </div>
@@ -326,7 +326,7 @@
 
         <div class="flex flex-col items-center justify-center p-4 bg-white rounded-2xl shadow-2xl">
           <QrcodeVue :value="getSubUrl(selectedUserForSub.uuid, selectedIsp)" :size="180" />
-          <p class="text-xs text-gray-800 font-bold mt-2">اسکن هوشمند توسط Sing-Box, V2rayN یا Shadowrocket</p>
+          <p class="text-xs text-gray-800 font-bold mt-2">Scan via Sing-Box, V2rayN, MahsaNG or Shadowrocket</p>
         </div>
       </div>
     </div>

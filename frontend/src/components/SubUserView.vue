@@ -52,7 +52,7 @@
         <!-- Usage Card -->
         <div class="glass-panel p-5 rounded-3xl border border-white/10 space-y-3">
           <div class="flex items-center justify-between text-xs">
-            <span class="text-gray-400">حجم مصرف‌شده</span>
+            <span class="text-gray-400">{{ t('trafficHeader') }}</span>
             <span class="text-cyberCyan font-bold font-mono">{{ usedGb }} GB / {{ limitGbText }}</span>
           </div>
           <div class="w-full h-3 bg-white/5 rounded-full overflow-hidden p-0.5 border border-white/10">
@@ -63,15 +63,15 @@
             ></div>
           </div>
           <div class="flex justify-between text-[11px] text-gray-500">
-            <span>درصد مصرف: {{ usagePercent.toFixed(1) }}%</span>
-            <span>باقی‌مانده: {{ remainGbText }}</span>
+            <span>Usage Percent: {{ usagePercent.toFixed(1) }}%</span>
+            <span>Remaining: {{ remainGbText }}</span>
           </div>
         </div>
 
         <!-- Expiration Card -->
         <div class="glass-panel p-5 rounded-3xl border border-white/10 space-y-3 flex flex-col justify-between">
           <div class="flex items-center justify-between text-xs">
-            <span class="text-gray-400">تاریخ پایان اعتبار</span>
+            <span class="text-gray-400">{{ t('expiryHeader') }}</span>
             <span class="text-cyberPink font-bold">{{ expireText }}</span>
           </div>
           <div class="flex items-center gap-2 text-xs text-gray-300">
@@ -88,7 +88,7 @@
             <Calendar class="w-5 h-5" />
           </div>
           <div>
-            <span class="text-gray-400 block text-[11px]">تاریخ ایجاد / خرید اشتراک</span>
+            <span class="text-gray-400 block text-[11px]">Creation Date</span>
             <span class="text-white font-bold text-xs">{{ createdAtText }}</span>
           </div>
         </div>
@@ -98,7 +98,7 @@
             <Users class="w-5 h-5" />
           </div>
           <div>
-            <span class="text-gray-400 block text-[11px]">محدودیت دستگاه همزمان (IP Limit)</span>
+            <span class="text-gray-400 block text-[11px]">{{ t('maxDevices') }} (IP Limit)</span>
             <span class="text-cyberCyan font-bold text-xs">{{ maxDevicesText }}</span>
           </div>
         </div>
@@ -106,7 +106,7 @@
 
       <!-- ISP Selector Bar -->
       <div class="glass-panel p-4 rounded-3xl border border-white/10 space-y-3">
-        <label class="block text-xs font-semibold text-gray-300">تنظیم اتوماتیک ترفندها بر اساس اپراتور شبکه شما:</label>
+        <label class="block text-xs font-semibold text-gray-300">Auto-configure bypass preset for your ISP:</label>
         <div class="flex flex-wrap gap-2">
           <button v-for="isp in ispOptions" :key="isp.id" @click="selectedIsp = isp.id; loadConfigs()"
             :class="['px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all', selectedIsp === isp.id ? isp.activeClass : 'bg-white/5 text-gray-400 hover:text-white']"
@@ -130,17 +130,17 @@
         <!-- Sub URL & Base64 -->
         <div v-if="activeTab === 'sub'" class="space-y-4">
           <div class="space-y-1.5">
-            <label class="block text-xs text-gray-400">لینک سابسکریپشن هوشمند (ویژه تمام نرم‌افزارها):</label>
+            <label class="block text-xs text-gray-400">Universal Subscription URL:</label>
             <div class="flex items-center gap-2">
               <input readonly :value="subUrl" dir="ltr" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2.5 text-xs font-mono text-left text-cyberCyan outline-none" />
-              <button @click="copy(subUrl, 'لینک سابسکریپشن کپی شد')" class="px-4 py-2.5 rounded-xl bg-cyberViolet text-white text-xs font-bold shrink-0 hover:opacity-90 flex items-center gap-1">
-                <Copy class="w-3.5 h-3.5" /> کپی
+              <button @click="copy(subUrl, 'Subscription link copied')" class="px-4 py-2.5 rounded-xl bg-cyberViolet text-white text-xs font-bold shrink-0 hover:opacity-90 flex items-center gap-1">
+                <Copy class="w-3.5 h-3.5" /> {{ t('copy') }}
               </button>
             </div>
           </div>
           <div class="flex flex-col items-center justify-center p-4 bg-white rounded-2xl shadow-xl">
             <QrcodeVue :value="subUrl" :size="190" />
-            <p class="text-xs text-gray-800 font-bold mt-2">اسکن مستقیم سابسکریپشن</p>
+            <p class="text-xs text-gray-800 font-bold mt-2">Scan Direct Subscription QR</p>
           </div>
         </div>
 
@@ -148,8 +148,8 @@
         <div v-if="activeTab === 'vless'" class="space-y-3">
           <div v-for="(link, i) in vlessLinks" :key="i" class="bg-black/40 rounded-2xl p-3.5 border border-white/5 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-xs text-cyberCyan font-bold">لینک VLESS اینباند {{ i + 1 }}</span>
-              <button @click="copy(link, 'لینک VLESS کپی شد')" class="px-3 py-1 rounded-xl bg-cyberViolet/30 text-cyberViolet hover:bg-cyberViolet/50 text-xs font-semibold">کپی لینک</button>
+              <span class="text-xs text-cyberCyan font-bold">VLESS Link Gateway {{ i + 1 }}</span>
+              <button @click="copy(link, 'VLESS link copied')" class="px-3 py-1 rounded-xl bg-cyberViolet/30 text-cyberViolet hover:bg-cyberViolet/50 text-xs font-semibold">{{ t('copy') }} Link</button>
             </div>
             <pre dir="ltr" class="text-[11px] font-mono text-gray-200 break-all whitespace-pre-wrap text-left p-2.5 bg-black/60 rounded-xl border border-white/5 leading-relaxed">{{ link }}</pre>
           </div>
@@ -158,8 +158,8 @@
         <!-- Clash Meta YAML -->
         <div v-if="activeTab === 'clash'" class="space-y-3">
           <div class="flex items-center justify-between">
-            <span class="text-xs text-gray-400">کانفیگ کامل YAML برای Clash / Stash</span>
-            <button @click="copy(clashYaml, 'فایل Clash کپی شد')" class="px-3 py-1 rounded-xl bg-cyberCyan/20 text-cyberCyan text-xs font-bold">کپی YAML</button>
+            <span class="text-xs text-gray-400">Full YAML config for Clash / Stash</span>
+            <button @click="copy(clashYaml, 'Clash file copied')" class="px-3 py-1 rounded-xl bg-cyberCyan/20 text-cyberCyan text-xs font-bold">{{ t('copy') }} YAML</button>
           </div>
           <pre dir="ltr" class="bg-black/60 p-4 rounded-2xl text-[11px] font-mono text-cyberGreen text-left overflow-x-auto border border-white/5 max-h-72 leading-relaxed">{{ clashYaml }}</pre>
         </div>
@@ -167,8 +167,8 @@
         <!-- Sing-Box JSON -->
         <div v-if="activeTab === 'singbox'" class="space-y-3">
           <div class="flex items-center justify-between">
-            <span class="text-xs text-gray-400">کانفیگ کامل JSON برای Sing-Box / NekoBox</span>
-            <button @click="copy(JSON.stringify(singboxJson, null, 2), 'فایل Sing-Box کپی شد')" class="px-3 py-1 rounded-xl bg-cyberViolet/20 text-cyberViolet text-xs font-bold">کپی JSON</button>
+            <span class="text-xs text-gray-400">Full JSON config for Sing-Box / NekoBox</span>
+            <button @click="copy(JSON.stringify(singboxJson, null, 2), 'Sing-Box file copied')" class="px-3 py-1 rounded-xl bg-cyberViolet/20 text-cyberViolet text-xs font-bold">{{ t('copy') }} JSON</button>
           </div>
           <pre dir="ltr" class="bg-black/60 p-4 rounded-2xl text-[11px] font-mono text-cyberCyan text-left overflow-x-auto border border-white/5 max-h-72 leading-relaxed">{{ JSON.stringify(singboxJson, null, 2) }}</pre>
         </div>
@@ -176,11 +176,11 @@
 
       <!-- Footer Branding -->
       <footer class="text-center space-y-2 pt-4 text-xs text-gray-400 border-t border-white/10">
-        <p>توسعه‌داده‌شده توسط <strong class="text-cyberCyan font-bold">تیم امنیتی ساینت (Cynet)</strong></p>
+        <p>{{ t('byCynet') }}</p>
         <div class="flex items-center justify-center gap-4 text-xs">
-          <a href="https://t.me/cynetx" target="_blank" class="hover:text-cyberCyan transition-colors">📢 تلگرام (cynetx)</a>
+          <a href="https://t.me/cynetx" target="_blank" class="hover:text-cyberCyan transition-colors">📢 Telegram (cynetx)</a>
           <span>•</span>
-          <a href="https://www.youtube.com/@cynetxir" target="_blank" class="hover:text-cyberPink transition-colors">🎥 یوتیوب (@cynetxir)</a>
+          <a href="https://www.youtube.com/@cynetxir" target="_blank" class="hover:text-cyberPink transition-colors">🎥 YouTube (@cynetxir)</a>
           <span>•</span>
           <a href="https://cynetx.ir" target="_blank" class="hover:text-cyberGreen transition-colors font-mono">🌐 cynetx.ir</a>
         </div>
@@ -218,17 +218,17 @@ const singboxJson = ref<any>(null);
 const subUrl = ref('');
 
 const configTabs = [
-  { id: 'sub', label: 'لینک سابسکریپشن & QR' },
-  { id: 'vless', label: 'لینک‌های VLESS' },
+  { id: 'sub', label: 'Subscription & QR' },
+  { id: 'vless', label: 'VLESS Links' },
   { id: 'clash', label: 'Clash Meta' },
   { id: 'singbox', label: 'Sing-Box' },
 ];
 
 const ispOptions = [
-  { id: 'DEFAULT', label: 'عمومی', activeClass: 'bg-cyberViolet text-white' },
-  { id: 'MCI', label: 'همراه اول', activeClass: 'bg-cyberPink text-white' },
-  { id: 'IRANCELL', label: 'ایرانسل', activeClass: 'bg-cyberCyan text-black font-bold' },
-  { id: 'WHITE_SNI', label: 'SNI سفید (زمان اختلال نت)', activeClass: 'bg-cyberGreen text-black font-bold' },
+  { id: 'DEFAULT', label: 'General', activeClass: 'bg-cyberViolet text-white' },
+  { id: 'MCI', label: 'MCI', activeClass: 'bg-cyberPink text-white' },
+  { id: 'IRANCELL', label: 'Irancell', activeClass: 'bg-cyberCyan text-black font-bold' },
+  { id: 'WHITE_SNI', label: 'White SNI', activeClass: 'bg-cyberGreen text-black font-bold' },
 ];
 
 const usedGb = computed(() => {
@@ -237,12 +237,12 @@ const usedGb = computed(() => {
 });
 
 const limitGbText = computed(() => {
-  if (!userData.value || !userData.value.dataLimitGb) return 'نامحدود';
+  if (!userData.value || !userData.value.dataLimitGb) return t('unlimited');
   return `${userData.value.dataLimitGb} GB`;
 });
 
 const remainGbText = computed(() => {
-  if (!userData.value || !userData.value.dataLimitGb) return 'نامحدود';
+  if (!userData.value || !userData.value.dataLimitGb) return t('unlimited');
   const rem = Math.max(0, userData.value.dataLimitGb - Number(usedGb.value));
   return `${rem.toFixed(2)} GB`;
 });
@@ -253,25 +253,25 @@ const usagePercent = computed(() => {
 });
 
 const expireText = computed(() => {
-  if (!userData.value || !userData.value.expireDate) return 'بدون محدودیت زمانی';
-  return new Date(userData.value.expireDate).toLocaleDateString('fa-IR');
+  if (!userData.value || !userData.value.expireDate) return t('unlimited');
+  return new Date(userData.value.expireDate).toLocaleDateString();
 });
 
 const daysLeftText = computed(() => {
-  if (!userData.value || !userData.value.expireDate) return 'مدت زمان: نامحدود';
+  if (!userData.value || !userData.value.expireDate) return 'Time limit: Unlimited';
   const diff = new Date(userData.value.expireDate).getTime() - new Date().getTime();
   const days = Math.ceil(diff / (1000 * 3600 * 24));
-  return days > 0 ? `${days} روز باقی‌مانده` : 'منقضی شده';
+  return days > 0 ? `${days} Days remaining` : 'Expired';
 });
 
 const createdAtText = computed(() => {
-  if (!userData.value || !userData.value.createdAt) return 'ثبت شده در سیستم';
-  return new Date(userData.value.createdAt).toLocaleDateString('fa-IR');
+  if (!userData.value || !userData.value.createdAt) return 'Registered';
+  return new Date(userData.value.createdAt).toLocaleDateString();
 });
 
 const maxDevicesText = computed(() => {
-  if (!userData.value || !userData.value.maxDevices) return '۲ کاربره همزمان (پیش‌فرض)';
-  return `${userData.value.maxDevices} دستگاه همزمان (محدودیت IP)`;
+  if (!userData.value || !userData.value.maxDevices) return '2 Devices (Default)';
+  return `${userData.value.maxDevices} Devices (IP Limit)`;
 });
 
 async function loadUserData() {
@@ -280,7 +280,7 @@ async function loadUserData() {
 
   const targetUuid = props.uuid || window.location.pathname.split('/subinfo/')[1];
   if (!targetUuid) {
-    error.value = 'شناسه کاربر یافت نشد.';
+    error.value = 'User UUID not specified.';
     loading.value = false;
     return;
   }
@@ -293,7 +293,7 @@ async function loadUserData() {
     singboxJson.value = res.data.singboxJson;
     subUrl.value = res.data.subUrl;
   } catch (err: any) {
-    error.value = err?.response?.data?.error || 'حساب کاربر یافت نشد یا غیرفعال گردیده است.';
+    error.value = err?.response?.data?.error || 'User account not found or disabled.';
   } finally {
     loading.value = false;
   }

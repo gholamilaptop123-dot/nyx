@@ -55,10 +55,10 @@ export function initTelegramBot(
   const getAdminReplyKeyboard = () => {
     return {
       keyboard: [
-        [{ text: '📊 آمار سرور' }, { text: '🌐 اینباندها و کانفیگ‌ها' }],
-        [{ text: '➕ ساخت کانفیگ / اینباند' }, { text: '⚡ تست SNI آنلاین' }],
-        [{ text: '🚀 اسکریپت تونل‌زنی' }, { text: '🖥️ سرورها و نودها' }],
-        [{ text: '👥 لیست کاربران' }, { text: '🚪 خروج ادمین' }]
+        [{ text: '📊 Server Stats' }, { text: '🌐 Inbounds & Configs' }],
+        [{ text: '➕ Create Config / Inbound' }, { text: '⚡ Live SNI Tester' }],
+        [{ text: '🚀 Tunnel Scripts' }, { text: '🖥️ Servers & Nodes' }],
+        [{ text: '👥 Users List' }, { text: '🚪 Admin Logout' }]
       ],
       resize_keyboard: true
     };
@@ -70,8 +70,8 @@ export function initTelegramBot(
     }
     return {
       keyboard: [
-        [{ text: '📊 وضعیت حساب من' }, { text: '🔑 دریافت اشتراک من' }],
-        [{ text: '❓ راهنما و پشتیبانی' }, { text: '🔑 ورود ادمین' }]
+        [{ text: '📊 My Account Usage' }, { text: '🔑 Get My Subscription' }],
+        [{ text: '❓ Help & Support' }, { text: '🔑 Admin Login' }]
       ],
       resize_keyboard: true
     };
@@ -82,9 +82,9 @@ export function initTelegramBot(
     const chatId = msg.chat.id;
     delete userStates[chatId];
 
-    const welcomeText = `🛡️ *به ربات مدیریت اختصاصی Nyx Panel خوش آمدید!*
+    const welcomeText = `🛡️ *Welcome to Nyx Panel Management Bot!*
 
-تمام امکانات پنل وب (ساخت کانفیگ، مدیریت ترافیک، تست SNI آنلاین، اسکریپت‌های تونل و آمار) از طریق دکمه‌های زیر در دسترس است.`;
+All web panel features (config creation, traffic monitoring, live SNI testing, tunnel scripts, and statistics) are accessible via the buttons below.`;
 
     bot.sendMessage(chatId, welcomeText, {
       parse_mode: 'Markdown',
@@ -100,39 +100,39 @@ export function initTelegramBot(
     if (text.startsWith('/login') || text.startsWith('/start')) return;
 
     // Public Commands
-    if (text === '📊 وضعیت حساب من') {
+    if (text === '📊 My Account Usage' || text === '📊 وضعیت حساب من') {
       return handleUserUsage(chatId, msg.from?.username);
     }
-    if (text === '🔑 دریافت اشتراک من') {
+    if (text === '🔑 Get My Subscription' || text === '🔑 دریافت اشتراک من') {
       return handleUserSub(chatId, msg.from?.username);
     }
-    if (text === '❓ راهنما و پشتیبانی') {
+    if (text === '❓ Help & Support' || text === '❓ راهنما و پشتیبانی') {
       return handleSupport(chatId);
     }
-    if (text === '🔑 ورود ادمین') {
+    if (text === '🔑 Admin Login' || text === '🔑 ورود ادمین') {
       delete userStates[chatId];
       userStates[chatId] = { step: 'WAIT_ADMIN_PASS', data: {} };
-      return bot.sendMessage(chatId, '🔒 *لطفاً کلمه عبور ادمین پنل را وارد کنید:*', { parse_mode: 'Markdown' });
+      return bot.sendMessage(chatId, '🔒 *Please enter the Admin Panel Password:*', { parse_mode: 'Markdown' });
     }
 
     // Admin Logout
-    if (text === '🚪 خروج ادمین') {
+    if (text === '🚪 Admin Logout' || text === '🚪 خروج ادمین') {
       adminChatIds.delete(chatId);
       delete userStates[chatId];
-      return bot.sendMessage(chatId, '🚪 شما از حساب مدیریت خارج شدید.', {
+      return bot.sendMessage(chatId, '🚪 You have logged out of Admin mode.', {
         reply_markup: getUserReplyKeyboard(chatId)
       });
     }
 
     // Admin Commands
     if (isAdmin(chatId)) {
-      if (text === '📊 آمار سرور') return sendAdminStats(chatId);
-      if (text === '🌐 اینباندها و کانفیگ‌ها') return sendAdminInboundsList(chatId);
-      if (text === '➕ ساخت کانفیگ / اینباند') return startCreateInboundWizard(chatId);
-      if (text === '⚡ تست SNI آنلاین') return sendSniTesterMenu(chatId);
-      if (text === '🚀 اسکریپت تونل‌زنی') return startTunnelWizard(chatId);
-      if (text === '🖥️ سرورها و نودها') return sendAdminNodesList(chatId);
-      if (text === '👥 لیست کاربران') return sendAdminUsersList(chatId);
+      if (text === '📊 Server Stats' || text === '📊 آمار سرور') return sendAdminStats(chatId);
+      if (text === '🌐 Inbounds & Configs' || text === '🌐 اینباندها و کانفیگ‌ها') return sendAdminInboundsList(chatId);
+      if (text === '➕ Create Config / Inbound' || text === '➕ ساخت کانفیگ / اینباند') return startCreateInboundWizard(chatId);
+      if (text === '⚡ Live SNI Tester' || text === '⚡ تست SNI آنلاین') return sendSniTesterMenu(chatId);
+      if (text === '🚀 Tunnel Scripts' || text === '🚀 اسکریپت تونل‌زنی') return startTunnelWizard(chatId);
+      if (text === '🖥️ Servers & Nodes' || text === '🖥️ سرورها و نودها') return sendAdminNodesList(chatId);
+      if (text === '👥 Users List' || text === '👥 لیست کاربران') return sendAdminUsersList(chatId);
     }
 
     // --- State Machine Wizards ---
@@ -143,7 +143,7 @@ export function initTelegramBot(
         if (text === ADMIN_PASS) {
           adminChatIds.add(chatId);
           delete userStates[chatId];
-          return bot.sendMessage(chatId, '✅ *خوش آمدید ادمین گرامی!*\nپنل مدیریتی با دکمه‌های کاملاً تعاملی فعال شد:', {
+          return bot.sendMessage(chatId, '✅ *Welcome Admin!*\nAdmin Panel keyboard layout activated:', {
             parse_mode: 'Markdown',
             reply_markup: getUserReplyKeyboard(chatId)
           });

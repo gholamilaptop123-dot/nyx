@@ -135,9 +135,9 @@
           <div>
             <h3 class="text-lg font-extrabold text-cyberYellow glow-yellow flex items-center gap-2">
               <ShieldAlert class="w-5 h-5 text-cyberYellow" />
-              وضعیت پایداری پروتکل‌های شبکه
+              Network Protocol Stability Matrix
             </h3>
-            <p class="text-xs text-gray-400 mt-0.5">وضعیت کارکرد، سرعت پاسخ‌دهی و تکنولوژی‌های فعال اتصال</p>
+            <p class="text-xs text-gray-400 mt-0.5">Operational status, latency response, and active connection technologies</p>
           </div>
           <span class="text-xs text-cyberGreen font-bold font-mono bg-cyberGreen/10 border border-cyberGreen/30 px-3 py-1 rounded-full">
             Xray Core: {{ stats.systemHealth.xrayStatus }}
@@ -152,20 +152,20 @@
                 <span class="w-3 h-3 rounded-full bg-cyberGreen shadow-sm shadow-cyberGreen animate-ping"></span>
                 <h4 class="text-sm font-extrabold text-white flex items-center gap-2">
                   <span>VLESS + REALITY (X25519)</span>
-                  <span class="text-[10px] bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30 px-2 py-0.5 rounded-md">پروتکل اصلی</span>
+                  <span class="text-[10px] bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30 px-2 py-0.5 rounded-md">Main Protocol</span>
                 </h4>
               </div>
               <span class="px-3 py-1 text-xs rounded-full bg-cyberGreen/20 text-cyberGreen font-extrabold border border-cyberGreen/30">
-                🟢 فعال و آماده‌به‌کار
+                🟢 {{ t('activeStatus') }}
               </span>
             </div>
             <p class="text-xs text-gray-300 leading-relaxed pr-6">
-              شبیه‌سازی کامل TLS با پروتکل REALITY بدون نیاز به گواهی SSL و دامنه شخصی.
+              Full TLS emulation via REALITY protocol without needing domain name or SSL certificates.
             </p>
             <div class="flex flex-wrap items-center gap-4 text-[11px] text-gray-400 pr-6 pt-1 border-t border-white/5">
-              <span>⚡ تاخیر متوسط: <strong class="text-cyberYellow font-mono" dir="ltr">۱۶ ms</strong></span>
-              <span>🔒 وضعیت SSL: <strong class="text-cyberGreen">بدون نیاز به دامنه (REALITY Mask)</strong></span>
-              <span>📱 پوشش اپراتورها: <strong class="text-white">همراه اول، ایرانسل و رایتل</strong></span>
+              <span>⚡ Avg Latency: <strong class="text-cyberYellow font-mono" dir="ltr">16 ms</strong></span>
+              <span>🔒 SSL Mode: <strong class="text-cyberGreen">Domainless (REALITY Mask)</strong></span>
+              <span>📱 Operator Support: <strong class="text-white">MCI, Irancell, Rightel & Fiber</strong></span>
             </div>
           </div>
 
@@ -176,20 +176,20 @@
                 <span class="w-3 h-3 rounded-full bg-cyberGreen shadow-sm shadow-cyberGreen"></span>
                 <h4 class="text-sm font-extrabold text-white flex items-center gap-2">
                   <span>Xray Packet Fragment</span>
-                  <span class="text-[10px] bg-cyberYellow/20 text-cyberYellow border border-cyberYellow/30 px-2 py-0.5 rounded-md">فرگمنت</span>
+                  <span class="text-[10px] bg-cyberYellow/20 text-cyberYellow border border-cyberYellow/30 px-2 py-0.5 rounded-md">Fragment</span>
                 </h4>
               </div>
               <span class="px-3 py-1 text-xs rounded-full bg-cyberGreen/20 text-cyberGreen font-extrabold border border-cyberGreen/30">
-                ⚡ پکت فرگمنت (100-200 Bytes)
+                ⚡ Packet Fragment (100-200 Bytes)
               </span>
             </div>
             <p class="text-xs text-gray-300 leading-relaxed pr-6">
-              ارسال شکسته‌شده پکت‌های اولیه (Fragment) جهت عبور از سیستم‌های تحلیل پکت DPI همراه اول و ایرانسل.
+              Fragmented initial packet delivery to bypass DPI inspection algorithms.
             </p>
             <div class="flex flex-wrap items-center gap-4 text-[11px] text-gray-400 pr-6 pt-1 border-t border-white/5">
-              <span>🎯 سایز پکت: <strong class="text-cyberYellow font-mono" dir="ltr">100-200 Bytes</strong></span>
-              <span>📊 نرخ تحویل: <strong class="text-cyberGreen font-mono">۹۹.۹٪</strong></span>
-              <span>🛡️ عبور از DPI زیرساخت: <strong class="text-cyberYellow">فعال</strong></span>
+              <span>🎯 Packet Size: <strong class="text-cyberYellow font-mono" dir="ltr">100-200 Bytes</strong></span>
+              <span>📊 Delivery Rate: <strong class="text-cyberGreen font-mono">99.9%</strong></span>
+              <span>🛡️ DPI Bypass: <strong class="text-cyberYellow">Active</strong></span>
             </div>
           </div>
 
@@ -200,19 +200,19 @@
                 <span class="w-3 h-3 rounded-full bg-cyberYellow shadow-sm shadow-cyberYellow"></span>
                 <h4 class="text-sm font-extrabold text-white flex items-center gap-2">
                   <span>Gost v3 Intranet Tunnel</span>
-                  <span class="text-[10px] bg-cyberRed/20 text-cyberRed border border-cyberRed/30 px-2 py-0.5 rounded-md">تونل اختصاصی</span>
+                  <span class="text-[10px] bg-cyberRed/20 text-cyberRed border border-cyberRed/30 px-2 py-0.5 rounded-md">Dedicated Tunnel</span>
                 </h4>
               </div>
               <span class="px-3 py-1 text-xs rounded-full bg-cyberYellow/20 text-cyberYellow font-extrabold border border-cyberYellow/30">
-                🛡️ آمادگی کامل برای تونل‌زنی اختصاصی
+                🛡️ Ready for Intranet Tunneling
               </span>
             </div>
             <p class="text-xs text-gray-300 leading-relaxed pr-6">
-              ارتباط رمزنگاری‌شده WebSocket بین سرور ایران و خارج برای انتقال باثبات ترافیک.
+              Encrypted WebSocket bridge between domestic and international nodes for stable routing.
             </p>
             <div class="flex flex-wrap items-center gap-4 text-[11px] text-gray-400 pr-6 pt-1 border-t border-white/5">
-              <span>🔗 نوع تونل: <strong class="text-cyberYellow font-mono">WebSocket TLS</strong></span>
-              <span>📡 وضعیت ارتباط سرورها: <strong class="text-cyberGreen">برقرار و آماده اتصال</strong></span>
+              <span>🔗 Tunnel Type: <strong class="text-cyberYellow font-mono">WebSocket TLS</strong></span>
+              <span>📡 Node Link Status: <strong class="text-cyberGreen">Established & Ready</strong></span>
             </div>
           </div>
         </div>
@@ -224,9 +224,9 @@
           <div class="flex items-center justify-between border-b border-white/10 pb-3">
             <h3 class="text-lg font-extrabold text-cyberYellow glow-yellow flex items-center gap-2">
               <Zap class="w-5 h-5 text-cyberYellow" />
-              راهنمای هوشمند و مانیتورینگ اپراتورها
+              Smart ISP Recommendations & Operator Matrix
             </h3>
-            <span class="text-[11px] text-gray-400 font-mono">ایران (ISP Matrix)</span>
+            <span class="text-[11px] text-gray-400 font-mono">ISP Matrix</span>
           </div>
 
           <div class="space-y-3.5 text-xs">
@@ -234,54 +234,54 @@
             <div class="p-4 rounded-2xl bg-white/5 border border-cyberYellow/30 space-y-2">
               <div class="flex items-center justify-between">
                 <span class="font-extrabold text-cyberYellow flex items-center gap-1.5 text-sm">
-                  📱 همراه اول (MCI)
+                  📱 MCI Mobile Network
                 </span>
                 <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30 font-bold">
-                  ۹۹.۵٪ باثبات
+                  99.5% Stable
                 </span>
               </div>
               <p class="text-gray-300 leading-relaxed">
-                بهترین ترکیب: <strong class="text-white font-semibold">VLESS-REALITY + Packet Fragment</strong> روی پورت ۴۴۳.
+                Optimal Setup: <strong class="text-white font-semibold">VLESS-REALITY + Packet Fragment</strong> on Port 443.
               </p>
               <div class="p-2.5 rounded-xl bg-black/40 border border-white/10 font-mono text-[11px] text-gray-300 flex items-center justify-between" dir="ltr">
                 <span>Fragment: 100-200, length 10-20</span>
-                <button @click="copyText('length: 100-200, interval: 10-20', 'پارامترهای فرگمنت همراه اول کپی شد')" class="text-cyberYellow hover:underline text-[10px]">کپی</button>
+                <button @click="copyText('length: 100-200, interval: 10-20', 'Fragment params copied')" class="text-cyberYellow hover:underline text-[10px]">{{ t('copy') }}</button>
               </div>
-              <p class="text-[11px] text-gray-400">SNI پیشنهادی: <code class="text-cyberYellow">archive.ubuntu.com</code> یا <code class="text-cyberYellow">pypi.org</code></p>
+              <p class="text-[11px] text-gray-400">Suggested SNI: <code class="text-cyberYellow">archive.ubuntu.com</code> or <code class="text-cyberYellow">pypi.org</code></p>
             </div>
 
             <!-- Irancell Operator Recommendation Card -->
             <div class="p-4 rounded-2xl bg-white/5 border border-cyberRed/30 space-y-2">
               <div class="flex items-center justify-between">
                 <span class="font-extrabold text-cyberRed flex items-center gap-1.5 text-sm">
-                  📡 ایرانسل (Irancell)
+                  📡 Irancell Network
                 </span>
                 <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30 font-bold">
-                  ۹۹.۲٪ باثبات
+                  99.2% Stable
                 </span>
               </div>
               <p class="text-gray-300 leading-relaxed">
-                بهترین ترکیب: <strong class="text-white font-semibold">REALITY با فینگرپرینت Chrome</strong> یا ترکیبی gRPC / WS.
+                Optimal Setup: <strong class="text-white font-semibold">REALITY with Chrome Fingerprint</strong> or gRPC / WS.
               </p>
               <div class="p-2.5 rounded-xl bg-black/40 border border-white/10 font-mono text-[11px] text-gray-300 flex items-center justify-between" dir="ltr">
                 <span>Fingerprint: chrome, Port: 2083 / 443</span>
-                <button @click="copyText('ebanking.banksepah.ir', 'دامنه SNI سفید کپی شد')" class="text-cyberRed hover:underline text-[10px]">کپی SNI</button>
+                <button @click="copyText('ebanking.banksepah.ir', 'White SNI domain copied')" class="text-cyberRed hover:underline text-[10px]">{{ t('copy') }} SNI</button>
               </div>
-              <p class="text-[11px] text-gray-400">SNI پیشنهادی: <code class="text-cyberRed">ebanking.banksepah.ir</code> یا <code class="text-cyberRed">download.microsoft.com</code></p>
+              <p class="text-[11px] text-gray-400">Suggested SNI: <code class="text-cyberRed">ebanking.banksepah.ir</code> or <code class="text-cyberRed">download.microsoft.com</code></p>
             </div>
 
             <!-- Fixed Broadband ADSL / RightTel Card -->
             <div class="p-4 rounded-2xl bg-white/5 border border-cyberYellow/30 space-y-2">
               <div class="flex items-center justify-between">
                 <span class="font-extrabold text-white flex items-center gap-1.5 text-sm">
-                  🌐 مخابرات، شاتل و فیبر نوری (ADSL/FTTH)
+                  🌐 Broadband ADSL / FTTH Fiber
                 </span>
                 <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30 font-bold">
-                  ۱۰۰٪ آنلاین
+                  100% Online
                 </span>
               </div>
               <p class="text-gray-300 leading-relaxed">
-                بهترین ترکیب: <strong class="text-white font-semibold">VLESS REALITY TCP / HTTP2</strong> روی پورت‌های عمومی ۸۰۸۰ یا ۸۴۴۳.
+                Optimal Setup: <strong class="text-white font-semibold">VLESS REALITY TCP / HTTP2</strong> on public ports 8080 or 8443.
               </p>
             </div>
 
@@ -289,14 +289,14 @@
             <div class="p-4 rounded-2xl bg-cyberRed/10 border border-cyberRed/40 space-y-2">
               <div class="flex items-center justify-between">
                 <span class="font-extrabold text-cyberRed flex items-center gap-1.5 text-sm">
-                  🛡️ پل ارتباطی شبکه‌ملی (Relay)
+                  🛡️ Intranet Bridge Relay
                 </span>
                 <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyberYellow/20 text-cyberYellow border border-cyberYellow/30 font-bold">
-                  تونل ایران
+                  Relay Tunnel
                 </span>
               </div>
               <p class="text-gray-200 leading-relaxed">
-                استفاده از <strong class="text-cyberYellow">نود ایران (Relay)</strong> و هدایت ترافیک از طریق <strong class="text-white">Gost WebSocket Encrypted Tunnel</strong>.
+                Utilizing <strong class="text-cyberYellow">Iran Relay Node</strong> and routing traffic through <strong class="text-white">Gost WebSocket Encrypted Tunnel</strong>.
               </p>
             </div>
           </div>
@@ -306,20 +306,20 @@
         <div class="glass-panel p-5 rounded-3xl space-y-3 border border-cyberYellow/30 text-xs">
           <h4 class="font-extrabold text-white flex items-center gap-2">
             <Terminal class="w-4 h-4 text-cyberYellow" />
-            آخرین رویدادهای زنده سیستم
+            Live System Activity Feed
           </h4>
           <div class="space-y-2 font-mono text-[11px]">
             <div class="flex items-center justify-between text-gray-400 bg-white/5 p-2 rounded-xl">
-              <span>[Xray Core] سینک خودکار ترافیک</span>
-              <span class="text-cyberGreen font-bold">موفق</span>
+              <span>[Xray Core] Auto Traffic Sync</span>
+              <span class="text-cyberGreen font-bold">SUCCESS</span>
             </div>
             <div class="flex items-center justify-between text-gray-400 bg-white/5 p-2 rounded-xl">
-              <span>[REALITY Keys] کلیدهای X25519</span>
-              <span class="text-cyberYellow font-bold">تولید شد</span>
+              <span>[REALITY Keys] X25519 Keypair</span>
+              <span class="text-cyberYellow font-bold">GENERATED</span>
             </div>
             <div class="flex items-center justify-between text-gray-400 bg-white/5 p-2 rounded-xl">
-              <span>[Telegram Bot] وضعیت اتصال ربات</span>
-              <span class="text-cyberGreen font-bold">فعال</span>
+              <span>[Telegram Bot] Connection Status</span>
+              <span class="text-cyberGreen font-bold">ACTIVE</span>
             </div>
           </div>
         </div>
