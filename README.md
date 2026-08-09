@@ -22,12 +22,17 @@
 
 <p align="center">
   <a href="https://youtu.be/pFEeQrtCg14" target="_blank">
-    <img src="https://img.youtube.com/vi/pFEeQrtCg14/maxresdefault.jpg" alt="Watch Nyx Panel YouTube Video Demo" width="90%" style="border-radius: 18px; border: 2px solid #FF0000;" />
+    <img src="https://i.ytimg.com/vi/pFEeQrtCg14/hqdefault.jpg" alt="Nyx Panel YouTube Video Demo" width="85%" />
   </a>
   <br />
   <br />
   <a href="https://youtu.be/pFEeQrtCg14" target="_blank">
-    <img src="https://img.shields.io/badge/▶️_تماشای_ویدیو_آموزش_و_معرفی_کامل_در_یوتیوب-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="Watch on YouTube" />
+    <img src="https://img.shields.io/badge/YouTube-Watch_Full_Video_Demo-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="Watch on YouTube" />
+  </a>
+  <br />
+  <br />
+  <a href="https://youtu.be/pFEeQrtCg14" target="_blank">
+    <span dir="rtl">🔴 <b>جهت تماشای ویدیو معرفی و آموزش کامل در یوتیوب کلیک کنید</b> 🔴</span>
   </a>
 </p>
 
@@ -61,7 +66,11 @@
 
 <div align="center">
 
-[![Nyx Panel YouTube Video](https://img.youtube.com/vi/pFEeQrtCg14/maxresdefault.jpg)](https://youtu.be/pFEeQrtCg14)
+<a href="https://youtu.be/pFEeQrtCg14" target="_blank">
+  <img src="https://i.ytimg.com/vi/pFEeQrtCg14/hqdefault.jpg" alt="Nyx Panel YouTube Video" width="85%" />
+</a>
+
+<br />
 
 👉 **[برای تماشا روی یوتیوب کلیک کنید (https://youtu.be/pFEeQrtCg14)](https://youtu.be/pFEeQrtCg14)** 👈
 
