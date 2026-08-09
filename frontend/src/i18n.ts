@@ -213,6 +213,13 @@ export const tMap = {
     sniTip4Title: '💡 Technical Tip 4: TLS 1.3 Support in REALITY Protocol',
     sniTip4Sub: 'Select target domains supporting TLS 1.3 and modern Ciphers for smooth SSL handshake.',
 
+    // Auto-Failover Keys
+    autoFailoverTitle: 'Smart Auto-Failover Protection (DPI & Blackout Bypass)',
+    autoFailoverSub: 'Live background daemon monitors SNI health. If DPI blocks active domain, it auto-switches to Whitelist SNIs without changing user subscription links.',
+    triggerFailoverBtn: '⚡ Audit & Auto-Switch Blocked SNIs Now',
+    autoFailoverStatusActive: 'Active & Monitoring (60s loop)',
+    failoverSuccessToast: 'Auto-failover check completed successfully',
+
     // Tunnels View Keys
     tunnelPortLabel: 'Tunnel Communication Port',
     kharejInboundPortLabel: 'Kharej Inbound Port',
@@ -425,6 +432,13 @@ export const tMap = {
     sniTip3Sub: 'استفاده از SNI بدون فعال بودن تکنولوژی Fragment ممکن است توسط سیستم‌های DPI زیرساخت شناسایی شود. حتماً چک‌باکس Fragment را روی اینباند فعال نگه دارید.',
     sniTip4Title: '💡 نکته فنی ۴: پشتیبانی از گواهی TLS 1.3 در پروتکل REALITY',
     sniTip4Sub: 'در پروتکل VLESS-REALITY حتماً دامنه‌هایی را انتخاب کنید که از TLS 1.3 و Cipherهای مدرن پشتیبانی می‌کنند تا دست‌تکانی SSL بدون اختلال برقرار گردد.',
+
+    // Auto-Failover Keys
+    autoFailoverTitle: 'سامانه هوشمند سوئیچ اتوماتیک SNI در زمان قطعی نت (Auto-Failover)',
+    autoFailoverSub: 'پایش لایو سلامت SNIها؛ در صورت مسدودی دامنه فعلی توسط اپراتور، به صورت هوشمند به SNIهای لیست سفید سوئیچ می‌کند بدون تغییر لینک کاربران.',
+    triggerFailoverBtn: '⚡ پایش لایو و سوئیچ اتوماتیک SNIهای مسدودشده',
+    autoFailoverStatusActive: 'فعال و در حال پایش (چک هر ۶۰ ثانیه)',
+    failoverSuccessToast: 'پایش و سوئیچ اتوماتیک SNI با موفقیت انجام شد',
 
     // Tunnels View Keys
     tunnelPortLabel: 'پورت ارتباطی تونل',

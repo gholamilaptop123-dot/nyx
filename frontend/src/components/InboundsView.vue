@@ -15,6 +15,28 @@
       </button>
     </div>
 
+    <!-- Smart Auto-Failover Banner Card -->
+    <div class="glass-panel rounded-3xl p-5 border border-cyberGreen/40 bg-gradient-to-r from-black/80 via-cyberGreen/10 to-black/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div class="space-y-1">
+        <h3 class="text-base font-extrabold text-cyberGreen glow-green flex items-center gap-2">
+          <ShieldAlert class="w-5 h-5 text-cyberGreen animate-pulse" />
+          <span>{{ t('autoFailoverTitle') }}</span>
+          <span class="px-2.5 py-0.5 rounded-full text-[10px] bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30 font-mono">{{ t('autoFailoverStatusActive') }}</span>
+        </h3>
+        <p class="text-xs text-gray-300 max-w-3xl leading-relaxed">
+          {{ t('autoFailoverSub') }}
+        </p>
+      </div>
+      <button 
+        @click="triggerAutoFailover" 
+        :disabled="failoverTriggering"
+        class="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-cyberGreen via-emerald-500 to-teal-500 text-black font-extrabold text-xs shadow-lg shadow-cyberGreen/20 hover:opacity-90 transition-all flex items-center gap-2 whitespace-nowrap border border-cyberGreen/40 disabled:opacity-50"
+      >
+        <Zap class="w-4 h-4 text-black font-bold" :class="{ 'animate-spin': failoverTriggering }" />
+        <span>{{ t('triggerFailoverBtn') }}</span>
+      </button>
+    </div>
+
     <!-- Live SNI Connection Tester Panel -->
     <div class="glass-panel rounded-3xl p-6 border border-cyberYellow/30 space-y-4">
       <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -479,11 +501,25 @@ const inboundConfigs = ref<any>(null);
 const configLoading = ref(false);
 const selectedSniPreset = ref('yahoo.com');
 
-// Live SNI Tester State
+// Live SNI Tester & Auto-Failover State
 const activeSniCat = ref('CLOUD');
 const testDomainInput = ref('arvancloud.ir');
 const testingSni = ref(false);
 const sniTestResult = ref<any>(null);
+const failoverTriggering = ref(false);
+
+async function triggerAutoFailover() {
+  failoverTriggering.value = true;
+  try {
+    const res = await axios.post('/api/sni/auto-failover/trigger');
+    props.toast?.(t('failoverSuccessToast'), 'success');
+    await fetchInbounds();
+  } catch (err: any) {
+    props.toast?.(err?.response?.data?.error || 'Failed to execute auto-failover', 'error');
+  } finally {
+    failoverTriggering.value = false;
+  }
+}
 
 const sniCategories = computed(() => [
   { id: 'CLOUD', label: t('sniCatCloud') },

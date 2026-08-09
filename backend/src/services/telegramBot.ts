@@ -5,6 +5,7 @@ import crypto from 'crypto';
 import { generateX25519Keypair } from '../xray/configGenerator';
 import { SubscriptionService } from './subscriptionService';
 import { TunnelManager } from './tunnelManager';
+import { autoFailoverService } from './autoFailoverService';
 
 const prisma = new PrismaClient();
 let currentBotInstance: TelegramBot | null = null;
@@ -12,6 +13,20 @@ const adminChatIds = new Set<number>();
 
 // Conversation state machine for interactive admin wizards
 const userStates: Record<number, { step: string; data: any }> = {};
+
+export function sendAdminNotification(message: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (!currentBotInstance) return resolve(false);
+    const dbAdminChatId = process.env.ADMIN_CHAT_ID;
+    if (dbAdminChatId) {
+      currentBotInstance.sendMessage(dbAdminChatId, message, { parse_mode: 'HTML' })
+        .then(() => resolve(true))
+        .catch(() => resolve(false));
+    } else {
+      resolve(false);
+    }
+  });
+}
 
 export function stopTelegramBot() {
   if (currentBotInstance) {
@@ -57,8 +72,9 @@ export function initTelegramBot(
       keyboard: [
         [{ text: '📊 Server Stats' }, { text: '🌐 Inbounds & Configs' }],
         [{ text: '➕ Create Config / Inbound' }, { text: '⚡ Live SNI Tester' }],
-        [{ text: '🚀 Tunnel Scripts' }, { text: '🖥️ Servers & Nodes' }],
-        [{ text: '👥 Users List' }, { text: '🚪 Admin Logout' }]
+        [{ text: '🛡️ Auto-Failover SNI' }, { text: '🚀 Tunnel Scripts' }],
+        [{ text: '🖥️ Servers & Nodes' }, { text: '👥 Users List' }],
+        [{ text: '🚪 Admin Logout' }]
       ],
       resize_keyboard: true
     };
@@ -130,6 +146,7 @@ All web panel features (config creation, traffic monitoring, live SNI testing, t
       if (text === '🌐 Inbounds & Configs' || text === '🌐 اینباندها و کانفیگ‌ها') return sendAdminInboundsList(chatId);
       if (text === '➕ Create Config / Inbound' || text === '➕ ساخت کانفیگ / اینباند') return startCreateInboundWizard(chatId);
       if (text === '⚡ Live SNI Tester' || text === '⚡ تست SNI آنلاین') return sendSniTesterMenu(chatId);
+      if (text === '🛡️ Auto-Failover SNI' || text === '🛡️ سوئیچ اتوماتیک SNI') return handleAutoFailoverTrigger(chatId);
       if (text === '🚀 Tunnel Scripts' || text === '🚀 اسکریپت تونل‌زنی') return startTunnelWizard(chatId);
       if (text === '🖥️ Servers & Nodes' || text === '🖥️ سرورها و نودها') return sendAdminNodesList(chatId);
       if (text === '👥 Users List' || text === '👥 لیست کاربران') return sendAdminUsersList(chatId);
@@ -829,6 +846,28 @@ ${infoWebUrl}`, { parse_mode: 'Markdown' });
 📉 مجموع مصرف ترافیک: *${(Number(totalBytes) / (1024 * 1024 * 1024)).toFixed(2)} GB*`;
 
     bot.sendMessage(chatId, statsText, { parse_mode: 'Markdown' });
+  }
+
+  async function handleAutoFailoverTrigger(chatId: number) {
+    bot.sendMessage(chatId, '⏳ *در حال تست دست‌تکانی SNIها و پایش سوئیچ اتوماتیک...*\nلطفاً چند ثانیه شکیبا باشید...', { parse_mode: 'Markdown' });
+    try {
+      const result = await autoFailoverService.checkAndFailoverInbounds(prisma, reloadXrayCallback || (async () => {}));
+      let msg = `✅ *گزارش سوئیچ هوشمند و پایش SNI (Auto-Failover):*\n\n` +
+        `🔹 *اینباندهای بررسی‌شده:* ${result.checkedCount}\n` +
+        `⚡ *سوئیچ‌های انجام‌شده:* ${result.switchedCount}\n\n`;
+
+      if (result.switchedCount === 0) {
+        msg += `🟢 تمام دامنه‌های SNI اینباندها فعال، باثبات و سالم هستند! نیازی به سوئیچ نبود.`;
+      } else {
+        msg += `⚠️ *جزئیات سوئیچ هوشمند اینباندها:*\n`;
+        for (const ev of result.events) {
+          msg += `• *${ev.remark}:* ${ev.oldSni} ➡️ *${ev.newSni}* (${ev.latencyMs}ms)\n`;
+        }
+      }
+      bot.sendMessage(chatId, msg, { parse_mode: 'Markdown' });
+    } catch (err) {
+      bot.sendMessage(chatId, '❌ خطا در اجرای سوئیچ هوشمند SNI.', { parse_mode: 'Markdown' });
+    }
   }
 
   return bot;

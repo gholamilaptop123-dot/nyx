@@ -10,6 +10,7 @@ import { SubscriptionService } from './services/subscriptionService';
 import { TunnelManager } from './services/tunnelManager';
 import { XrayStatsService } from './services/xrayStatsService';
 import { initTelegramBot, stopTelegramBot } from './services/telegramBot';
+import { autoFailoverService } from './services/autoFailoverService';
 import { execFile, ChildProcess } from 'child_process';
 import tls from 'tls';
 import os from 'os';
@@ -463,6 +464,20 @@ app.get('/api/sni/test', async (req, res) => {
   }
 });
 
+// Auto-Failover SNI Endpoints
+app.get('/api/sni/auto-failover/status', (req, res) => {
+  res.json(autoFailoverService.getStatus());
+});
+
+app.post('/api/sni/auto-failover/trigger', async (req, res) => {
+  try {
+    const result = await autoFailoverService.checkAndFailoverInbounds(prisma, reloadXrayService);
+    res.json({ success: true, ...result });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // 5. Multi-Node & Tunnel Generator APIs
 app.get('/api/nodes', async (req, res) => {
   try {
@@ -851,6 +866,9 @@ async function start() {
 
     // Start live Xray traffic sync
     XrayStatsService.startTrafficSyncLoop(xrayBinaryPath, 20000);
+
+    // Start Auto-Failover background monitoring daemon (checks every 60 seconds)
+    autoFailoverService.startDaemon(prisma, reloadXrayService, 60000);
 
     // Start Telegram Bot if BOT_TOKEN is present in DB or ENV
     const dbBotToken = await prisma.systemSetting.findUnique({ where: { key: 'BOT_TOKEN' } });
