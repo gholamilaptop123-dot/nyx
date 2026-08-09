@@ -1,17 +1,28 @@
 <template>
-  <div class="min-h-screen bg-darkBg text-gray-100 font-sans p-4 md:p-8 flex flex-col items-center justify-center">
+  <div class="min-h-screen bg-darkBg text-gray-100 font-sans p-4 md:p-8 flex flex-col items-center justify-center relative">
     <ToastNotification ref="toastRef" />
+
+    <!-- Language Switcher -->
+    <div class="absolute top-4 right-4 z-20">
+      <button 
+        @click="toggleLanguage" 
+        class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-bold border border-white/15 text-cyberYellow transition-all"
+      >
+        <Globe class="w-4 h-4 text-cyberYellow" />
+        <span>{{ currentLang === 'en' ? '🇮🇷 فارسی' : '🇺🇸 English' }}</span>
+      </button>
+    </div>
 
     <div v-if="loading" class="flex flex-col items-center gap-3 py-12">
       <div class="w-10 h-10 border-4 border-cyberViolet border-t-transparent rounded-full animate-spin"></div>
-      <p class="text-xs text-gray-400">در حال دریافت اطلاعات اشتراک کاربر…</p>
+      <p class="text-xs text-gray-400">{{ t('loading') }}</p>
     </div>
 
     <div v-else-if="error" class="glass-panel max-w-md w-full p-8 rounded-3xl text-center space-y-4 border border-red-500/30">
       <div class="w-12 h-12 mx-auto rounded-full bg-red-500/20 text-red-400 flex items-center justify-center">
         <AlertTriangle class="w-6 h-6" />
       </div>
-      <h2 class="text-lg font-bold text-white">خطا در دریافت اطلاعات</h2>
+      <h2 class="text-lg font-bold text-white">Error Loading Subscription</h2>
       <p class="text-xs text-gray-400 leading-relaxed">{{ error }}</p>
     </div>
 
@@ -22,7 +33,7 @@
           <img src="/logo_trans.png" alt="Nyx Panel Logo" class="w-16 h-16 md:w-20 md:h-20 object-contain drop-shadow-[0_0_20px_rgba(234,179,8,0.5)] shrink-0 hover:scale-105 transition-all" />
           <div>
             <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-cyberCyan">
-              اشتراک: {{ userData.username }}
+              {{ t('userSubTitle') }}: {{ userData.username }}
             </h1>
             <p class="text-xs text-gray-400 font-mono" dir="ltr">UUID: {{ userData.uuid }}</p>
           </div>
@@ -32,7 +43,7 @@
           :class="userData.status === 'ACTIVE' ? 'bg-cyberGreen/15 border border-cyberGreen/40 text-cyberGreen' : 'bg-red-500/15 border border-red-500/40 text-red-400'"
         >
           <span class="w-2 h-2 rounded-full" :class="userData.status === 'ACTIVE' ? 'bg-cyberGreen animate-ping' : 'bg-red-400'"></span>
-          {{ userData.status === 'ACTIVE' ? 'اشتراک فعال' : 'اشتراک منقضی / غیرفعال' }}
+          {{ userData.status === 'ACTIVE' ? t('activeStatus') : t('expiredStatus') }}
         </div>
       </div>
 
@@ -181,10 +192,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
-import { Shield, Clock, AlertTriangle, Copy, Calendar, Users } from 'lucide-vue-next';
+import { Shield, Clock, AlertTriangle, Copy, Calendar, Users, Globe } from 'lucide-vue-next';
 import QrcodeVue from 'qrcode.vue';
 import ToastNotification from './ToastNotification.vue';
 import { copyToClipboard } from '../utils/clipboard';
+import { currentLang, setLanguage, t } from '../i18n';
 
 const props = defineProps<{ uuid?: string }>();
 
@@ -194,6 +206,11 @@ const userData = ref<any>(null);
 const selectedIsp = ref('MCI');
 const activeTab = ref('sub');
 const toastRef = ref<any>(null);
+
+function toggleLanguage() {
+  const nextLang = currentLang.value === 'en' ? 'fa' : 'en';
+  setLanguage(nextLang);
+}
 
 const vlessLinks = ref<string[]>([]);
 const clashYaml = ref('');

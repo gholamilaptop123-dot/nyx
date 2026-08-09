@@ -1,5 +1,16 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-darkBg text-gray-100 px-4">
+  <div class="min-h-screen flex items-center justify-center bg-darkBg text-gray-100 px-4 relative">
+    <!-- Language Switcher in Login Screen -->
+    <div class="absolute top-6 right-6">
+      <button 
+        @click="toggleLanguage" 
+        class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-bold border border-white/15 text-cyberYellow transition-all"
+      >
+        <Globe class="w-4 h-4 text-cyberYellow" />
+        <span>{{ currentLang === 'en' ? '🇮🇷 فارسی' : '🇺🇸 English' }}</span>
+      </button>
+    </div>
+
     <div class="glass-panel max-w-md w-full p-8 rounded-3xl border border-cyberYellow/30 space-y-6 shadow-2xl relative overflow-hidden">
       <!-- Ambient Cyberpunk Glow -->
       <div class="absolute -top-20 -right-20 w-40 h-40 bg-cyberYellow/20 blur-3xl rounded-full"></div>
@@ -8,36 +19,36 @@
       <div class="text-center space-y-3 relative z-10">
         <img src="/logo_trans.png" alt="Nyx Panel Logo" class="w-32 h-32 md:w-36 md:h-36 mx-auto object-contain drop-shadow-[0_0_25px_rgba(234,179,8,0.6)] hover:scale-105 transition-all duration-300 animate-pulse" />
         <h2 class="text-2xl md:text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-cyberYellow via-red-400 to-cyberRed glow-yellow">
-          ورود به Nyx Panel
+          {{ t('loginTitle') }}
         </h2>
-        <p class="text-xs text-gray-400 font-mono">سامانه مدیریت ضد فیلترینگ و شبکه ملی</p>
+        <p class="text-xs text-gray-400 font-mono">{{ t('loginSub') }}</p>
       </div>
 
       <form @submit.prevent="handleLogin" class="space-y-4 relative z-10">
         <div class="space-y-1.5">
-          <label class="text-xs font-semibold text-gray-300">نام کاربری ادمین</label>
+          <label class="text-xs font-semibold text-gray-300">{{ t('usernameLabel') }}</label>
           <div class="relative">
-            <User class="w-4 h-4 absolute right-3.5 top-3 text-gray-400" />
+            <User class="w-4 h-4 absolute ltr:left-3.5 rtl:right-3.5 top-3 text-gray-400" />
             <input 
               v-model="username" 
               type="text" 
               placeholder="admin" 
               required
-              class="w-full bg-white/5 border border-white/10 rounded-xl pr-10 pl-4 py-2.5 text-xs text-white placeholder-gray-500 focus:border-cyberYellow outline-none"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-10 py-2.5 text-xs text-white placeholder-gray-500 focus:border-cyberYellow outline-none"
             />
           </div>
         </div>
 
         <div class="space-y-1.5">
-          <label class="text-xs font-semibold text-gray-300">کلمه عبور</label>
+          <label class="text-xs font-semibold text-gray-300">{{ t('passwordLabel') }}</label>
           <div class="relative">
-            <Lock class="w-4 h-4 absolute right-3.5 top-3 text-gray-400" />
+            <Lock class="w-4 h-4 absolute ltr:left-3.5 rtl:right-3.5 top-3 text-gray-400" />
             <input 
               v-model="password" 
               type="password" 
               placeholder="••••••••" 
               required
-              class="w-full bg-white/5 border border-white/10 rounded-xl pr-10 pl-4 py-2.5 text-xs text-white placeholder-gray-500 focus:border-cyberYellow outline-none"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-10 py-2.5 text-xs text-white placeholder-gray-500 focus:border-cyberYellow outline-none"
             />
           </div>
         </div>
@@ -52,16 +63,16 @@
           class="w-full py-3 rounded-xl bg-gradient-to-r from-cyberYellow via-red-600 to-cyberRed text-black font-extrabold text-xs shadow-lg shadow-cyberYellow/20 hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
         >
           <RefreshCw v-if="loading" class="w-4 h-4 animate-spin text-black" />
-          <span>{{ loading ? 'در حال بررسی…' : 'ورود به داشبورد' }}</span>
+          <span>{{ loading ? t('authenticating') : t('loginButton') }}</span>
         </button>
       </form>
 
       <div class="text-center space-y-2 border-t border-white/5 pt-4 text-xs text-gray-400">
-        <p>توسعه‌داده‌شده توسط <strong class="text-cyberCyan font-bold">تیم امنیتی ساینت (Cynet)</strong></p>
+        <p>{{ t('byCynet') }}</p>
         <div class="flex items-center justify-center gap-3 text-[11px]">
-          <a href="https://t.me/cynetx" target="_blank" class="hover:text-cyberCyan transition-colors">📢 تلگرام</a>
+          <a href="https://t.me/cynetx" target="_blank" class="hover:text-cyberCyan transition-colors">📢 Telegram</a>
           <span>•</span>
-          <a href="https://www.youtube.com/@cynetxir" target="_blank" class="hover:text-cyberPink transition-colors">🎥 یوتیوب</a>
+          <a href="https://www.youtube.com/@cynetxir" target="_blank" class="hover:text-cyberPink transition-colors">🎥 YouTube</a>
           <span>•</span>
           <a href="https://cynetx.ir" target="_blank" class="hover:text-cyberGreen transition-colors font-mono">🌐 cynetx.ir</a>
         </div>
@@ -73,7 +84,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import axios from 'axios';
-import { Shield, User, Lock, RefreshCw } from 'lucide-vue-next';
+import { User, Lock, RefreshCw, Globe } from 'lucide-vue-next';
+import { currentLang, setLanguage, t } from '../i18n';
 
 const emit = defineEmits(['loggedIn']);
 
@@ -81,6 +93,11 @@ const username = ref('admin');
 const password = ref('');
 const loading = ref(false);
 const errorMsg = ref('');
+
+function toggleLanguage() {
+  const nextLang = currentLang.value === 'en' ? 'fa' : 'en';
+  setLanguage(nextLang);
+}
 
 async function handleLogin() {
   loading.value = true;
@@ -98,7 +115,7 @@ async function handleLogin() {
       emit('loggedIn');
     }
   } catch (err: any) {
-    errorMsg.value = err?.response?.data?.error || 'خطا در ارتباط با سرور.';
+    errorMsg.value = err?.response?.data?.error || t('invalidAuth');
   } finally {
     loading.value = false;
   }

@@ -41,11 +41,19 @@
       <div class="flex items-center gap-3">
         <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyberGreen/10 border border-cyberGreen/30 text-cyberGreen text-xs font-semibold">
           <span class="w-2 h-2 rounded-full bg-cyberGreen animate-ping"></span>
-          آماده عبور از قطعی نت
+          {{ t('readyBypass') }}
         </div>
         <button 
+          @click="toggleLanguage" 
+          title="Switch Language"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-bold border border-white/15 text-cyberYellow transition-all"
+        >
+          <Globe class="w-4 h-4 text-cyberYellow" />
+          <span>{{ currentLang === 'en' ? '🇮🇷 فارسی' : '🇺🇸 English' }}</span>
+        </button>
+        <button 
           @click="handleLogout" 
-          title="خروج از سیستم"
+          :title="t('logout')"
           class="p-2 rounded-xl bg-white/5 hover:bg-cyberRed/20 text-gray-400 hover:text-cyberRed border border-white/10 transition-all"
         >
           <LogOut class="w-4 h-4" />
@@ -84,16 +92,16 @@
       <div class="flex items-center gap-2">
         <span class="font-semibold text-gray-200">Nyx Panel v2.0</span>
         <span class="text-gray-600">|</span>
-        <span>توسعه‌داده‌شده توسط <strong class="text-cyberYellow font-bold">تیم امنیتی ساینت (Cynet)</strong></span>
+        <span>{{ t('byCynet') }}</span>
       </div>
 
       <div class="flex items-center gap-4 text-xs">
         <a href="https://t.me/cynetx" target="_blank" class="text-gray-400 hover:text-cyberYellow transition-all flex items-center gap-1">
-          📢 کانال تلگرام (cynetx)
+          📢 Telegram (cynetx)
         </a>
         <span class="text-gray-700">•</span>
         <a href="https://www.youtube.com/@cynetxir" target="_blank" class="text-gray-400 hover:text-cyberRed transition-all flex items-center gap-1">
-          🎥 یوتیوب (@cynetxir)
+          🎥 YouTube (@cynetxir)
         </a>
         <span class="text-gray-700">•</span>
         <a href="https://cynetx.ir" target="_blank" class="text-gray-400 hover:text-cyberGreen transition-all flex items-center gap-1 font-mono">
@@ -109,7 +117,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
-import { Shield, LayoutDashboard, Users, Server, Zap, Network, Settings, LogOut } from 'lucide-vue-next';
+import { Shield, LayoutDashboard, Users, Server, Zap, Network, Settings, LogOut, Globe } from 'lucide-vue-next';
 import DashboardView from './components/DashboardView.vue';
 import UsersView from './components/UsersView.vue';
 import InboundsView from './components/InboundsView.vue';
@@ -119,23 +127,30 @@ import SettingsView from './components/SettingsView.vue';
 import SubUserView from './components/SubUserView.vue';
 import LoginView from './components/LoginView.vue';
 import ToastNotification from './components/ToastNotification.vue';
+import { currentLang, setLanguage, t } from './i18n';
 
 const authenticated = ref(false);
 const activeTab = ref('dashboard');
 const toastRef = ref<any>(null);
+
+function toggleLanguage() {
+  const nextLang = currentLang.value === 'en' ? 'fa' : 'en';
+  setLanguage(nextLang);
+}
 
 const isSubInfoPage = computed(() => {
   const p = window.location.pathname;
   return p.startsWith('/subinfo/') || p.startsWith('/sub/info/');
 });
 
-const tabs = [
-  { id: 'dashboard', name: 'داشبورد', icon: LayoutDashboard },
-  { id: 'inbounds', name: 'اینباندها و کانفیگ‌ها', icon: Network },
-  { id: 'nodes', name: 'سرورها و نودها', icon: Server },
-  { id: 'tunnels', name: 'تونل قطعی نت', icon: Zap },
-  { id: 'settings', name: 'ربات و تنظیمات', icon: Settings },
-];
+const tabs = computed(() => [
+  { id: 'dashboard', name: t('tabDashboard'), icon: LayoutDashboard },
+  { id: 'users', name: t('tabUsers'), icon: Users },
+  { id: 'inbounds', name: t('tabInbounds'), icon: Network },
+  { id: 'nodes', name: t('tabNodes'), icon: Server },
+  { id: 'tunnels', name: t('tabTunnels'), icon: Zap },
+  { id: 'settings', name: t('tabSettings'), icon: Settings },
+]);
 
 function showToast(message: string, type: 'success' | 'error' | 'info' = 'info') {
   if (toastRef.value) {
