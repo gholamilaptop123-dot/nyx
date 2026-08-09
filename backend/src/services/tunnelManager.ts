@@ -7,6 +7,7 @@ export interface TunnelParams {
   tunnelType: 'GOST' | 'RATHOLE' | 'ICMP_TUNNEL' | 'WHITE_DNS_TUNNEL' | 'IPV6_RELAY';
   whiteDnsServer?: string;
   whiteDomain?: string;
+  lang?: 'en' | 'fa';
 }
 
 export class TunnelManager {
@@ -179,71 +180,110 @@ echo "✅ DNS Tunnel Server active on UDP port 53!"
    * Generates a human-readable step-by-step guide for tunnel setup
    */
   static generateStepByStepGuide(params: TunnelParams): any {
-    const { iranIp, kharejIp, tunnelPort, targetInboundPort, secret, tunnelType } = params;
+    const { iranIp, kharejIp, tunnelPort, targetInboundPort, secret, tunnelType, lang } = params;
+    const isEn = lang === 'en';
 
     const steps: { title: string; iranStep: string; kharejStep: string }[] = [];
 
     if (tunnelType === 'GOST') {
       steps.push({
-        title: '📦 گام ۱ — نصب Gost v3',
-        iranStep: `روی سرور ایران (${iranIp}) دستور زیر را اجرا کنید:\ncurl -s https://raw.githubusercontent.com/go-gost/gost/master/install.sh | bash -s -- --version 3.0.0`,
-        kharejStep: `روی سرور خارج (${kharejIp}) دستور زیر را اجرا کنید:\ncurl -s https://raw.githubusercontent.com/go-gost/gost/master/install.sh | bash -s -- --version 3.0.0`
+        title: isEn ? '📦 Step 1 — Install Gost v3' : '📦 گام ۱ — نصب Gost v3',
+        iranStep: isEn
+          ? `Run on Iran Server (${iranIp}):\ncurl -s https://raw.githubusercontent.com/go-gost/gost/master/install.sh | bash -s -- --version 3.0.0`
+          : `روی سرور ایران (${iranIp}) دستور زیر را اجرا کنید:\ncurl -s https://raw.githubusercontent.com/go-gost/gost/master/install.sh | bash -s -- --version 3.0.0`,
+        kharejStep: isEn
+          ? `Run on Kharej Server (${kharejIp}):\ncurl -s https://raw.githubusercontent.com/go-gost/gost/master/install.sh | bash -s -- --version 3.0.0`
+          : `روی سرور خارج (${kharejIp}) دستور زیر را اجرا کنید:\ncurl -s https://raw.githubusercontent.com/go-gost/gost/master/install.sh | bash -s -- --version 3.0.0`
       });
       steps.push({
-        title: '🔌 گام ۲ — راه‌اندازی تونل',
-        iranStep: `روی سرور ایران (${iranIp}) — کلاینت:\nnohup gost -L=tcp://:${targetInboundPort}/:${targetInboundPort} -F="relay+mws://${kharejIp}:${tunnelPort}?secrets=${secret}" > /var/log/gost_iran.log 2>&1 &`,
-        kharejStep: `روی سرور خارج (${kharejIp}) — سرور:\nnohup gost -L="relay+mws://:${tunnelPort}?secrets=${secret}" > /var/log/gost_kharej.log 2>&1 &`
+        title: isEn ? '🔌 Step 2 — Launch Tunnel' : '🔌 گام ۲ — راه‌اندازی تونل',
+        iranStep: isEn
+          ? `Run on Iran Server (${iranIp}) — Client mode:\nnohup gost -L="tcp://:${targetInboundPort}/127.0.0.1:${targetInboundPort}" -F="relay+mws://${kharejIp}:${tunnelPort}?secrets=${secret}" > /var/log/gost_iran.log 2>&1 &`
+          : `روی سرور ایران (${iranIp}) — کلاینت:\nnohup gost -L="tcp://:${targetInboundPort}/127.0.0.1:${targetInboundPort}" -F="relay+mws://${kharejIp}:${tunnelPort}?secrets=${secret}" > /var/log/gost_iran.log 2>&1 &`,
+        kharejStep: isEn
+          ? `Run on Kharej Server (${kharejIp}) — Listener mode:\nnohup gost -L="relay+mws://:${tunnelPort}?secrets=${secret}" > /var/log/gost_kharej.log 2>&1 &`
+          : `روی سرور خارج (${kharejIp}) — سرور:\nnohup gost -L="relay+mws://:${tunnelPort}?secrets=${secret}" > /var/log/gost_kharej.log 2>&1 &`
       });
       steps.push({
-        title: '✅ گام ۳ — تأیید اتصال',
-        iranStep: `از ایران تست کنید:\ncurl -v telnet://${iranIp}:${targetInboundPort}\nیا:\ncat /var/log/gost_iran.log`,
-        kharejStep: `از خارج تست کنید:\ncat /var/log/gost_kharej.log\nیا با netstat پورت ${tunnelPort} را چک کنید`
+        title: isEn ? '✅ Step 3 — Verify Connection' : '✅ گام ۳ — تأیید اتصال',
+        iranStep: isEn
+          ? `Verify from Iran:\ncurl -v telnet://${iranIp}:${targetInboundPort}\nor check log:\ncat /var/log/gost_iran.log`
+          : `از ایران تست کنید:\ncurl -v telnet://${iranIp}:${targetInboundPort}\nیا:\ncat /var/log/gost_iran.log`,
+        kharejStep: isEn
+          ? `Verify from Kharej:\ncat /var/log/gost_kharej.log\nor check listening port ${tunnelPort}`
+          : `از خارج تست کنید:\ncat /var/log/gost_kharej.log\nیا با netstat پورت ${tunnelPort} را چک کنید`
       });
     } else if (tunnelType === 'RATHOLE') {
       steps.push({
-        title: '📦 گام ۱ — نصب Rathole',
-        iranStep: `روی سرور ایران (${iranIp}):\nmkdir -p /opt/rathole && cd /opt/rathole\nwget -O rathole.zip https://github.com/rapiz1/rathole/releases/latest/download/rathole-x86_64-unknown-linux-gnu.zip\nunzip -o rathole.zip && chmod +x rathole`,
-        kharejStep: `روی سرور خارج (${kharejIp}):\nmkdir -p /opt/rathole && cd /opt/rathole\nwget -O rathole.zip https://github.com/rapiz1/rathole/releases/latest/download/rathole-x86_64-unknown-linux-gnu.zip\nunzip -o rathole.zip && chmod +x rathole`
+        title: isEn ? '📦 Step 1 — Install Rathole' : '📦 گام ۱ — نصب Rathole',
+        iranStep: isEn
+          ? `Run on Iran Server (${iranIp}):\nmkdir -p /opt/rathole && cd /opt/rathole\nwget -O rathole.zip https://github.com/rapiz1/rathole/releases/latest/download/rathole-x86_64-unknown-linux-gnu.zip\nunzip -o rathole.zip && chmod +x rathole`
+          : `روی سرور ایران (${iranIp}):\nmkdir -p /opt/rathole && cd /opt/rathole\nwget -O rathole.zip https://github.com/rapiz1/rathole/releases/latest/download/rathole-x86_64-unknown-linux-gnu.zip\nunzip -o rathole.zip && chmod +x rathole`,
+        kharejStep: isEn
+          ? `Run on Kharej Server (${kharejIp}):\nmkdir -p /opt/rathole && cd /opt/rathole\nwget -O rathole.zip https://github.com/rapiz1/rathole/releases/latest/download/rathole-x86_64-unknown-linux-gnu.zip\nunzip -o rathole.zip && chmod +x rathole`
+          : `روی سرور خارج (${kharejIp}):\nmkdir -p /opt/rathole && cd /opt/rathole\nwget -O rathole.zip https://github.com/rapiz1/rathole/releases/latest/download/rathole-x86_64-unknown-linux-gnu.zip\nunzip -o rathole.zip && chmod +x rathole`
       });
       steps.push({
-        title: '🔌 گام ۲ — پیکربندی و اجرا',
-        iranStep: `روی سرور ایران — ایجاد فایل client.toml:\n[client]\nremote_addr = "${kharejIp}:${tunnelPort}"\ndefault_token = "${secret}"\n[client.services.nyx_proxy]\ntype = "tcp"\nlocal_addr = "127.0.0.1:${targetInboundPort}"\n\nسپس اجرا: nohup ./rathole client.toml > /var/log/rathole_iran.log 2>&1 &`,
-        kharejStep: `روی سرور خارج — ایجاد فایل server.toml:\n[server]\nbind_addr = "0.0.0.0:${tunnelPort}"\ndefault_token = "${secret}"\n[server.services.nyx_proxy]\ntype = "tcp"\nbind_addr = "0.0.0.0:${targetInboundPort}"\n\nسپس اجرا: nohup ./rathole server.toml > /var/log/rathole_kharej.log 2>&1 &`
+        title: isEn ? '🔌 Step 2 — Configure & Start Service' : '🔌 گام ۲ — پیکربندی و اجرا',
+        iranStep: isEn
+          ? `On Iran Server — Create client.toml:\n[client]\nremote_addr = "${kharejIp}:${tunnelPort}"\ndefault_token = "${secret}"\n[client.services.nyx_proxy]\ntype = "tcp"\nlocal_addr = "127.0.0.1:${targetInboundPort}"\n\nRun client: nohup ./rathole client.toml > /var/log/rathole_iran.log 2>&1 &`
+          : `روی سرور ایران — ایجاد فایل client.toml:\n[client]\nremote_addr = "${kharejIp}:${tunnelPort}"\ndefault_token = "${secret}"\n[client.services.nyx_proxy]\ntype = "tcp"\nlocal_addr = "127.0.0.1:${targetInboundPort}"\n\nسپس اجرا: nohup ./rathole client.toml > /var/log/rathole_iran.log 2>&1 &`,
+        kharejStep: isEn
+          ? `On Kharej Server — Create server.toml:\n[server]\nbind_addr = "0.0.0.0:${tunnelPort}"\ndefault_token = "${secret}"\n[server.services.nyx_proxy]\ntype = "tcp"\nbind_addr = "0.0.0.0:${targetInboundPort}"\n\nRun server: nohup ./rathole server.toml > /var/log/rathole_kharej.log 2>&1 &`
+          : `روی سرور خارج — ایجاد فایل server.toml:\n[server]\nbind_addr = "0.0.0.0:${tunnelPort}"\ndefault_token = "${secret}"\n[server.services.nyx_proxy]\ntype = "tcp"\nbind_addr = "0.0.0.0:${targetInboundPort}"\n\nسپس اجرا: nohup ./rathole server.toml > /var/log/rathole_kharej.log 2>&1 &`
       });
     } else if (tunnelType === 'ICMP_TUNNEL') {
       steps.push({
-        title: '⚡ گام ۱ — نصب PingTunnel',
-        iranStep: `روی سرور ایران (${iranIp}):\nmkdir -p /opt/pingtunnel && cd /opt/pingtunnel\nwget https://github.com/esrrhs/pingtunnel/releases/latest/download/pingtunnel_linux_amd64.zip\nunzip -o pingtunnel_linux_amd64.zip && chmod +x pingtunnel`,
-        kharejStep: `روی سرور خارج (${kharejIp}):\nmkdir -p /opt/pingtunnel && cd /opt/pingtunnel\nwget https://github.com/esrrhs/pingtunnel/releases/latest/download/pingtunnel_linux_amd64.zip\nunzip -o pingtunnel_linux_amd64.zip && chmod +x pingtunnel`
+        title: isEn ? '⚡ Step 1 — Install PingTunnel' : '⚡ گام ۱ — نصب PingTunnel',
+        iranStep: isEn
+          ? `Run on Iran Server (${iranIp}):\nmkdir -p /opt/pingtunnel && cd /opt/pingtunnel\nwget https://github.com/esrrhs/pingtunnel/releases/latest/download/pingtunnel_linux_amd64.zip\nunzip -o pingtunnel_linux_amd64.zip && chmod +x pingtunnel`
+          : `روی سرور ایران (${iranIp}):\nmkdir -p /opt/pingtunnel && cd /opt/pingtunnel\nwget https://github.com/esrrhs/pingtunnel/releases/latest/download/pingtunnel_linux_amd64.zip\nunzip -o pingtunnel_linux_amd64.zip && chmod +x pingtunnel`,
+        kharejStep: isEn
+          ? `Run on Kharej Server (${kharejIp}):\nmkdir -p /opt/pingtunnel && cd /opt/pingtunnel\nwget https://github.com/esrrhs/pingtunnel/releases/latest/download/pingtunnel_linux_amd64.zip\nunzip -o pingtunnel_linux_amd64.zip && chmod +x pingtunnel`
+          : `روی سرور خارج (${kharejIp}):\nmkdir -p /opt/pingtunnel && cd /opt/pingtunnel\nwget https://github.com/esrrhs/pingtunnel/releases/latest/download/pingtunnel_linux_amd64.zip\nunzip -o pingtunnel_linux_amd64.zip && chmod +x pingtunnel`
       });
       steps.push({
-        title: '🔌 گام ۲ — راه‌اندازی سرور ICMP (خارج اول)',
-        iranStep: `منتظر بمانید تا سرور خارج راه‌اندازی شود.`,
-        kharejStep: `ابتدا روی سرور خارج (${kharejIp}) ICMP را فعال کنید:\nsysctl -w net.ipv4.icmp_echo_ignore_all=1\nnohup ./pingtunnel -type server -key ${secret} > /var/log/pingtunnel_kharej.log 2>&1 &`
+        title: isEn ? '🔌 Step 2 — Start ICMP Server (Kharej Node First)' : '🔌 گام ۲ — راه‌اندازی سرور ICMP (خارج اول)',
+        iranStep: isEn ? `Wait for Kharej server setup.` : `منتظر بمانید تا سرور خارج راه‌اندازی شود.`,
+        kharejStep: isEn
+          ? `Enable ICMP listener on Kharej (${kharejIp}):\nsysctl -w net.ipv4.icmp_echo_ignore_all=1\nnohup ./pingtunnel -type server -key ${secret} > /var/log/pingtunnel_kharej.log 2>&1 &`
+          : `ابتدا روی سرور خارج (${kharejIp}) ICMP را فعال کنید:\nsysctl -w net.ipv4.icmp_echo_ignore_all=1\nnohup ./pingtunnel -type server -key ${secret} > /var/log/pingtunnel_kharej.log 2>&1 &`
       });
       steps.push({
-        title: '🔌 گام ۳ — راه‌اندازی کلاینت ICMP (ایران)',
-        iranStep: `روی سرور ایران (${iranIp}):\nnohup ./pingtunnel -type client -l :${targetInboundPort} -s ${kharejIp} -t 127.0.0.1:${targetInboundPort} -key ${secret} > /var/log/pingtunnel_iran.log 2>&1 &`,
-        kharejStep: `سرور خارج در حال اجرا است. لاگ را بررسی کنید:\ncat /var/log/pingtunnel_kharej.log`
+        title: isEn ? '🔌 Step 3 — Start ICMP Client (Iran Node)' : '🔌 گام ۳ — راه‌اندازی کلاینت ICMP (ایران)',
+        iranStep: isEn
+          ? `Run on Iran Server (${iranIp}):\nnohup ./pingtunnel -type client -l :${targetInboundPort} -s ${kharejIp} -t 127.0.0.1:${targetInboundPort} -key ${secret} > /var/log/pingtunnel_iran.log 2>&1 &`
+          : `روی سرور ایران (${iranIp}):\nnohup ./pingtunnel -type client -l :${targetInboundPort} -s ${kharejIp} -t 127.0.0.1:${targetInboundPort} -key ${secret} > /var/log/pingtunnel_iran.log 2>&1 &`,
+        kharejStep: isEn
+          ? `Kharej server is running. Check log:\ncat /var/log/pingtunnel_kharej.log`
+          : `سرور خارج در حال اجرا است. لاگ را بررسی کنید:\ncat /var/log/pingtunnel_kharej.log`
       });
     } else if (tunnelType === 'IPV6_RELAY') {
       steps.push({
-        title: '🌐 گام ۱ — فعال‌سازی IP Forwarding',
-        iranStep: `روی سرور ایران (${iranIp}):\necho 1 > /proc/sys/net/ipv4/ip_forward\niptables -t nat -A PREROUTING -p tcp --dport ${targetInboundPort} -j DNAT --to-destination ${kharejIp}:${targetInboundPort}\niptables -t nat -A POSTROUTING -p tcp -d ${kharejIp} --dport ${targetInboundPort} -j MASQUERADE\n\nبرای دائمی کردن:\necho "net.ipv4.ip_forward=1" >> /etc/sysctl.conf && sysctl -p`,
-        kharejStep: `هیچ تنظیمی لازم نیست. سرور Xray روی پورت ${targetInboundPort} فعال می‌ماند.`
+        title: isEn ? '🌐 Step 1 — Enable IP Forwarding (IPTables NAT)' : '🌐 گام ۱ — فعال‌سازی IP Forwarding',
+        iranStep: isEn
+          ? `Run on Iran Server (${iranIp}):\necho 1 > /proc/sys/net/ipv4/ip_forward\niptables -t nat -A PREROUTING -p tcp --dport ${targetInboundPort} -j DNAT --to-destination ${kharejIp}:${targetInboundPort}\niptables -t nat -A POSTROUTING -p tcp -d ${kharejIp} --dport ${targetInboundPort} -j MASQUERADE\n\nTo make persistent:\necho "net.ipv4.ip_forward=1" >> /etc/sysctl.conf && sysctl -p`
+          : `روی سرور ایران (${iranIp}):\necho 1 > /proc/sys/net/ipv4/ip_forward\niptables -t nat -A PREROUTING -p tcp --dport ${targetInboundPort} -j DNAT --to-destination ${kharejIp}:${targetInboundPort}\niptables -t nat -A POSTROUTING -p tcp -d ${kharejIp} --dport ${targetInboundPort} -j MASQUERADE\n\nبرای دائمی کردن:\necho "net.ipv4.ip_forward=1" >> /etc/sysctl.conf && sysctl -p`,
+        kharejStep: isEn
+          ? `No special setup needed. Xray core continues listening on port ${targetInboundPort}.`
+          : `هیچ تنظیمی لازم نیست. سرور Xray روی پورت ${targetInboundPort} فعال می‌ماند.`
       });
     } else {
       steps.push({
-        title: 'راهنمای عمومی',
-        iranStep: `اسکریپت سرور ایران را اجرا کنید.`,
-        kharejStep: `اسکریپت سرور خارج را اجرا کنید.`
+        title: isEn ? 'General Setup Guide' : 'راهنمای عمومی',
+        iranStep: isEn ? `Execute script on Iran server.` : `اسکریپت سرور ایران را اجرا کنید.`,
+        kharejStep: isEn ? `Execute script on Kharej server.` : `اسکریپت سرور خارج را اجرا کنید.`
       });
     }
 
     steps.push({
-      title: '🔄 گام نهایی — تنظیم کلاینت کاربر',
-      iranStep: `کاربران به جای IP سرور خارج (${kharejIp})، آدرس IP سرور ایران (${iranIp}) را در کانفیگ وارد کنند.\nپورت: ${targetInboundPort}`,
-      kharejStep: `سرور Xray روی خارج همانطور که بود کار می‌کند. نودهای واسط ایران ترافیک را به آن هدایت می‌کنند.`
+      title: isEn ? '🔄 Final Step — Configure User Client' : '🔄 گام نهایی — تنظیم کلاینت کاربر',
+      iranStep: isEn
+        ? `Users replace Kharej IP (${kharejIp}) with Iran IP (${iranIp}) in their V2ray client configs.\nPort: ${targetInboundPort}`
+        : `کاربران به جای IP سرور خارج (${kharejIp})، آدرس IP سرور ایران (${iranIp}) را در کانفیگ وارد کنند.\nپورت: ${targetInboundPort}`,
+      kharejStep: isEn
+        ? `Kharej Xray Core listens natively. Iran relay node proxies all client traffic to it.`
+        : `سرور Xray روی خارج همانطور که بود کار می‌کند. نودهای واسط ایران ترافیک را به آن هدایت می‌کنند.`
     });
 
     return {

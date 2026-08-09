@@ -505,7 +505,7 @@ app.delete('/api/nodes/:id', async (req, res) => {
 
 app.post('/api/nodes/tunnel-script', async (req, res) => {
   try {
-    const { iranIp, kharejIp, tunnelPort, targetInboundPort, secret, tunnelType, whiteDnsServer, whiteDomain } = req.body;
+    const { iranIp, kharejIp, tunnelPort, targetInboundPort, secret, tunnelType, whiteDnsServer, whiteDomain, lang } = req.body;
     const hostIp = (req.headers.host ? req.headers.host.split(':')[0] : SERVER_IP);
     const params = {
       iranIp: iranIp || 'IRAN_SERVER_IP',
@@ -515,7 +515,8 @@ app.post('/api/nodes/tunnel-script', async (req, res) => {
       secret: secret || 'NyxSecret123',
       tunnelType: tunnelType || 'GOST',
       whiteDnsServer,
-      whiteDomain
+      whiteDomain,
+      lang: lang || 'en'
     };
 
     const iranScript = TunnelManager.generateIranScript(params as any);

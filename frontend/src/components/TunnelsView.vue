@@ -174,7 +174,7 @@ import { ref } from 'vue';
 import axios from 'axios';
 import { Zap, Copy, Check, Terminal, FileText, ArrowLeftRight, Code, BookOpen } from 'lucide-vue-next';
 import { copyToClipboard } from '../utils/clipboard';
-import { t } from '../i18n';
+import { t, currentLang } from '../i18n';
 
 const props = defineProps<{ toast?: (msg: string, type?: 'success' | 'error' | 'info') => void }>();
 
@@ -196,7 +196,8 @@ const stepGuide = ref<any>(null);
 
 async function generateScripts() {
   try {
-    const res = await axios.post('/api/nodes/tunnel-script', params.value);
+    const payload = { ...params.value, lang: currentLang.value };
+    const res = await axios.post('/api/nodes/tunnel-script', payload);
     iranScript.value = res.data.iranScript;
     kharejScript.value = res.data.kharejScript;
     stepGuide.value = res.data.stepGuide;
