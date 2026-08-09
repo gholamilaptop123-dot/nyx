@@ -21,10 +21,10 @@
         <div>
           <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
             <Activity class="w-5 h-5 text-cyberYellow" />
-            <span>سامانه پایش و تست زنده دامنه‌های SNI (ارزیابی گذر از اینترنت ملی)</span>
+            <span>{{ t('sniTesterHeading') }}</span>
           </h3>
           <p class="text-xs text-gray-400 mt-1">
-            عملکرد هر SNI متغیر است و ممکن است روی همراه اول، ایرانسل یا در شرایط قطعی نت متفاوت باشد. پیش از ساخت کانفیگ، وضعیت اتصال دامنه را تست کنید.
+            {{ t('sniTesterHeadingSub') }}
           </p>
         </div>
       </div>
@@ -57,7 +57,7 @@
 
         <!-- Custom Domain Test Box -->
         <div class="p-3 bg-black/60 rounded-2xl border border-white/10 flex flex-col justify-between space-y-2">
-          <label class="text-xs text-gray-400">تست دامنه دلخواه (Custom SNI):</label>
+          <label class="text-xs text-gray-400">{{ t('customSniTestLabel') }}</label>
           <div class="flex items-center gap-2">
             <input 
               v-model="testDomainInput"
@@ -72,7 +72,7 @@
               class="px-3 py-1.5 rounded-xl bg-cyberYellow text-black font-bold text-xs hover:opacity-90 transition-all shrink-0 flex items-center gap-1"
             >
               <RefreshCw v-if="testingSni" class="w-3.5 h-3.5 animate-spin" />
-              <span>تست</span>
+              <span>{{ t('testBtn') }}</span>
             </button>
           </div>
 
@@ -92,40 +92,40 @@
         <div class="p-3 rounded-2xl bg-cyberYellow/10 border border-cyberYellow/30 space-y-1">
           <div class="flex items-center gap-1.5 text-cyberYellow font-bold">
             <AlertTriangle class="w-4 h-4 shrink-0" />
-            <span>⚠️ هشدار ۱: تفاوت رفتار اپراتورها (MCI / Irancell / ADSL)</span>
+            <span>{{ t('sniWarning1Title') }}</span>
           </div>
           <p class="text-[11px] text-gray-300 leading-relaxed">
-            دامنه‌ای که روی همراه اول پاسخ می‌دهد ممکن است روی ایرانسل یا شاتل مسدود باشد. قبل از ارائه عمومی کانفیگ، حتماً پایش زنده اتصال را انجام دهید.
+            {{ t('sniWarning1Sub') }}
           </p>
         </div>
 
         <div class="p-3 rounded-2xl bg-cyberRed/10 border border-cyberRed/30 space-y-1">
           <div class="flex items-center gap-1.5 text-cyberRed font-bold">
             <ShieldAlert class="w-4 h-4 shrink-0" />
-            <span>⚠️ هشدار ۲: تغییر رفتار فیلترینگ در قطعی نت ملی</span>
+            <span>{{ t('sniWarning2Title') }}</span>
           </div>
           <p class="text-[11px] text-gray-300 leading-relaxed">
-            در زمان قطعی کامل اینترنت بین‌الملل، سیستم لیست سفید (Whitelist) فعال می‌شود. در این شرایط دامنه‌های شاپرک (درگاه‌های بانکی) و ابر آروان بالاترین پایداری را دارند.
+            {{ t('sniWarning2Sub') }}
           </p>
         </div>
 
         <div class="p-3 rounded-2xl bg-cyberGreen/10 border border-cyberGreen/30 space-y-1">
           <div class="flex items-center gap-1.5 text-cyberGreen font-bold">
             <Zap class="w-4 h-4 shrink-0" />
-            <span>⚡ نکته فنی ۳: الزام ترکیب SNI با تکنولوژی Packet Fragment</span>
+            <span>{{ t('sniTip3Title') }}</span>
           </div>
           <p class="text-[11px] text-gray-300 leading-relaxed">
-            استفاده از SNI بدون فعال بودن تکنولوژی Fragment ممکن است توسط سیستم‌های DPI زیرساخت شناسایی شود. حتماً چک‌باکس Fragment را روی اینباند فعال نگه دارید.
+            {{ t('sniTip3Sub') }}
           </p>
         </div>
 
         <div class="p-3 rounded-2xl bg-blue-500/10 border border-blue-500/30 space-y-1">
           <div class="flex items-center gap-1.5 text-blue-400 font-bold">
             <Info class="w-4 h-4 shrink-0" />
-            <span>💡 نکته فنی ۴: پشتیبانی از گواهی TLS 1.3 در پروتکل REALITY</span>
+            <span>{{ t('sniTip4Title') }}</span>
           </div>
           <p class="text-[11px] text-gray-300 leading-relaxed">
-            در پروتکل VLESS-REALITY حتماً دامنه‌هایی را انتخاب کنید که از TLS 1.3 و Cipherهای مدرن پشتیبانی می‌کنند تا دست‌تکانی SSL بدون اختلال برقرار گردد.
+            {{ t('sniTip4Sub') }}
           </p>
         </div>
       </div>
@@ -485,15 +485,15 @@ const testDomainInput = ref('arvancloud.ir');
 const testingSni = ref(false);
 const sniTestResult = ref<any>(null);
 
-const sniCategories = [
-  { id: 'CLOUD', label: '☁️ ابر و CDN داخلی' },
-  { id: 'SHAPARAK', label: '💳 درگاه بانکی/شاپرک' },
-  { id: 'APPS', label: '🚗 سوپر اپ‌ها' },
-  { id: 'GOV', label: '🏛️ خدمات دولتی' },
-  { id: 'REPOS', label: '📦 مخازن نرم‌افزار' },
-  { id: 'SSL', label: '🔒 مراجع SSL' },
-  { id: 'GENERAL', label: '🌐 بین‌المللی باثبات' },
-];
+const sniCategories = computed(() => [
+  { id: 'CLOUD', label: t('sniCatCloud') },
+  { id: 'SHAPARAK', label: t('sniCatBanking') },
+  { id: 'APPS', label: t('sniCatApps') },
+  { id: 'GOV', label: t('sniCatGov') },
+  { id: 'REPOS', label: t('sniCatRepos') },
+  { id: 'SSL', label: t('sniCatSsl') },
+  { id: 'GENERAL', label: t('sniCatGeneral') },
+]);
 
 const sniLists: Record<string, string[]> = {
   CLOUD: ['arvancloud.ir', 'n2a.arvancloud.ir', 'iran.liara.run', 'storage.iran.liara.ir', 'derak.cloud', 'asiatech.ir', 'hostiran.net'],

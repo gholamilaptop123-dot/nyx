@@ -217,19 +217,19 @@ const clashYaml = ref('');
 const singboxJson = ref<any>(null);
 const subUrl = ref('');
 
-const configTabs = [
-  { id: 'sub', label: 'Subscription & QR' },
-  { id: 'vless', label: 'VLESS Links' },
+const configTabs = computed(() => [
+  { id: 'sub', label: currentLang.value === 'fa' ? 'سابسکریپشن & QR' : 'Subscription & QR' },
+  { id: 'vless', label: currentLang.value === 'fa' ? 'لینک‌های VLESS' : 'VLESS Links' },
   { id: 'clash', label: 'Clash Meta' },
   { id: 'singbox', label: 'Sing-Box' },
-];
+]);
 
-const ispOptions = [
-  { id: 'DEFAULT', label: 'General', activeClass: 'bg-cyberViolet text-white' },
-  { id: 'MCI', label: 'MCI', activeClass: 'bg-cyberPink text-white' },
-  { id: 'IRANCELL', label: 'Irancell', activeClass: 'bg-cyberCyan text-black font-bold' },
-  { id: 'WHITE_SNI', label: 'White SNI', activeClass: 'bg-cyberGreen text-black font-bold' },
-];
+const ispOptions = computed(() => [
+  { id: 'DEFAULT', label: currentLang.value === 'fa' ? 'عمومی' : 'General', activeClass: 'bg-cyberViolet text-white' },
+  { id: 'MCI', label: t('operatorMci'), activeClass: 'bg-cyberPink text-white' },
+  { id: 'IRANCELL', label: t('operatorIrancell'), activeClass: 'bg-cyberCyan text-black font-bold' },
+  { id: 'WHITE_SNI', label: t('operatorWhite'), activeClass: 'bg-cyberGreen text-black font-bold' },
+]);
 
 const usedGb = computed(() => {
   if (!userData.value) return '0.00';
@@ -254,24 +254,33 @@ const usagePercent = computed(() => {
 
 const expireText = computed(() => {
   if (!userData.value || !userData.value.expireDate) return t('unlimited');
-  return new Date(userData.value.expireDate).toLocaleDateString();
+  return currentLang.value === 'fa'
+    ? new Date(userData.value.expireDate).toLocaleDateString('fa-IR')
+    : new Date(userData.value.expireDate).toLocaleDateString();
 });
 
 const daysLeftText = computed(() => {
-  if (!userData.value || !userData.value.expireDate) return 'Time limit: Unlimited';
+  if (!userData.value || !userData.value.expireDate) return currentLang.value === 'fa' ? 'مدت زمان: نامحدود' : 'Time limit: Unlimited';
   const diff = new Date(userData.value.expireDate).getTime() - new Date().getTime();
   const days = Math.ceil(diff / (1000 * 3600 * 24));
+  if (currentLang.value === 'fa') {
+    return days > 0 ? `${days} روز باقی‌مانده` : 'منقضی شده';
+  }
   return days > 0 ? `${days} Days remaining` : 'Expired';
 });
 
 const createdAtText = computed(() => {
-  if (!userData.value || !userData.value.createdAt) return 'Registered';
-  return new Date(userData.value.createdAt).toLocaleDateString();
+  if (!userData.value || !userData.value.createdAt) return currentLang.value === 'fa' ? 'ثبت شده در سیستم' : 'Registered';
+  return currentLang.value === 'fa'
+    ? new Date(userData.value.createdAt).toLocaleDateString('fa-IR')
+    : new Date(userData.value.createdAt).toLocaleDateString();
 });
 
 const maxDevicesText = computed(() => {
-  if (!userData.value || !userData.value.maxDevices) return '2 Devices (Default)';
-  return `${userData.value.maxDevices} Devices (IP Limit)`;
+  if (!userData.value || !userData.value.maxDevices) return currentLang.value === 'fa' ? '۲ کاربره همزمان (پیش‌فرض)' : '2 Devices (Default)';
+  return currentLang.value === 'fa'
+    ? `${userData.value.maxDevices} دستگاه همزمان (محدودیت IP)`
+    : `${userData.value.maxDevices} Devices (IP Limit)`;
 });
 
 async function loadUserData() {

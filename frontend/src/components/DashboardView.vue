@@ -135,9 +135,9 @@
           <div>
             <h3 class="text-lg font-extrabold text-cyberYellow glow-yellow flex items-center gap-2">
               <ShieldAlert class="w-5 h-5 text-cyberYellow" />
-              Network Protocol Stability Matrix
+              {{ t('protoMatrixTitle') }}
             </h3>
-            <p class="text-xs text-gray-400 mt-0.5">Operational status, latency response, and active connection technologies</p>
+            <p class="text-xs text-gray-400 mt-0.5">{{ t('protoMatrixSub') }}</p>
           </div>
           <span class="text-xs text-cyberGreen font-bold font-mono bg-cyberGreen/10 border border-cyberGreen/30 px-3 py-1 rounded-full">
             Xray Core: {{ stats.systemHealth.xrayStatus }}
@@ -152,7 +152,7 @@
                 <span class="w-3 h-3 rounded-full bg-cyberGreen shadow-sm shadow-cyberGreen animate-ping"></span>
                 <h4 class="text-sm font-extrabold text-white flex items-center gap-2">
                   <span>VLESS + REALITY (X25519)</span>
-                  <span class="text-[10px] bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30 px-2 py-0.5 rounded-md">Main Protocol</span>
+                  <span class="text-[10px] bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30 px-2 py-0.5 rounded-md">{{ t('mainProtocol') }}</span>
                 </h4>
               </div>
               <span class="px-3 py-1 text-xs rounded-full bg-cyberGreen/20 text-cyberGreen font-extrabold border border-cyberGreen/30">
@@ -160,12 +160,12 @@
               </span>
             </div>
             <p class="text-xs text-gray-300 leading-relaxed pr-6">
-              Full TLS emulation via REALITY protocol without needing domain name or SSL certificates.
+              {{ t('vlessRealityDesc') }}
             </p>
             <div class="flex flex-wrap items-center gap-4 text-[11px] text-gray-400 pr-6 pt-1 border-t border-white/5">
-              <span>⚡ Avg Latency: <strong class="text-cyberYellow font-mono" dir="ltr">16 ms</strong></span>
-              <span>🔒 SSL Mode: <strong class="text-cyberGreen">Domainless (REALITY Mask)</strong></span>
-              <span>📱 Operator Support: <strong class="text-white">MCI, Irancell, Rightel & Fiber</strong></span>
+              <span>⚡ {{ t('avgLatency') }}: <strong class="text-cyberYellow font-mono" dir="ltr">16 ms</strong></span>
+              <span>🔒 {{ t('sslStatus') }}: <strong class="text-cyberGreen">{{ t('domainlessReality') }}</strong></span>
+              <span>📱 {{ t('operatorSupport') }}: <strong class="text-white">{{ t('allOperators') }}</strong></span>
             </div>
           </div>
 
@@ -184,12 +184,12 @@
               </span>
             </div>
             <p class="text-xs text-gray-300 leading-relaxed pr-6">
-              Fragmented initial packet delivery to bypass DPI inspection algorithms.
+              {{ t('fragmentDesc') }}
             </p>
             <div class="flex flex-wrap items-center gap-4 text-[11px] text-gray-400 pr-6 pt-1 border-t border-white/5">
-              <span>🎯 Packet Size: <strong class="text-cyberYellow font-mono" dir="ltr">100-200 Bytes</strong></span>
-              <span>📊 Delivery Rate: <strong class="text-cyberGreen font-mono">99.9%</strong></span>
-              <span>🛡️ DPI Bypass: <strong class="text-cyberYellow">Active</strong></span>
+              <span>🎯 {{ t('packetSize') }}: <strong class="text-cyberYellow font-mono" dir="ltr">100-200 Bytes</strong></span>
+              <span>📊 {{ t('deliveryRate') }}: <strong class="text-cyberGreen font-mono">99.9%</strong></span>
+              <span>🛡️ {{ t('dpiBypass') }}: <strong class="text-cyberYellow">{{ t('activeStatus') }}</strong></span>
             </div>
           </div>
 
@@ -200,19 +200,19 @@
                 <span class="w-3 h-3 rounded-full bg-cyberYellow shadow-sm shadow-cyberYellow"></span>
                 <h4 class="text-sm font-extrabold text-white flex items-center gap-2">
                   <span>Gost v3 Intranet Tunnel</span>
-                  <span class="text-[10px] bg-cyberRed/20 text-cyberRed border border-cyberRed/30 px-2 py-0.5 rounded-md">Dedicated Tunnel</span>
+                  <span class="text-[10px] bg-cyberRed/20 text-cyberRed border border-cyberRed/30 px-2 py-0.5 rounded-md">{{ t('dedicatedTunnel') }}</span>
                 </h4>
               </div>
               <span class="px-3 py-1 text-xs rounded-full bg-cyberYellow/20 text-cyberYellow font-extrabold border border-cyberYellow/30">
-                🛡️ Ready for Intranet Tunneling
+                🛡️ {{ t('readyBypass') }}
               </span>
             </div>
             <p class="text-xs text-gray-300 leading-relaxed pr-6">
-              Encrypted WebSocket bridge between domestic and international nodes for stable routing.
+              {{ t('gostTunnelDesc') }}
             </p>
             <div class="flex flex-wrap items-center gap-4 text-[11px] text-gray-400 pr-6 pt-1 border-t border-white/5">
-              <span>🔗 Tunnel Type: <strong class="text-cyberYellow font-mono">WebSocket TLS</strong></span>
-              <span>📡 Node Link Status: <strong class="text-cyberGreen">Established & Ready</strong></span>
+              <span>🔗 {{ t('tunnelTypeLabel') }}: <strong class="text-cyberYellow font-mono">WebSocket TLS</strong></span>
+              <span>📡 {{ t('nodeLinkStatus') }}: <strong class="text-cyberGreen">{{ t('readyEstablished') }}</strong></span>
             </div>
           </div>
         </div>
@@ -224,7 +224,7 @@
           <div class="flex items-center justify-between border-b border-white/10 pb-3">
             <h3 class="text-lg font-extrabold text-cyberYellow glow-yellow flex items-center gap-2">
               <Zap class="w-5 h-5 text-cyberYellow" />
-              Smart ISP Recommendations & Operator Matrix
+              {{ t('ispMatrixTitle') }}
             </h3>
             <span class="text-[11px] text-gray-400 font-mono">ISP Matrix</span>
           </div>
@@ -234,54 +234,54 @@
             <div class="p-4 rounded-2xl bg-white/5 border border-cyberYellow/30 space-y-2">
               <div class="flex items-center justify-between">
                 <span class="font-extrabold text-cyberYellow flex items-center gap-1.5 text-sm">
-                  📱 MCI Mobile Network
+                  📱 {{ t('mciNetwork') }}
                 </span>
                 <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30 font-bold">
-                  99.5% Stable
+                  99.5% {{ t('stable') }}
                 </span>
               </div>
               <p class="text-gray-300 leading-relaxed">
-                Optimal Setup: <strong class="text-white font-semibold">VLESS-REALITY + Packet Fragment</strong> on Port 443.
+                {{ t('optimalSetup') }}: <strong class="text-white font-semibold">VLESS-REALITY + Packet Fragment</strong> Port 443.
               </p>
               <div class="p-2.5 rounded-xl bg-black/40 border border-white/10 font-mono text-[11px] text-gray-300 flex items-center justify-between" dir="ltr">
                 <span>Fragment: 100-200, length 10-20</span>
-                <button @click="copyText('length: 100-200, interval: 10-20', 'Fragment params copied')" class="text-cyberYellow hover:underline text-[10px]">{{ t('copy') }}</button>
+                <button @click="copyText('length: 100-200, interval: 10-20', t('copied'))" class="text-cyberYellow hover:underline text-[10px]">{{ t('copy') }}</button>
               </div>
-              <p class="text-[11px] text-gray-400">Suggested SNI: <code class="text-cyberYellow">archive.ubuntu.com</code> or <code class="text-cyberYellow">pypi.org</code></p>
+              <p class="text-[11px] text-gray-400">{{ t('suggestedSni') }}: <code class="text-cyberYellow">archive.ubuntu.com</code> / <code class="text-cyberYellow">pypi.org</code></p>
             </div>
 
             <!-- Irancell Operator Recommendation Card -->
             <div class="p-4 rounded-2xl bg-white/5 border border-cyberRed/30 space-y-2">
               <div class="flex items-center justify-between">
                 <span class="font-extrabold text-cyberRed flex items-center gap-1.5 text-sm">
-                  📡 Irancell Network
+                  📡 {{ t('irancellNetwork') }}
                 </span>
                 <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30 font-bold">
-                  99.2% Stable
+                  99.2% {{ t('stable') }}
                 </span>
               </div>
               <p class="text-gray-300 leading-relaxed">
-                Optimal Setup: <strong class="text-white font-semibold">REALITY with Chrome Fingerprint</strong> or gRPC / WS.
+                {{ t('optimalSetup') }}: <strong class="text-white font-semibold">REALITY (Chrome Fingerprint)</strong> / gRPC / WS.
               </p>
               <div class="p-2.5 rounded-xl bg-black/40 border border-white/10 font-mono text-[11px] text-gray-300 flex items-center justify-between" dir="ltr">
                 <span>Fingerprint: chrome, Port: 2083 / 443</span>
-                <button @click="copyText('ebanking.banksepah.ir', 'White SNI domain copied')" class="text-cyberRed hover:underline text-[10px]">{{ t('copy') }} SNI</button>
+                <button @click="copyText('ebanking.banksepah.ir', t('copied'))" class="text-cyberRed hover:underline text-[10px]">{{ t('copy') }} SNI</button>
               </div>
-              <p class="text-[11px] text-gray-400">Suggested SNI: <code class="text-cyberRed">ebanking.banksepah.ir</code> or <code class="text-cyberRed">download.microsoft.com</code></p>
+              <p class="text-[11px] text-gray-400">{{ t('suggestedSni') }}: <code class="text-cyberRed">ebanking.banksepah.ir</code> / <code class="text-cyberRed">download.microsoft.com</code></p>
             </div>
 
             <!-- Fixed Broadband ADSL / RightTel Card -->
             <div class="p-4 rounded-2xl bg-white/5 border border-cyberYellow/30 space-y-2">
               <div class="flex items-center justify-between">
                 <span class="font-extrabold text-white flex items-center gap-1.5 text-sm">
-                  🌐 Broadband ADSL / FTTH Fiber
+                  🌐 {{ t('adslFiberNetwork') }}
                 </span>
                 <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30 font-bold">
-                  100% Online
+                  100% {{ t('statusOnline') }}
                 </span>
               </div>
               <p class="text-gray-300 leading-relaxed">
-                Optimal Setup: <strong class="text-white font-semibold">VLESS REALITY TCP / HTTP2</strong> on public ports 8080 or 8443.
+                {{ t('optimalSetup') }}: <strong class="text-white font-semibold">VLESS REALITY TCP / HTTP2</strong> (Port 8080 / 8443).
               </p>
             </div>
 
@@ -289,14 +289,14 @@
             <div class="p-4 rounded-2xl bg-cyberRed/10 border border-cyberRed/40 space-y-2">
               <div class="flex items-center justify-between">
                 <span class="font-extrabold text-cyberRed flex items-center gap-1.5 text-sm">
-                  🛡️ Intranet Bridge Relay
+                  🛡️ {{ t('intranetRelayTitle') }}
                 </span>
                 <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyberYellow/20 text-cyberYellow border border-cyberYellow/30 font-bold">
-                  Relay Tunnel
+                  {{ t('relayTunnelBadge') }}
                 </span>
               </div>
               <p class="text-gray-200 leading-relaxed">
-                Utilizing <strong class="text-cyberYellow">Iran Relay Node</strong> and routing traffic through <strong class="text-white">Gost WebSocket Encrypted Tunnel</strong>.
+                <strong class="text-cyberYellow">Gost WebSocket Encrypted Tunnel</strong> Relay Path.
               </p>
             </div>
           </div>
@@ -306,20 +306,20 @@
         <div class="glass-panel p-5 rounded-3xl space-y-3 border border-cyberYellow/30 text-xs">
           <h4 class="font-extrabold text-white flex items-center gap-2">
             <Terminal class="w-4 h-4 text-cyberYellow" />
-            Live System Activity Feed
+            {{ t('liveActivityFeed') }}
           </h4>
           <div class="space-y-2 font-mono text-[11px]">
             <div class="flex items-center justify-between text-gray-400 bg-white/5 p-2 rounded-xl">
-              <span>[Xray Core] Auto Traffic Sync</span>
-              <span class="text-cyberGreen font-bold">SUCCESS</span>
+              <span>{{ t('autoTrafficSync') }}</span>
+              <span class="text-cyberGreen font-bold">{{ t('successText') }}</span>
             </div>
             <div class="flex items-center justify-between text-gray-400 bg-white/5 p-2 rounded-xl">
-              <span>[REALITY Keys] X25519 Keypair</span>
-              <span class="text-cyberYellow font-bold">GENERATED</span>
+              <span>{{ t('realityKeypair') }}</span>
+              <span class="text-cyberYellow font-bold">{{ t('generatedText') }}</span>
             </div>
             <div class="flex items-center justify-between text-gray-400 bg-white/5 p-2 rounded-xl">
-              <span>[Telegram Bot] Connection Status</span>
-              <span class="text-cyberGreen font-bold">ACTIVE</span>
+              <span>{{ t('botConnectionStatus') }}</span>
+              <span class="text-cyberGreen font-bold">{{ t('activeStatus') }}</span>
             </div>
           </div>
         </div>
