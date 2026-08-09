@@ -3,34 +3,34 @@
     <div class="glass-panel p-6 rounded-3xl border border-cyberYellow/40 relative overflow-hidden">
       <div class="flex items-center gap-3 mb-2">
         <Zap class="w-6 h-6 text-cyberYellow" />
-        <h2 class="text-xl font-extrabold text-cyberYellow glow-yellow">اتصال سرور ایران به خارج (راهنمای گام‌به‌گام و اسکریپت تونل)</h2>
+        <h2 class="text-xl font-extrabold text-cyberYellow glow-yellow">{{ t('tunnelsTitle') }}</h2>
       </div>
       <p class="text-xs text-gray-300 leading-relaxed">
-        وقتی اینترنت بین‌الملل دچار اختلال یا قطعی کامل می‌شود، ترافیک کاربران باید ابتدا به یک سرور داخل ایران منتقل شده و سپس از طریق تونل امن به سرور خارج هدایت شود. از بین روش‌های زیر مناسب‌ترین متد را برای شرایط شبکه خود انتخاب کنید.
+        {{ t('tunnelsSub') }}
       </p>
     </div>
 
     <!-- Generator Input Form -->
     <div class="glass-panel p-6 rounded-3xl border border-cyberYellow/30 space-y-4">
-      <h3 class="text-base font-bold text-white">پیکربندی پارامترهای تونل</h3>
+      <h3 class="text-base font-bold text-white">{{ t('tunnelsTitle') }}</h3>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div>
-          <label class="block text-xs text-gray-400 mb-1">روش تونل‌زنی</label>
+          <label class="block text-xs text-gray-400 mb-1">{{ t('tunnelType') }}</label>
           <select 
             v-model="params.tunnelType"
             class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:border-cyberYellow outline-none"
           >
-            <option value="GOST">Gost v3 (تونل انکریپت‌شده WebSocket - پیشنهادی)</option>
-            <option value="ICMP_TUNNEL">ICMP Ping Tunnel (عبور از طریق پکت‌های پینگ)</option>
-            <option value="WHITE_DNS_TUNNEL">White DNS Tunnel (پورت ۵۳ و دی‌ان‌اس‌های سفید)</option>
-            <option value="RATHOLE">Rathole (سبک و با سرعت بالا)</option>
-            <option value="IPV6_RELAY">IPv6 / IP Forwarding (انتقال مستقیم پورت)</option>
+            <option value="GOST">Gost v3 (Encrypted MWS Tunnel - Recommended)</option>
+            <option value="ICMP_TUNNEL">ICMP Ping Tunnel (Bypasses TCP/UDP Blackouts)</option>
+            <option value="WHITE_DNS_TUNNEL">White DNS Tunnel (Port 53 Whitelisted DNS)</option>
+            <option value="RATHOLE">Rathole (High-speed Intranet Tunnel)</option>
+            <option value="IPV6_RELAY">IPv6 / IP Forwarding (Direct NAT Relay)</option>
           </select>
         </div>
 
         <div>
-          <label class="block text-xs text-gray-400 mb-1">آدرس IP سرور خارج</label>
+          <label class="block text-xs text-gray-400 mb-1">{{ t('kharejIp') }}</label>
           <input 
             v-model="params.kharejIp"
             type="text" 
@@ -174,6 +174,7 @@ import { ref } from 'vue';
 import axios from 'axios';
 import { Zap, Copy, Check, Terminal, FileText, ArrowLeftRight, Code, BookOpen } from 'lucide-vue-next';
 import { copyToClipboard } from '../utils/clipboard';
+import { t } from '../i18n';
 
 const props = defineProps<{ toast?: (msg: string, type?: 'success' | 'error' | 'info') => void }>();
 

@@ -6,14 +6,14 @@
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
         <div>
           <h2 class="text-2xl font-extrabold text-cyberYellow glow-yellow mb-1 flex items-center gap-2">
-            <span>داشبورد مانیتورینگ زنده Nyx Panel</span>
-            <span class="text-xs px-2.5 py-0.5 rounded-full bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/40 animate-pulse font-normal">آنلاین (Live)</span>
+            <span>{{ t('dashboardTitle') }}</span>
+            <span class="text-xs px-2.5 py-0.5 rounded-full bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/40 animate-pulse font-normal">Live</span>
           </h2>
-          <p class="text-sm text-gray-300">سامانه هوشمند پایش و مدیریت اتصالات Xray و تونل‌زنی.</p>
+          <p class="text-sm text-gray-300">{{ t('dashboardSub') }}</p>
         </div>
         <div class="flex items-center gap-3">
           <div class="bg-black/60 backdrop-blur-md px-4 py-2 rounded-2xl border border-cyberYellow/30 text-xs flex items-center gap-2">
-            <span class="text-gray-400">آدرس IP سرور:</span>
+            <span class="text-gray-400">{{ t('serverIp') }}:</span>
             <span class="font-mono text-cyberYellow font-extrabold">{{ stats.serverIp }}</span>
           </div>
         </div>
@@ -27,7 +27,7 @@
         <div class="flex items-center justify-between">
           <span class="text-xs text-gray-400 font-medium flex items-center gap-1.5">
             <Cpu class="w-4 h-4 text-cyberYellow" />
-            بار پردازنده (CPU)
+            {{ t('cpuLoad') }}
           </span>
           <span class="text-xs font-mono font-bold text-cyberYellow">{{ stats.systemHealth.cpuPercent }}%</span>
         </div>
@@ -44,13 +44,13 @@
         <div class="flex items-center justify-between">
           <span class="text-xs text-gray-400 font-medium flex items-center gap-1.5">
             <HardDrive class="w-4 h-4 text-cyberYellow" />
-            مصرف رم (RAM)
+            {{ t('ramUsage') }}
           </span>
           <span class="text-xs font-mono font-bold text-white">{{ stats.systemHealth.ramPercent }}%</span>
         </div>
         <div class="flex items-center justify-between mt-2">
           <span class="text-xs font-mono text-gray-300" dir="ltr">{{ stats.systemHealth.ramUsageGb }}</span>
-          <span class="text-[10px] text-cyberGreen font-bold">پایدار</span>
+          <span class="text-[10px] text-cyberGreen font-bold">{{ t('stable') }}</span>
         </div>
       </div>
 
@@ -59,12 +59,12 @@
         <div class="flex items-center justify-between">
           <span class="text-xs text-gray-400 font-medium flex items-center gap-1.5">
             <Activity class="w-4 h-4 text-cyberGreen" />
-            پینگ پاسخ‌دهی شبکه
+            {{ t('networkPing') }}
           </span>
           <span class="text-xs font-mono font-extrabold text-cyberGreen" dir="ltr">{{ stats.systemHealth.pingMs }} ms</span>
         </div>
         <div class="flex items-center justify-between mt-2 text-xs">
-          <span class="text-gray-400">سرعت آنی:</span>
+          <span class="text-gray-400">{{ t('instantSpeed') }}:</span>
           <span class="font-mono text-cyberYellow font-bold" dir="ltr">{{ stats.systemHealth.networkSpeedMb }} MB/s</span>
         </div>
       </div>
@@ -74,12 +74,12 @@
         <div class="flex items-center justify-between">
           <span class="text-xs text-gray-400 font-medium flex items-center gap-1.5">
             <Clock class="w-4 h-4 text-cyberYellow" />
-            آپ‌تایم آنلاین سرور
+            {{ t('serverUptime') }}
           </span>
           <span class="text-xs font-bold text-cyberYellow">{{ stats.systemHealth.uptimeText }}</span>
         </div>
         <div class="flex items-center justify-between mt-2 text-xs">
-          <span class="text-gray-400">نرخ پایداری شبکه:</span>
+          <span class="text-gray-400">{{ t('networkStability') }}:</span>
           <span class="font-bold text-cyberGreen" dir="ltr">{{ stats.systemHealth.bypassEfficiency }}</span>
         </div>
       </div>
@@ -92,7 +92,7 @@
           <Users class="w-6 h-6" />
         </div>
         <div>
-          <p class="text-xs text-gray-400 font-medium">کل کاربران</p>
+          <p class="text-xs text-gray-400 font-medium">{{ t('totalUsers') }}</p>
           <h3 class="text-2xl font-extrabold text-white mt-1">{{ stats.totalUsers }}</h3>
         </div>
       </div>
@@ -102,7 +102,7 @@
           <CheckCircle class="w-6 h-6" />
         </div>
         <div>
-          <p class="text-xs text-gray-400 font-medium">کاربران فعال</p>
+          <p class="text-xs text-gray-400 font-medium">{{ t('activeUsers') }}</p>
           <h3 class="text-2xl font-extrabold text-white mt-1">{{ stats.activeUsers }}</h3>
         </div>
       </div>
@@ -112,7 +112,7 @@
           <Activity class="w-6 h-6" />
         </div>
         <div>
-          <p class="text-xs text-gray-400 font-medium">ترافیک کل تبادل شده</p>
+          <p class="text-xs text-gray-400 font-medium">{{ t('totalTraffic') }}</p>
           <h3 class="text-2xl font-extrabold text-white mt-1">{{ stats.totalTransferredGb }} GB</h3>
         </div>
       </div>
@@ -122,8 +122,8 @@
           <Server class="w-6 h-6" />
         </div>
         <div>
-          <p class="text-xs text-gray-400 font-medium">نودها و سرورها</p>
-          <h3 class="text-2xl font-extrabold text-white mt-1">{{ stats.totalNodes }} نود</h3>
+          <p class="text-xs text-gray-400 font-medium">{{ t('nodesAndServers') }}</p>
+          <h3 class="text-2xl font-extrabold text-white mt-1">{{ stats.totalNodes }} {{ t('nodesCount') }}</h3>
         </div>
       </div>
     </div>
@@ -333,6 +333,7 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
 import { Users, CheckCircle, Activity, Server, ShieldAlert, Zap, Cpu, HardDrive, Clock, Terminal } from 'lucide-vue-next';
 import { copyToClipboard } from '../utils/clipboard';
+import { t } from '../i18n';
 
 const stats = ref({
   totalUsers: 0,

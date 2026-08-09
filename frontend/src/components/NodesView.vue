@@ -2,15 +2,15 @@
   <div class="space-y-6">
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div>
-        <h2 class="text-2xl font-bold text-white">سرورها و نودها (Multi-Node)</h2>
-        <p class="text-sm text-gray-400">مدیریت متمرکز سرورهای خارج و نودهای واسط داخل ایران (Relays)</p>
+        <h2 class="text-2xl font-bold text-white">{{ t('nodesTitle') }}</h2>
+        <p class="text-sm text-gray-400">{{ t('nodesSub') }}</p>
       </div>
       <button 
         @click="showCreateModal = true"
         class="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-cyberCyan text-black font-bold text-sm shadow-lg shadow-cyberCyan/30 hover:opacity-90 transition-all"
       >
         <Server class="w-4 h-4" />
-        افزودن نود جدید
+        {{ t('addNodeBtn') }}
       </button>
     </div>
 
@@ -33,44 +33,44 @@
             'px-2.5 py-1 text-xs rounded-full font-semibold',
             node.status === 'ONLINE' ? 'bg-cyberGreen/20 text-cyberGreen' : 'bg-red-500/20 text-red-400'
           ]">
-            {{ node.status === 'ONLINE' ? 'آنلاین' : 'آفلاین' }}
+            {{ node.status === 'ONLINE' ? t('statusOnline') : t('statusOffline') }}
           </span>
         </div>
 
         <div class="p-3 rounded-2xl bg-white/5 space-y-1 text-xs">
           <div class="flex justify-between text-gray-400">
-            <span>نوع نود:</span>
-            <span class="text-white font-semibold">{{ node.type === 'IRAN_RELAY' ? 'ریلی ایران (Relay)' : 'سرور اصلی خارج (Kharej)' }}</span>
+            <span>{{ t('nodeType') }}:</span>
+            <span class="text-white font-semibold">{{ node.type === 'IRAN_RELAY' ? 'Iran Relay Node' : 'Kharej Master Node' }}</span>
           </div>
           <div class="flex justify-between text-gray-400">
-            <span>حالت تونل:</span>
-            <span class="text-cyberCyan font-semibold">{{ node.tunnelType || 'مستقیم (None)' }}</span>
+            <span>{{ t('tunnelType') }}:</span>
+            <span class="text-cyberCyan font-semibold">{{ node.tunnelType || 'Direct (None)' }}</span>
           </div>
         </div>
       </div>
 
       <div v-if="nodes.length === 0" class="col-span-full glass-panel p-8 rounded-3xl text-center text-gray-400 text-sm">
-        هنوز هیچ نود اضافی ثبت نشده است. سرور اصلی به‌صورت خودکار در حال فعالیت است.
+        No extra nodes configured yet. Master Kharej node is active automatically.
       </div>
     </div>
 
     <!-- Create Node Modal -->
     <div v-if="showCreateModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
       <div class="glass-panel max-w-md w-full rounded-3xl p-6 border border-white/10 space-y-4">
-        <h3 class="text-lg font-bold text-white">افزودن نود جدید</h3>
+        <h3 class="text-lg font-bold text-white">{{ t('addNodeBtn') }}</h3>
 
         <div class="space-y-3">
           <div>
-            <label class="block text-xs text-gray-400 mb-1">نام نود / سرور</label>
+            <label class="block text-xs text-gray-400 mb-1">{{ t('nodeName') }}</label>
             <input 
               v-model="newNode.name"
               type="text" 
-              placeholder="مثال: Iran-Asiatech-Relay-1"
+              placeholder="e.g. Iran-Asiatech-Relay-1"
               class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:border-cyberCyan outline-none"
             />
           </div>
           <div>
-            <label class="block text-xs text-gray-400 mb-1">آدرس IP سرور</label>
+            <label class="block text-xs text-gray-400 mb-1">{{ t('nodeIp') }}</label>
             <input 
               v-model="newNode.ip"
               type="text" 
@@ -79,20 +79,20 @@
             />
           </div>
           <div>
-            <label class="block text-xs text-gray-400 mb-1">نوع سرور</label>
+            <label class="block text-xs text-gray-400 mb-1">{{ t('nodeType') }}</label>
             <select 
               v-model="newNode.type"
               class="w-full bg-darkBg border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:border-cyberCyan outline-none"
             >
-              <option value="IRAN_RELAY">🇮🇷 سرور واسط ایران (Relay)</option>
-              <option value="KHAREJ">🇪🇺 سرور خروجی خارج (Kharej Node)</option>
+              <option value="IRAN_RELAY">🇮🇷 Iran Relay Node</option>
+              <option value="KHAREJ">🇪🇺 Kharej Master Node</option>
             </select>
           </div>
         </div>
 
         <div class="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
-          <button @click="showCreateModal = false" class="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white">انصراف</button>
-          <button @click="createNode" class="px-5 py-2 rounded-xl bg-cyberCyan text-black text-xs font-bold shadow-lg shadow-cyberCyan/30">ثبت نود</button>
+          <button @click="showCreateModal = false" class="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white">{{ t('cancel') }}</button>
+          <button @click="createNode" class="px-5 py-2 rounded-xl bg-cyberCyan text-black text-xs font-bold shadow-lg shadow-cyberCyan/30">{{ t('save') }}</button>
         </div>
       </div>
     </div>
@@ -103,8 +103,9 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { Server } from 'lucide-vue-next';
+import { t } from '../i18n';
 
-const props = defineProps<{ toast?: (msg: string, type?: 'success' | 'error' | 'info') => void }>();
+const props = defineProps<{ toast?: Function }>();
 
 const nodes = ref<any[]>([]);
 const showCreateModal = ref(false);
@@ -129,10 +130,10 @@ async function createNode() {
     await axios.post('/api/nodes', newNode.value);
     showCreateModal.value = false;
     newNode.value = { name: '', ip: '', type: 'IRAN_RELAY' };
-    props.toast?.('نود جدید با موفقیت ثبت شد', 'success');
+    if (props.toast) props.toast(t('save'), 'success');
     fetchNodes();
   } catch (err) {
-    props.toast?.('خطا در ثبت نود', 'error');
+    if (props.toast) props.toast(t('error'), 'error');
   }
 }
 

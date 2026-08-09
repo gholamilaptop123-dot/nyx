@@ -3,15 +3,15 @@
     <!-- Header Action Bar -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div>
-        <h2 class="text-2xl font-extrabold text-cyberYellow glow-yellow">ساخت و مدیریت اینباندها و کانفیگ‌ها</h2>
-        <p class="text-sm text-gray-400">تعریف ساختار VPN، محدودیت حجم، انقضا، تست زنده SNI و مدیریت کانفیگ‌ها</p>
+        <h2 class="text-2xl font-extrabold text-cyberYellow glow-yellow">{{ t('inboundsTitle') }}</h2>
+        <p class="text-sm text-gray-400">{{ t('inboundsSub') }}</p>
       </div>
       <button 
         @click="showCreateModal = true"
         class="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-cyberYellow via-red-600 to-cyberRed text-black font-extrabold text-sm shadow-lg shadow-cyberYellow/20 hover:opacity-90 transition-all border border-cyberYellow/40"
       >
         <Plus class="w-4 h-4 text-black font-bold" />
-        ساخت اینباند / کانفیگ جدید
+        {{ t('createInboundBtn') }}
       </button>
     </div>
 
@@ -480,6 +480,7 @@ import axios from 'axios';
 import { Plus, Trash2, Download, Network, Edit3, ExternalLink, Activity, Play, RefreshCw, AlertTriangle, ShieldAlert, Zap, Info } from 'lucide-vue-next';
 import QrcodeVue from 'qrcode.vue';
 import { copyToClipboard } from '../utils/clipboard';
+import { t } from '../i18n';
 
 const inbounds = ref<any[]>([]);
 const showCreateModal = ref(false);

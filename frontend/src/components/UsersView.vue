@@ -3,15 +3,15 @@
     <!-- Header Action Bar -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div>
-        <h2 class="text-2xl font-extrabold text-cyberYellow glow-yellow">مدیریت کاربران و اشتراک‌ها</h2>
-        <p class="text-sm text-gray-400">تعریف کاربر، محدودیت حجم، انقضا، تعداد دستگاه‌های همزمان و لینک اختصاصی اکانت</p>
+        <h2 class="text-2xl font-extrabold text-cyberYellow glow-yellow">{{ t('usersTitle') }}</h2>
+        <p class="text-sm text-gray-400">{{ t('usersSub') }}</p>
       </div>
       <button 
         @click="showCreateModal = true"
         class="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-cyberYellow via-red-600 to-cyberRed text-black font-extrabold text-sm shadow-lg shadow-cyberYellow/20 hover:opacity-90 transition-all border border-cyberYellow/40"
       >
         <UserPlus class="w-4 h-4 text-black font-bold" />
-        ساخت کاربر جدید
+        {{ t('createUserBtn') }}
       </button>
     </div>
 
@@ -21,12 +21,12 @@
         <table class="w-full min-w-[750px] text-right border-collapse">
           <thead>
             <tr class="bg-white/5 border-b border-cyberYellow/20 text-xs text-cyberYellow font-bold">
-              <th class="p-4">نام کاربر</th>
-              <th class="p-4">مصرف / سقف حجم</th>
-              <th class="p-4">تاریخ انقضا</th>
-              <th class="p-4">حد دستگاه همزمان</th>
-              <th class="p-4">وضعیت</th>
-              <th class="p-4 text-center">عملیات و دریافت اشتراک</th>
+              <th class="p-4">{{ t('usernameHeader') }}</th>
+              <th class="p-4">{{ t('trafficHeader') }}</th>
+              <th class="p-4">{{ t('expiryHeader') }}</th>
+              <th class="p-4">{{ t('maxDevices') }}</th>
+              <th class="p-4">{{ t('statusHeader') }}</th>
+              <th class="p-4 text-center">{{ t('actions') }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-white/5 text-sm">
@@ -44,39 +44,39 @@
               </td>
               <td class="p-4">
                 <span class="text-cyberYellow font-mono font-bold" dir="ltr">{{ (Number(user.usedDataBytes) / (1024*1024*1024)).toFixed(2) }} GB</span>
-                <span class="text-gray-400 text-xs mr-1">/ {{ user.dataLimitGb > 0 ? user.dataLimitGb + ' GB' : 'نامحدود' }}</span>
+                <span class="text-gray-400 text-xs mr-1">/ {{ user.dataLimitGb > 0 ? user.dataLimitGb + ' GB' : t('unlimited') }}</span>
               </td>
               <td class="p-4 text-xs text-gray-300">
-                {{ user.expireDate ? new Date(user.expireDate).toLocaleDateString('fa-IR') : 'بدون انقضا' }}
+                {{ user.expireDate ? new Date(user.expireDate).toLocaleDateString() : t('unlimited') }}
               </td>
               <td class="p-4 text-xs font-mono text-white">
-                {{ user.maxDevices || 2 }} کاربره
+                {{ user.maxDevices || 2 }} Device
               </td>
               <td class="p-4">
                 <span :class="[
                   'px-3 py-1 text-xs rounded-full font-bold inline-block',
                   user.status === 'ACTIVE' ? 'bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30' : 'bg-cyberRed/20 text-cyberRed border border-cyberRed/30'
                 ]">
-                  {{ user.status === 'ACTIVE' ? '🟢 فعال' : '🔴 غیرفعال' }}
+                  {{ user.status === 'ACTIVE' ? t('activeStatus') : t('disabledStatus') }}
                 </span>
               </td>
               <td class="p-4 flex items-center justify-center gap-2">
                 <button @click="openConfigModal(user)" class="px-3 py-1.5 rounded-xl bg-cyberYellow/20 border border-cyberYellow/40 text-cyberYellow hover:bg-cyberYellow/30 text-xs font-extrabold flex items-center gap-1 transition-all">
                   <Download class="w-3.5 h-3.5" />
-                  کانفیگ‌ها
+                  Configs
                 </button>
                 <button @click="openSubModal(user)" class="px-3 py-1.5 rounded-xl bg-cyberRed/20 border border-cyberRed/40 text-cyberRed hover:bg-cyberRed/30 text-xs font-extrabold flex items-center gap-1 transition-all">
                   <QrCode class="w-3.5 h-3.5" />
-                  لینک ساب
+                  Sub Link
                 </button>
-                <button @click="copyUserInfoLink(user)" class="px-3 py-1.5 rounded-xl bg-cyberGreen/20 border border-cyberGreen/40 text-cyberGreen hover:bg-cyberGreen/30 text-xs font-extrabold flex items-center gap-1 transition-all" title="لینک صفحه وب اختصاصی کاربر جهت مشاهده حجم و مشخصات اکانت">
+                <button @click="copyUserInfoLink(user)" class="px-3 py-1.5 rounded-xl bg-cyberGreen/20 border border-cyberGreen/40 text-cyberGreen hover:bg-cyberGreen/30 text-xs font-extrabold flex items-center gap-1 transition-all" title="User Web Portal">
                   <ExternalLink class="w-3.5 h-3.5" />
-                  صفحه اکانت
+                  Web Portal
                 </button>
-                <button @click="openEditModal(user)" class="p-1.5 rounded-xl bg-white/10 text-gray-300 hover:text-white text-xs transition-all" title="ویرایش کاربر">
+                <button @click="openEditModal(user)" class="p-1.5 rounded-xl bg-white/10 text-gray-300 hover:text-white text-xs transition-all" title="Edit User">
                   <Edit3 class="w-4 h-4" />
                 </button>
-                <button @click="deleteUser(user.id)" class="p-1.5 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs transition-all" title="حذف کاربر">
+                <button @click="deleteUser(user.id)" class="p-1.5 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs transition-all" title="Delete User">
                   <Trash2 class="w-4 h-4" />
                 </button>
               </td>
@@ -84,7 +84,7 @@
 
             <tr v-if="users.length === 0">
               <td colspan="6" class="p-8 text-center text-gray-400 text-sm">
-                هیچ کاربری ثبت نشده است. با زدن دکمه «ساخت کاربر جدید» اولین کاربر را تعریف کنید.
+                No subscribers created yet. Click "Create User" to define the first user.
               </td>
             </tr>
           </tbody>
@@ -339,6 +339,7 @@ import axios from 'axios';
 import { UserPlus, Trash2, QrCode, Copy, Download, Edit3, ExternalLink } from 'lucide-vue-next';
 import QrcodeVue from 'qrcode.vue';
 import { copyToClipboard } from '../utils/clipboard';
+import { t } from '../i18n';
 
 const users = ref<any[]>([]);
 const showCreateModal = ref(false);
