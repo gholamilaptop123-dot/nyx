@@ -10,7 +10,7 @@
 
 [![Version](https://img.shields.io/badge/version-2.0.0-cyberViolet?style=for-the-badge&logo=shield)](https://github.com/icynetx/Nyx)
 [![Telegram](https://img.shields.io/badge/Telegram-cynetx-2CA5E0?style=for-the-badge&logo=telegram)](https://t.me/cynetx)
-[![YouTube](https://img.shields.io/badge/YouTube-cynetxir-FF0000?style=for-the-badge&logo=youtube)](https://www.youtube.com/@cynetxir)
+[![YouTube Video](https://img.shields.io/badge/Watch_Video-pFEeQrtCg14-FF0000?style=for-the-badge&logo=youtube)](https://youtu.be/pFEeQrtCg14)
 [![Website](https://img.shields.io/badge/Website-cynetx.ir-cyberCyan?style=for-the-badge)](https://cynetx.ir)
 [![License](https://img.shields.io/badge/license-MIT-cyberGreen?style=for-the-badge)](https://github.com/icynetx/Nyx/blob/main/LICENSE)
 
@@ -20,6 +20,18 @@
   <code>VLESS + REALITY (X25519)</code> · <code>Packet Fragment</code> · ربات دکمه‌ای ادمین · وب‌صفحه اختصاصی مشترکین
 </p>
 
+<p align="center">
+  <a href="https://youtu.be/pFEeQrtCg14" target="_blank">
+    <img src="https://img.youtube.com/vi/pFEeQrtCg14/maxresdefault.jpg" alt="Watch Nyx Panel YouTube Video Demo" width="90%" style="border-radius: 18px; border: 2px solid #FF0000;" />
+  </a>
+  <br />
+  <br />
+  <a href="https://youtu.be/pFEeQrtCg14" target="_blank">
+    <img src="https://img.shields.io/badge/▶️_تماشای_ویدیو_آموزش_و_معرفی_کامل_در_یوتیوب-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="Watch on YouTube" />
+  </a>
+</p>
+
+[🎥 ویدیو معرفی](#-ویدیو-معرفی-و-آموزش-کامل-در-یوتیوب) •
 [⚡ راهنمای نصب](#-راهنمای-نصب-سریع-روی-سرور-لینوکس) •
 [🧩 توضیحات کامل امکانات](#-توضیحات-تفصیلی-امکانات-پنل) •
 [🤖 راهنمای ربات تلگرام ادمین](#-راهنمای-کامل-پیکربندی-و-استفاده-از-ربات-تلگرام) •
@@ -27,6 +39,24 @@
 [🌐 راهنمای تونل لینوکس](#-راهنمای-راه‌اندازی-تونل-انتقال-ترافیک-سرور-ایران-به-خارج) •
 [🗑️ راهنمای حذف کامل](#-راهنمای-حذف-کامل-و-پاکسازی-پنل-uninstallation-guide) •
 [💖 حمایت مالی](#-حمایت-مالی-و-دونیت-donation)
+
+</div>
+
+---
+
+<div dir="rtl">
+
+## 🎥 ویدیو معرفی و آموزش کامل در یوتیوب
+
+جهت مشاهده آموزش کامل راه‌اندازی، نحوه کار با پنل، تنظیمات ربات تلگرام و ساخت اسکریپت‌های اتوماتیک تونل، ویدیو زیر را در یوتیوب تماشا کنید:
+
+<div align="center">
+
+[![Nyx Panel YouTube Video](https://img.youtube.com/vi/pFEeQrtCg14/maxresdefault.jpg)](https://youtu.be/pFEeQrtCg14)
+
+👉 **[برای تماشا روی یوتیوب کلیک کنید (https://youtu.be/pFEeQrtCg14)](https://youtu.be/pFEeQrtCg14)** 👈
+
+</div>
 
 </div>
 
