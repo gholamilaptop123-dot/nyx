@@ -211,7 +211,23 @@ export const tMap = {
     sniTip3Title: '⚡ Technical Tip 3: Mandatory Combination with Packet Fragment',
     sniTip3Sub: 'Using SNI without Fragment can be detected by DPI. Keep Packet Fragment checkbox enabled.',
     sniTip4Title: '💡 Technical Tip 4: TLS 1.3 Support in REALITY Protocol',
-    sniTip4Sub: 'Select target domains supporting TLS 1.3 and modern Ciphers for smooth SSL handshake.'
+    sniTip4Sub: 'Select target domains supporting TLS 1.3 and modern Ciphers for smooth SSL handshake.',
+
+    // Tunnels View Keys
+    tunnelPortLabel: 'Tunnel Communication Port',
+    kharejInboundPortLabel: 'Kharej Inbound Port',
+    whiteDnsIpLabel: 'White DNS Server IP',
+    whiteSubdomainLabel: 'Custom Subdomain for DNS',
+    generateScriptsBtnLabel: 'Generate Scripts & Setup Guide',
+    stepGuideTitle: 'Step-by-step Setup Guide (Execution Order)',
+    iranServerBadge: '🇮🇷 Iran Server',
+    kharejServerBadge: '🇪🇺 Kharej Server',
+    iranScriptBoxTitle: '🇮🇷 Full Execution Script for Iran Server',
+    kharejScriptBoxTitle: '🇪🇺 Full Execution Script for Kharej Server',
+    copyScriptBtn: 'Copy Script',
+    tunnelScriptsSuccess: 'Automatic tunnel scripts generated successfully',
+    tunnelScriptError: 'Failed to generate tunnel script',
+    scriptCopiedToast: 'Script copied to clipboard.'
   },
   fa: {
     // General
@@ -408,7 +424,23 @@ export const tMap = {
     sniTip3Title: '⚡ نکته فنی ۳: الزام ترکیب SNI با تکنولوژی Packet Fragment',
     sniTip3Sub: 'استفاده از SNI بدون فعال بودن تکنولوژی Fragment ممکن است توسط سیستم‌های DPI زیرساخت شناسایی شود. حتماً چک‌باکس Fragment را روی اینباند فعال نگه دارید.',
     sniTip4Title: '💡 نکته فنی ۴: پشتیبانی از گواهی TLS 1.3 در پروتکل REALITY',
-    sniTip4Sub: 'در پروتکل VLESS-REALITY حتماً دامنه‌هایی را انتخاب کنید که از TLS 1.3 و Cipherهای مدرن پشتیبانی می‌کنند تا دست‌تکانی SSL بدون اختلال برقرار گردد.'
+    sniTip4Sub: 'در پروتکل VLESS-REALITY حتماً دامنه‌هایی را انتخاب کنید که از TLS 1.3 و Cipherهای مدرن پشتیبانی می‌کنند تا دست‌تکانی SSL بدون اختلال برقرار گردد.',
+
+    // Tunnels View Keys
+    tunnelPortLabel: 'پورت ارتباطی تونل',
+    kharejInboundPortLabel: 'پورت اینباند Xray روی خارج',
+    whiteDnsIpLabel: 'آدرس IP دی‌ان‌اس سفید',
+    whiteSubdomainLabel: 'زیردامنه اختصاصی دی‌ان‌اس',
+    generateScriptsBtnLabel: 'تولید راهنما و اسکریپت‌های نصب',
+    stepGuideTitle: 'راهنمای گام‌به‌گام راه‌اندازی (ترتیب اجرای دستورات)',
+    iranServerBadge: '🇮🇷 سرور ایران',
+    kharejServerBadge: '🇪🇺 سرور خارج',
+    iranScriptBoxTitle: '🇮🇷 اسکریپت کامل اجرا روی سرور ایران',
+    kharejScriptBoxTitle: '🇪🇺 اسکریپت کامل اجرا روی سرور خارج',
+    copyScriptBtn: 'کپی اسکریپت',
+    tunnelScriptsSuccess: 'اسکریپت‌های اتوماتیک تونل با موفقیت تولید شدند',
+    tunnelScriptError: 'خطا در دریافت اطلاعات اسکریپت تونل',
+    scriptCopiedToast: 'اسکریپت در حافظه کپی شد.'
   }
 };
 

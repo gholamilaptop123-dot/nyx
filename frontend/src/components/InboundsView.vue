@@ -469,7 +469,7 @@ import axios from 'axios';
 import { Plus, Trash2, Download, Network, Edit3, ExternalLink, Activity, Play, RefreshCw, AlertTriangle, ShieldAlert, Zap, Info } from 'lucide-vue-next';
 import QrcodeVue from 'qrcode.vue';
 import { copyToClipboard } from '../utils/clipboard';
-import { t } from '../i18n';
+import { t, currentLang } from '../i18n';
 
 const inbounds = ref<any[]>([]);
 const showCreateModal = ref(false);
@@ -569,11 +569,11 @@ async function createInbound() {
     const res = await axios.post('/api/inbounds', form.value);
     showCreateModal.value = false;
     const created = res.data;
-    props.toast?.('اینباند / کانفیگ جدید با موفقیت ساخته شد', 'success');
+    props.toast?.(currentLang.value === 'fa' ? 'اینباند / کانفیگ جدید با موفقیت ساخته شد' : 'New inbound config created successfully', 'success');
     fetchInbounds();
     if (created) openConfigModal(created);
   } catch (err: any) {
-    props.toast?.(err?.response?.data?.error || 'خطا در ساخت اینباند', 'error');
+    props.toast?.(err?.response?.data?.error || (currentLang.value === 'fa' ? 'خطا در ساخت اینباند' : 'Failed to create inbound'), 'error');
   }
 }
 
@@ -592,11 +592,11 @@ async function saveInboundEdit() {
   if (!editingInbound.value) return;
   try {
     await axios.patch(`/api/inbounds/${editingInbound.value.id}`, editForm.value);
-    props.toast?.('مشخصات اینباند با موفقیت به روز شد', 'success');
+    props.toast?.(currentLang.value === 'fa' ? 'مشخصات اینباند با موفقیت به روز شد' : 'Inbound updated successfully', 'success');
     editingInbound.value = null;
     fetchInbounds();
   } catch (err) {
-    props.toast?.('خطا در بروزرسانی اینباند', 'error');
+    props.toast?.(currentLang.value === 'fa' ? 'خطا در بروزرسانی اینباند' : 'Failed to update inbound', 'error');
   }
 }
 
@@ -605,18 +605,18 @@ async function toggleInbound(inbound: any) {
     await axios.patch(`/api/inbounds/${inbound.id}`, { enabled: !inbound.enabled });
     fetchInbounds();
   } catch (err) {
-    props.toast?.('خطا در تغییر وضعیت اینباند', 'error');
+    props.toast?.(currentLang.value === 'fa' ? 'خطا در تغییر وضعیت اینباند' : 'Failed to toggle inbound', 'error');
   }
 }
 
 async function deleteInbound(id: string) {
-  if (!confirm('آیا از حذف این اینباند اطمینان دارید؟')) return;
+  if (!confirm(currentLang.value === 'fa' ? 'آیا از حذف این اینباند اطمینان دارید؟' : 'Are you sure you want to delete this inbound?')) return;
   try {
     await axios.delete(`/api/inbounds/${id}`);
-    props.toast?.('اینباند حذف شد', 'success');
+    props.toast?.(currentLang.value === 'fa' ? 'اینباند حذف شد' : 'Inbound deleted successfully', 'success');
     fetchInbounds();
   } catch (err) {
-    props.toast?.('خطا در حذف اینباند', 'error');
+    props.toast?.(currentLang.value === 'fa' ? 'خطا در حذف اینباند' : 'Failed to delete inbound', 'error');
   }
 }
 
@@ -639,12 +639,12 @@ function copyInboundInfoPage(inbound: any) {
   const link = `http://${host}/subinfo/${inbound.uuid || inbound.id}`;
   copyToClipboard(link);
   window.open(link, '_blank');
-  props.toast?.('صفحه وب کانفیگ در تب جدید باز شد و لینک کپی گردید.', 'success');
+  props.toast?.(currentLang.value === 'fa' ? 'صفحه وب کانفیگ در تب جدید باز شد و لینک کپی گردید.' : 'Config web page opened and link copied.', 'success');
 }
 
 function copy(text: string) {
   copyToClipboard(text);
-  props.toast?.('محتوا با موفقیت کپی شد.', 'success');
+  props.toast?.(t('copied'), 'success');
 }
 
 onMounted(fetchInbounds);

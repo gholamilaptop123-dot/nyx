@@ -41,7 +41,7 @@
         </div>
 
         <div>
-          <label class="block text-xs text-gray-400 mb-1">پورت ارتباطی تونل</label>
+          <label class="block text-xs text-gray-400 mb-1">{{ t('tunnelPortLabel') }}</label>
           <input 
             v-model="params.tunnelPort"
             type="number" 
@@ -52,7 +52,7 @@
         </div>
 
         <div>
-          <label class="block text-xs text-gray-400 mb-1">پورت اینباند Xray روی خارج</label>
+          <label class="block text-xs text-gray-400 mb-1">{{ t('kharejInboundPortLabel') }}</label>
           <input 
             v-model="params.targetInboundPort"
             type="number" 
@@ -66,7 +66,7 @@
       <!-- Options for DNS Tunnel -->
       <div v-if="params.tunnelType === 'WHITE_DNS_TUNNEL'" class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-white/5">
         <div>
-          <label class="block text-xs text-gray-400 mb-1">آدرس IP دی‌ان‌اس سفید</label>
+          <label class="block text-xs text-gray-400 mb-1">{{ t('whiteDnsIpLabel') }}</label>
           <input 
             v-model="params.whiteDnsServer"
             type="text" 
@@ -76,7 +76,7 @@
           />
         </div>
         <div>
-          <label class="block text-xs text-gray-400 mb-1">زیردامنه اختصاصی دی‌ان‌اس</label>
+          <label class="block text-xs text-gray-400 mb-1">{{ t('whiteSubdomainLabel') }}</label>
           <input 
             v-model="params.whiteDomain"
             type="text" 
@@ -93,7 +93,7 @@
           class="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-cyberYellow via-red-600 to-cyberRed text-black font-extrabold text-xs shadow-lg shadow-cyberYellow/20 hover:opacity-90 transition-all flex items-center gap-2 border border-cyberYellow/40"
         >
           <Code class="w-4 h-4 text-black font-bold" />
-          تولید راهنما و اسکریپت‌های نصب
+          {{ t('generateScriptsBtnLabel') }}
         </button>
       </div>
     </div>
@@ -103,7 +103,7 @@
       <div class="glass-panel p-5 rounded-3xl border border-cyberYellow/30">
         <h3 class="text-base font-extrabold text-cyberYellow glow-yellow flex items-center gap-2 mb-4">
           <BookOpen class="w-5 h-5 text-cyberYellow" />
-          راهنمای گام‌به‌گام راه‌اندازی (ترتیب اجرای دستورات)
+          {{ t('stepGuideTitle') }}
         </h3>
         <div class="space-y-4">
           <div v-for="(step, i) in stepGuide.steps" :key="i" class="border border-white/10 rounded-2xl overflow-hidden bg-black/40">
@@ -114,14 +114,14 @@
             <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x md:divide-x-reverse divide-white/5">
               <div class="p-4 space-y-2">
                 <div class="flex items-center justify-between mb-2">
-                  <span class="text-xs font-bold text-cyberViolet flex items-center gap-1">🇮🇷 سرور ایران</span>
+                  <span class="text-xs font-bold text-cyberViolet flex items-center gap-1">{{ t('iranServerBadge') }}</span>
                   <span class="text-[11px] font-mono text-gray-400" dir="ltr">{{ stepGuide.iranIp }}</span>
                 </div>
                 <pre dir="ltr" class="text-xs font-mono text-gray-200 bg-black/60 p-3 rounded-xl whitespace-pre-wrap break-all border border-white/5 text-left leading-relaxed selection:bg-cyberViolet selection:text-white">{{ step.iranStep }}</pre>
               </div>
               <div class="p-4 space-y-2">
                 <div class="flex items-center justify-between mb-2">
-                  <span class="text-xs font-bold text-cyberGreen flex items-center gap-1">🇪🇺 سرور خارج</span>
+                  <span class="text-xs font-bold text-cyberGreen flex items-center gap-1">{{ t('kharejServerBadge') }}</span>
                   <span class="text-[11px] font-mono text-gray-400" dir="ltr">{{ stepGuide.kharejIp }}</span>
                 </div>
                 <pre dir="ltr" class="text-xs font-mono text-gray-200 bg-black/60 p-3 rounded-xl whitespace-pre-wrap break-all border border-white/5 text-left leading-relaxed selection:bg-cyberGreen selection:text-white">{{ step.kharejStep }}</pre>
@@ -138,13 +138,13 @@
       <div class="glass-panel p-5 rounded-3xl border border-white/10 space-y-3">
         <div class="flex items-center justify-between">
           <h4 class="text-sm font-bold text-white flex items-center gap-2">
-            <span>🇮🇷</span> اسکریپت کامل اجرا روی سرور ایران
+            <span>{{ t('iranScriptBoxTitle') }}</span>
           </h4>
           <button 
             @click="copyText(iranScript)"
             class="px-3 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold text-cyberCyan transition-all"
           >
-            کپی اسکریپت
+            {{ t('copyScriptBtn') }}
           </button>
         </div>
         <pre dir="ltr" class="bg-black/60 p-4 rounded-2xl text-xs font-mono text-cyberGreen overflow-x-auto border border-white/5 max-h-96 text-left leading-relaxed">{{ iranScript }}</pre>
@@ -154,13 +154,13 @@
       <div class="glass-panel p-5 rounded-3xl border border-white/10 space-y-3">
         <div class="flex items-center justify-between">
           <h4 class="text-sm font-bold text-white flex items-center gap-2">
-            <span>🇪🇺</span> اسکریپت کامل اجرا روی سرور خارج
+            <span>{{ t('kharejScriptBoxTitle') }}</span>
           </h4>
           <button 
             @click="copyText(kharejScript)"
             class="px-3 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold text-cyberCyan transition-all"
           >
-            کپی اسکریپت
+            {{ t('copyScriptBtn') }}
           </button>
         </div>
         <pre dir="ltr" class="bg-black/60 p-4 rounded-2xl text-xs font-mono text-cyberCyan overflow-x-auto border border-white/5 max-h-96 text-left leading-relaxed">{{ kharejScript }}</pre>
@@ -201,14 +201,14 @@ async function generateScripts() {
     kharejScript.value = res.data.kharejScript;
     stepGuide.value = res.data.stepGuide;
     generated.value = true;
-    props.toast?.('اسکریپت‌های اتوماتیک تونل با موفقیت تولید شدند', 'success');
+    props.toast?.(t('tunnelScriptsSuccess'), 'success');
   } catch (err) {
-    props.toast?.('خطا در دریافت اطلاعات اسکریپت تونل', 'error');
+    props.toast?.(t('tunnelScriptError'), 'error');
   }
 }
 
 function copyText(text: string) {
   copyToClipboard(text);
-  props.toast?.('اسکریپت در حافظه کپی شد.', 'success');
+  props.toast?.(t('scriptCopiedToast'), 'success');
 }
 </script>

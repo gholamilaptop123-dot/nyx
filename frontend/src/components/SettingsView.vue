@@ -85,7 +85,7 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { Bot, Send, Info, Shield, Save, RefreshCw } from 'lucide-vue-next';
-import { t } from '../i18n';
+import { t, currentLang } from '../i18n';
 
 const props = defineProps<{ toast?: (msg: string, type?: 'success' | 'error' | 'info') => void }>();
 
@@ -114,9 +114,9 @@ async function saveSettings() {
       adminChatId: adminChatId.value
     });
     botEnabled.value = res.data.botEnabled;
-    props.toast?.(res.data.message || 'تنظیمات ذخیره شد', 'success');
+    props.toast?.(res.data.message || (currentLang.value === 'fa' ? 'تنظیمات ذخیره شد' : 'Settings saved successfully'), 'success');
   } catch (err: any) {
-    props.toast?.(err?.response?.data?.error || 'خطا در ذخیره تنظیمات', 'error');
+    props.toast?.(err?.response?.data?.error || (currentLang.value === 'fa' ? 'خطا در ذخیره تنظیمات' : 'Failed to save settings'), 'error');
   } finally {
     saving.value = false;
   }

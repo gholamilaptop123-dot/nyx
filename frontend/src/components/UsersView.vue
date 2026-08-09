@@ -334,12 +334,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 import { UserPlus, Trash2, QrCode, Copy, Download, Edit3, ExternalLink } from 'lucide-vue-next';
 import QrcodeVue from 'qrcode.vue';
 import { copyToClipboard } from '../utils/clipboard';
-import { t } from '../i18n';
+import { t, currentLang } from '../i18n';
 
 const users = ref<any[]>([]);
 const showCreateModal = ref(false);
@@ -356,19 +356,19 @@ const configLoading = ref(false);
 const selectedConfigIsp = ref('DEFAULT');
 const activeConfigTab = ref('vless');
 
-const configTabs = [
-  { id: 'vless', label: '🔗 لینک مستقیم VLESS' },
+const configTabs = computed(() => [
+  { id: 'vless', label: currentLang.value === 'fa' ? '🔗 لینک مستقیم VLESS' : '🔗 Direct VLESS Links' },
   { id: 'clash', label: '⚡ Clash Meta' },
   { id: 'singbox', label: '📦 Sing-Box' },
-  { id: 'qr', label: '📱 بارکد QR' },
-];
+  { id: 'qr', label: currentLang.value === 'fa' ? '📱 بارکد QR' : '📱 QR Code' },
+]);
 
-const ispOptions = [
-  { id: 'DEFAULT', label: '🌐 عمومی', activeClass: 'bg-cyberYellow text-black font-bold' },
-  { id: 'MCI', label: '📱 همراه اول', activeClass: 'bg-cyberYellow text-black font-bold' },
-  { id: 'IRANCELL', label: '📡 ایرانسل', activeClass: 'bg-cyberRed text-white font-bold' },
-  { id: 'WHITE_SNI', label: '⚡ SNI سفید (زمان قطعی نت)', activeClass: 'bg-cyberGreen text-black font-bold' },
-];
+const ispOptions = computed(() => [
+  { id: 'DEFAULT', label: currentLang.value === 'fa' ? '🌐 عمومی' : '🌐 General', activeClass: 'bg-cyberYellow text-black font-bold' },
+  { id: 'MCI', label: t('operatorMci'), activeClass: 'bg-cyberYellow text-black font-bold' },
+  { id: 'IRANCELL', label: t('operatorIrancell'), activeClass: 'bg-cyberRed text-white font-bold' },
+  { id: 'WHITE_SNI', label: t('operatorWhite'), activeClass: 'bg-cyberGreen text-black font-bold' },
+]);
 
 const props = defineProps<{ toast?: (msg: string, type?: 'success' | 'error' | 'info') => void }>();
 const newUser = ref({ username: '', dataLimitGb: 0, expireDays: 30, maxDevices: 2 });
@@ -385,12 +385,12 @@ async function createUser() {
     showCreateModal.value = false;
     const createdUser = res.data;
     newUser.value = { username: '', dataLimitGb: 0, expireDays: 30, maxDevices: 2 };
-    props.toast?.('کاربر جدید با موفقیت ساخته شد', 'success');
+    props.toast?.(currentLang.value === 'fa' ? 'کاربر جدید با موفقیت ساخته شد' : 'New user created successfully', 'success');
     await fetchUsers();
     if (createdUser) {
       openConfigModal(createdUser);
     }
-  } catch (err: any) { props.toast?.(err?.response?.data?.error || 'خطا در ساخت کاربر جدید', 'error'); }
+  } catch (err: any) { props.toast?.(err?.response?.data?.error || (currentLang.value === 'fa' ? 'خطا در ساخت کاربر جدید' : 'Failed to create user'), 'error'); }
 }
 
 function openEditModal(user: any) {
@@ -407,22 +407,22 @@ async function saveUserEdit() {
   if (!editingUser.value) return;
   try {
     await axios.patch(`/api/users/${editingUser.value.id}`, editForm.value);
-    props.toast?.('مشخصات کاربر با موفقیت به‌روزرسانی گردید', 'success');
+    props.toast?.(currentLang.value === 'fa' ? 'مشخصات کاربر با موفقیت به‌روزرسانی گردید' : 'User updated successfully', 'success');
     editingUser.value = null;
     fetchUsers();
   } catch (err: any) {
-    props.toast?.('خطا در بروزرسانی کاربر', 'error');
+    props.toast?.(currentLang.value === 'fa' ? 'خطا در بروزرسانی کاربر' : 'Failed to update user', 'error');
   }
 }
 
 async function deleteUser(id: string) {
-  if (!confirm('آیا از حذف این کاربر اطمینان دارید؟')) return;
+  if (!confirm(currentLang.value === 'fa' ? 'آیا از حذف این کاربر اطمینان دارید؟' : 'Are you sure you want to delete this user?')) return;
   try {
     await axios.delete(`/api/users/${id}`);
-    props.toast?.('کاربر با موفقیت حذف شد', 'success');
+    props.toast?.(currentLang.value === 'fa' ? 'کاربر با موفقیت حذف شد' : 'User deleted successfully', 'success');
     fetchUsers();
   }
-  catch (err) { props.toast?.('خطا در حذف کاربر', 'error'); }
+  catch (err) { props.toast?.(currentLang.value === 'fa' ? 'خطا در حذف کاربر' : 'Failed to delete user', 'error'); }
 }
 
 async function openConfigModal(user: any) {
@@ -445,7 +445,7 @@ async function loadConfigs() {
 
 function copy(text: string) {
   copyToClipboard(text);
-  props.toast?.('محتوا در حافظه کپی شد.', 'success');
+  props.toast?.(t('copied'), 'success');
 }
 
 function openSubModal(user: any) { selectedUserForSub.value = user; }
@@ -460,7 +460,7 @@ function copyUserInfoLink(user: any) {
   const link = `http://${host}/subinfo/${user.uuid}`;
   copyToClipboard(link);
   window.open(link, '_blank');
-  props.toast?.('صفحه وب اختصاصی کاربر باز شد و لینک کپی گردید.', 'success');
+  props.toast?.(currentLang.value === 'fa' ? 'صفحه وب اختصاصی کاربر باز شد و لینک کپی گردید.' : 'User web portal opened & link copied.', 'success');
 }
 
 onMounted(fetchUsers);

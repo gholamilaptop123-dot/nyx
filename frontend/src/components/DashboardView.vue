@@ -333,7 +333,7 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
 import { Users, CheckCircle, Activity, Server, ShieldAlert, Zap, Cpu, HardDrive, Clock, Terminal } from 'lucide-vue-next';
 import { copyToClipboard } from '../utils/clipboard';
-import { t } from '../i18n';
+import { t, currentLang } from '../i18n';
 
 const stats = ref({
   totalUsers: 0,
@@ -346,11 +346,11 @@ const stats = ref({
     cpuPercent: 12,
     ramUsageGb: '1.2 / 8.0 GB',
     ramPercent: 15,
-    uptimeText: 'آنلاین',
-    xrayStatus: 'فعال و آنلاین (ONLINE 🟢)',
+    uptimeText: currentLang.value === 'fa' ? 'آنلاین' : 'Online',
+    xrayStatus: currentLang.value === 'fa' ? 'فعال و آنلاین (ONLINE 🟢)' : 'Active & Online (ONLINE 🟢)',
     pingMs: 18,
     networkSpeedMb: '5.2',
-    bypassEfficiency: '۹۹.۸٪ باثبات'
+    bypassEfficiency: currentLang.value === 'fa' ? '۹۹.۸٪ باثبات' : '99.8% Stable'
   }
 });
 
