@@ -219,6 +219,16 @@ export const tMap = {
     triggerFailoverBtn: '⚡ Audit & Auto-Switch Blocked SNIs Now',
     autoFailoverStatusActive: 'Active & Monitoring (60s loop)',
     failoverSuccessToast: 'Auto-failover check completed successfully',
+    // WARP Outbound Keys
+    warpTitle: '1-Click Cloudflare WARP Outbound (Anti-Sanction & IP Masking)',
+    warpSub: 'Routes outgoing server traffic through Cloudflare WireGuard network. Unlocks ChatGPT, OpenAI, Netflix, Spotify, and hides VPS IP.',
+    warpEnabledLabel: 'WARP Active & Connected',
+    warpDisabledLabel: 'WARP Outbound Disabled',
+    enableWarpBtn: '⚡ Enable Cloudflare WARP Outbound',
+    disableWarpBtn: '🛑 Disable WARP Outbound',
+    warpModeAll: 'Route 100% Traffic (Maximum IP Shield)',
+    warpModeSanctioned: 'Sanctioned Sites Only (ChatGPT, Netflix, Spotify)',
+    warpAssignedIp: 'Assigned Cloudflare IPv4',
 
     // Tunnels View Keys
     tunnelPortLabel: 'Tunnel Communication Port',
@@ -439,6 +449,17 @@ export const tMap = {
     triggerFailoverBtn: '⚡ پایش لایو و سوئیچ اتوماتیک SNIهای مسدودشده',
     autoFailoverStatusActive: 'فعال و در حال پایش (چک هر ۶۰ ثانیه)',
     failoverSuccessToast: 'پایش و سوئیچ اتوماتیک SNI با موفقیت انجام شد',
+
+    // WARP Outbound Keys
+    warpTitle: 'خروجی ۱-کلیکه کلودفلر WARP (رفع تحریم و مخفی‌سازی IP سرور)',
+    warpSub: 'انتقال ۱۰۰٪ ترافیک خروجی سرور از شبکه کلودفلر؛ رفع تحریم کامل سایت‌های ChatGPT، نتفلیکس، اسپاتیفای و مخفی‌سازی IP اصلی سرور.',
+    warpEnabledLabel: 'سرویس WARP فعال و متصل است',
+    warpDisabledLabel: 'سرویس WARP غیرفعال است',
+    enableWarpBtn: '⚡ فعال‌سازی خروجی کلودفلر WARP',
+    disableWarpBtn: '🛑 غیرفعال‌سازی WARP',
+    warpModeAll: 'روت ۱۰۰٪ ترافیک (حداکثر امنیت و مخفی‌سازی IP)',
+    warpModeSanctioned: 'فقط سایت‌های تحریمی (ChatGPT، نتفلیکس، اسپاتیفای)',
+    warpAssignedIp: 'آدرس IP اختصاصی کلودفلر (v4)',
 
     // Tunnels View Keys
     tunnelPortLabel: 'پورت ارتباطی تونل',

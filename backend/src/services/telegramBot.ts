@@ -6,6 +6,7 @@ import { generateX25519Keypair } from '../xray/configGenerator';
 import { SubscriptionService } from './subscriptionService';
 import { TunnelManager } from './tunnelManager';
 import { autoFailoverService } from './autoFailoverService';
+import { WarpService } from './warpService';
 
 const prisma = new PrismaClient();
 let currentBotInstance: TelegramBot | null = null;
@@ -72,9 +73,9 @@ export function initTelegramBot(
       keyboard: [
         [{ text: '📊 Server Stats' }, { text: '🌐 Inbounds & Configs' }],
         [{ text: '➕ Create Config / Inbound' }, { text: '⚡ Live SNI Tester' }],
-        [{ text: '🛡️ Auto-Failover SNI' }, { text: '🚀 Tunnel Scripts' }],
-        [{ text: '🖥️ Servers & Nodes' }, { text: '👥 Users List' }],
-        [{ text: '🚪 Admin Logout' }]
+        [{ text: '🛡️ Auto-Failover SNI' }, { text: '🌐 Cloudflare WARP' }],
+        [{ text: '🚀 Tunnel Scripts' }, { text: '🖥️ Servers & Nodes' }],
+        [{ text: '👥 Users List' }, { text: '🚪 Admin Logout' }]
       ],
       resize_keyboard: true
     };
@@ -147,6 +148,7 @@ All web panel features (config creation, traffic monitoring, live SNI testing, t
       if (text === '➕ Create Config / Inbound' || text === '➕ ساخت کانفیگ / اینباند') return startCreateInboundWizard(chatId);
       if (text === '⚡ Live SNI Tester' || text === '⚡ تست SNI آنلاین') return sendSniTesterMenu(chatId);
       if (text === '🛡️ Auto-Failover SNI' || text === '🛡️ سوئیچ اتوماتیک SNI') return handleAutoFailoverTrigger(chatId);
+      if (text === '🌐 Cloudflare WARP' || text === '🌐 کلودفلر WARP') return handleWarpControl(chatId);
       if (text === '🚀 Tunnel Scripts' || text === '🚀 اسکریپت تونل‌زنی') return startTunnelWizard(chatId);
       if (text === '🖥️ Servers & Nodes' || text === '🖥️ سرورها و نودها') return sendAdminNodesList(chatId);
       if (text === '👥 Users List' || text === '👥 لیست کاربران') return sendAdminUsersList(chatId);
@@ -250,6 +252,23 @@ All web panel features (config creation, traffic monitoring, live SNI testing, t
     const data = query.data || '';
 
     bot.answerCallbackQuery(query.id);
+
+    // --- Cloudflare WARP Callbacks ---
+    if (data.startsWith('toggle_warp:') && isAdmin(chatId)) {
+      const targetState = data.split('toggle_warp:')[1] === 'true';
+      await WarpService.updateWarpStatus(prisma, targetState, 'ALL');
+      if (reloadXrayCallback) await reloadXrayCallback();
+      bot.sendMessage(chatId, `✅ وضعیت Cloudflare WARP به *${targetState ? 'فعال (ترافیک کلی)' : 'غیرفعال'}* تغییر یافت و هسته Xray ریلود شد.`, { parse_mode: 'Markdown' });
+      return handleWarpControl(chatId);
+    }
+
+    if (data === 'register_warp' && isAdmin(chatId)) {
+      bot.sendMessage(chatId, '⏳ در حال دریافت و ثبت کلید جدید از کلودفلر WARP...');
+      await WarpService.registerWarpAccount(prisma);
+      if (reloadXrayCallback) await reloadXrayCallback();
+      bot.sendMessage(chatId, '✅ ثبت‌نام مجدد اکانت Cloudflare WARP با موفقیت انجام شد!');
+      return handleWarpControl(chatId);
+    }
 
     // --- Inbound Creation Wizard Callbacks ---
     if (data.startsWith('inb_port_') && isAdmin(chatId)) {
@@ -867,6 +886,40 @@ ${infoWebUrl}`, { parse_mode: 'Markdown' });
       bot.sendMessage(chatId, msg, { parse_mode: 'Markdown' });
     } catch (err) {
       bot.sendMessage(chatId, '❌ خطا در اجرای سوئیچ هوشمند SNI.', { parse_mode: 'Markdown' });
+    }
+  }
+
+  async function handleWarpControl(chatId: number) {
+    try {
+      const warpConfig = await WarpService.getWarpConfig(prisma);
+      const isEnabled = warpConfig?.enabled || false;
+      const mode = warpConfig?.mode || 'ALL';
+      const statusEmoji = isEnabled ? '🟢 فعال' : '⚪ غیرفعال';
+      const modeText = mode === 'ALL' ? '۱۰۰٪ کل ترافیک (All Traffic)' : 'فقط سایت‌های تحریمی (ChatGPT, Netflix, Spotify)';
+
+      const text = `🌐 *مدیریت خروجی Cloudflare WARP (سرویس ضد تحریم و مخفی‌سازی IP)*
+
+🔹 *وضعیت اتصال:* ${statusEmoji}
+⚡ *حالت روتینگ:* ${modeText}
+📡 *IP اختصاصی کلودفلر (v4):* \`${warpConfig?.ipv4 || 'ثبت‌نشده'}\`
+📜 *IP اختصاصی کلودفلر (v6):* \`${warpConfig?.ipv6 || 'ثبت‌نشده'}\`
+
+_با فعال‌سازی این سرویس، ترافیک سرور شما از شبکه WireGuard کلودفلر عبور کرده، IP اصلی سرور مخفی شده و تمام سایت‌های تحریمی باز می‌شوند._`;
+
+      const keyboard = {
+        inline_keyboard: [
+          [
+            { text: isEnabled ? '🛑 غیرفعال‌سازی WARP' : '🚀 فعال‌سازی ۱-کلیکه WARP', callback_data: `toggle_warp:${!isEnabled}` }
+          ],
+          [
+            { text: '🔄 ثبت‌نام مجدد اکانت WARP', callback_data: 'register_warp' }
+          ]
+        ]
+      };
+
+      bot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: keyboard });
+    } catch (err) {
+      bot.sendMessage(chatId, '❌ خطا در دریافت وضعیت Cloudflare WARP.');
     }
   }
 

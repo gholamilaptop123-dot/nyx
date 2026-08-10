@@ -78,13 +78,93 @@
         </button>
       </div>
     </div>
+
+    <!-- Cloudflare WARP Outbound Management Card -->
+    <div class="glass-panel p-6 rounded-3xl border border-cyan-500/30 bg-gradient-to-r from-black/80 via-cyan-950/20 to-black/80 space-y-6">
+      <div class="flex items-center justify-between border-b border-white/10 pb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center font-bold">
+            <Globe class="w-5 h-5" />
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span>{{ t('warpTitle') }}</span>
+            </h3>
+            <p class="text-xs text-gray-300 max-w-2xl leading-relaxed mt-0.5">
+              {{ t('warpSub') }}
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+          :class="warpEnabled ? 'bg-cyan-500/10 border border-cyan-500/30 text-cyan-400' : 'bg-white/5 border border-white/10 text-gray-400'"
+        >
+          <span class="w-2 h-2 rounded-full" :class="warpEnabled ? 'bg-cyan-400 animate-pulse' : 'bg-gray-500'"></span>
+          {{ warpEnabled ? t('warpEnabledLabel') : t('warpDisabledLabel') }}
+        </div>
+      </div>
+
+      <div v-if="warpConfig" class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-black/40 p-4 rounded-2xl border border-white/5 text-xs text-gray-300">
+        <div>
+          <span class="text-gray-400 block mb-1">{{ t('warpAssignedIp') }}:</span>
+          <span class="font-mono text-cyan-300 font-bold bg-cyan-950/40 px-2 py-1 rounded border border-cyan-500/20">{{ warpConfig.ipv4 || 'N/A' }}</span>
+        </div>
+        <div>
+          <span class="text-gray-400 block mb-1">Assigned Cloudflare IPv6:</span>
+          <span class="font-mono text-cyan-300 font-bold bg-cyan-950/40 px-2 py-1 rounded border border-cyan-500/20 truncate block">{{ warpConfig.ipv6 || 'N/A' }}</span>
+        </div>
+      </div>
+
+      <!-- WARP Mode Options -->
+      <div class="space-y-3">
+        <label class="block text-xs font-semibold text-gray-300">Routing Mode / حالت روتینگ:</label>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button 
+            type="button" 
+            @click="warpMode = 'ALL'"
+            :class="['p-3 rounded-2xl border text-xs text-left transition-all', warpMode === 'ALL' ? 'bg-cyan-500/20 border-cyan-400 text-white font-bold' : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10']"
+          >
+            <div class="font-bold text-cyan-300">🌐 {{ t('warpModeAll') }}</div>
+            <div class="text-[11px] text-gray-400 mt-1">Routes 100% server outbound traffic through Cloudflare WireGuard mesh.</div>
+          </button>
+          <button 
+            type="button" 
+            @click="warpMode = 'SANCTIONED'"
+            :class="['p-3 rounded-2xl border text-xs text-left transition-all', warpMode === 'SANCTIONED' ? 'bg-cyan-500/20 border-cyan-400 text-white font-bold' : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10']"
+          >
+            <div class="font-bold text-cyan-300">🤖 {{ t('warpModeSanctioned') }}</div>
+            <div class="text-[11px] text-gray-400 mt-1">Routes OpenAI, ChatGPT, Netflix, Spotify & IP check sites through WARP.</div>
+          </button>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-white/10">
+        <button 
+          @click="registerWarp" 
+          :disabled="warpRegistering"
+          class="px-4 py-2 rounded-2xl bg-white/5 hover:bg-white/10 text-gray-300 text-xs border border-white/10 flex items-center gap-2 disabled:opacity-50"
+        >
+          <RefreshCw class="w-3.5 h-3.5" :class="{ 'animate-spin': warpRegistering }" />
+          <span>Re-register WARP Account</span>
+        </button>
+
+        <button 
+          @click="toggleWarp" 
+          :disabled="warpSaving"
+          :class="['px-6 py-2.5 rounded-2xl font-extrabold text-xs shadow-lg transition-all flex items-center gap-2 border disabled:opacity-50', warpEnabled ? 'bg-cyberRed text-white border-cyberRed/40 shadow-cyberRed/20' : 'bg-gradient-to-r from-cyan-500 to-teal-500 text-black border-cyan-400 shadow-cyan-500/20']"
+        >
+          <Zap class="w-4 h-4" :class="{ 'animate-spin': warpSaving }" />
+          <span>{{ warpEnabled ? t('disableWarpBtn') : t('enableWarpBtn') }}</span>
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import { Bot, Send, Info, Shield, Save, RefreshCw } from 'lucide-vue-next';
+import { Bot, Send, Info, Shield, Save, RefreshCw, Globe, Zap } from 'lucide-vue-next';
 import { t, currentLang } from '../i18n';
 
 const props = defineProps<{ toast?: (msg: string, type?: 'success' | 'error' | 'info') => void }>();
@@ -95,12 +175,24 @@ const botEnabled = ref(false);
 const showToken = ref(false);
 const saving = ref(false);
 
+// WARP State
+const warpConfig = ref<any>(null);
+const warpEnabled = ref(false);
+const warpMode = ref<'ALL' | 'SANCTIONED'>('ALL');
+const warpSaving = ref(false);
+const warpRegistering = ref(false);
+
 async function fetchSettings() {
   try {
     const res = await axios.get('/api/settings');
     botToken.value = res.data.botToken || '';
     adminChatId.value = res.data.adminChatId || '';
     botEnabled.value = res.data.botEnabled || false;
+
+    const warpRes = await axios.get('/api/warp/status');
+    warpConfig.value = warpRes.data;
+    warpEnabled.value = warpRes.data?.enabled || false;
+    warpMode.value = warpRes.data?.mode || 'ALL';
   } catch (err) {
     console.error('Failed to fetch settings:', err);
   }
@@ -119,6 +211,38 @@ async function saveSettings() {
     props.toast?.(err?.response?.data?.error || (currentLang.value === 'fa' ? 'خطا در ذخیره تنظیمات' : 'Failed to save settings'), 'error');
   } finally {
     saving.value = false;
+  }
+}
+
+async function toggleWarp() {
+  warpSaving.value = true;
+  const targetState = !warpEnabled.value;
+  try {
+    const res = await axios.post('/api/warp/toggle', {
+      enabled: targetState,
+      mode: warpMode.value
+    });
+    warpConfig.value = res.data.config;
+    warpEnabled.value = res.data.config.enabled;
+    props.toast?.(currentLang.value === 'fa' ? `سرویس Cloudflare WARP ${targetState ? 'فعال' : 'غیرفعال'} شد.` : `Cloudflare WARP ${targetState ? 'enabled' : 'disabled'}.`, 'success');
+  } catch (err: any) {
+    props.toast?.(err?.response?.data?.error || 'Failed to update WARP state', 'error');
+  } finally {
+    warpSaving.value = false;
+  }
+}
+
+async function registerWarp() {
+  warpRegistering.value = true;
+  try {
+    const res = await axios.post('/api/warp/register');
+    warpConfig.value = res.data.config;
+    warpEnabled.value = res.data.config.enabled;
+    props.toast?.(currentLang.value === 'fa' ? 'ثبت‌نام مجدد اکانت WARP با موفقیت انجام شد' : 'WARP account registered successfully', 'success');
+  } catch (err: any) {
+    props.toast?.(err?.response?.data?.error || 'Failed to register WARP account', 'error');
+  } finally {
+    warpRegistering.value = false;
   }
 }
 

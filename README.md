@@ -82,6 +82,7 @@
 | **Cross-Platform (Linux + Windows Server)** | **Yes (Native PowerShell + Bash)** | Linux Only | Linux Only |
 | **RAM Footprint (Memory)** | **Lightweight (~70 MB)** | Moderate (~250 MB) | Heavy (~400 MB+) |
 | **Smart Auto-Failover SNI Daemon** | **Yes (DPI Blackout Auto-Switch)** | No | No |
+| **1-Click Cloudflare WARP Outbound** | **Yes (Anti-Sanction & IP Shield)** | Complex Manual | Complex Manual |
 | **Token-based Authentication** | **Yes (Secure Auth)** | Yes | Yes |
 | **Live Traffic Sync via gRPC** | **Yes (Every 20 seconds)** | Yes | Yes |
 | **Live TLS SNI Handshake Tester** | **Built-in Panel Tool** | No | No |
@@ -142,7 +143,16 @@ iwr -useb https://raw.githubusercontent.com/icynetx/Nyx/main/install.ps1 | iex
 - **هشدار فوری تلگرام:** ارسال گزارش کامل سوئیچ به همراه میزان تاخیر میلی‌ثانیه‌ای به پیوی تلگرام ادمین.
 - **دکمه اجرای دستی ۱-کلیکه:** امکان اجرای پایش و سوئیچ آنی از طریق وب‌پنل و دکمه `🛡️ Auto-Failover SNI` در ربات تلگرام.
 
-### 🔒 ۲. پروتکل `VLESS + REALITY` با کلیدهای اختصاصی `X25519`
+### 🌐 ۲. خروجی ۱-کلیکه کلودفلر WARP (رفع تحریم و مخفی‌سازی IP سرور)
+- **ثبت‌نام اتوماتیک اکانت WireGuard کلودفلر:** اتصال مستقیم به API رسمی کلودفلر جهت دریافت IP و کلیدهای اختصاصی IPv4/IPv6.
+- **رفع تحریم کامل وب‌سایت‌های بین‌المللی:** باز کردن اتوماتیک سایت‌های تحریمی نظیر `ChatGPT`, `OpenAI`, `Netflix`, `Spotify`.
+- **مخفی‌سازی IP اصلی سرور (IP Masking):** خروجی ترافیک کاربران از شبکه WireGuard کلودفلر رد شده و IP اصلی VPS شما از دید دیتاسنترها و سیستم‌های فیلترینگ مخفی می‌ماند.
+- **دو حالت روتینگ هوشمند:**
+  - 🌐 **ترافیک ۱۰۰٪ (ALL):** روت کل ترافیک سرور از کلودفلر برای بالاترین سطح امنیت.
+  - 🤖 **سایت‌های تحریمی (SANCTIONED):** روت هوشمند فقط سرویس‌های تحریمی و هوش مصنوعی.
+- **مدیریت از ربات تلگرام و وب‌پنل:** فعال‌سازی/غیرفعال‌سازی ۱-کلیکه از تب تنظیمات یا دکمه `🌐 Cloudflare WARP` در ربات تلگرام.
+
+### 🔒 ۳. پروتکل `VLESS + REALITY` با کلیدهای اختصاصی `X25519`
 - **عدم نیاز به دامنه یا گواهی SSL:** شبیه‌سازی اتصال واقعی TLS به سمت دامنه‌های معتبر جهانی بدون نیاز به ثبت دامنه.
 - **دسته‌بندی هوشمند دامنه‌های وانمودی (SNI):**
   - **مخازن نرم‌افزاری و توسعه:** `archive.ubuntu.com`, `pypi.org`, `registry.npmjs.org`, `download.docker.com`

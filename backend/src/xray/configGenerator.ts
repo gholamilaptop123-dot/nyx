@@ -69,7 +69,20 @@ export function generateX25519Keypair(xrayExecPath?: string): { privateKey: stri
   }
 }
 
-export function generateXrayJsonConfig(inbounds: InboundConfig[], users: UserConfig[]) {
+export interface WarpConfigOptions {
+  enabled: boolean;
+  mode?: 'ALL' | 'SANCTIONED';
+  secretKey?: string;
+  address?: string[];
+  publicKey?: string;
+  endpoint?: string;
+}
+
+export function generateXrayJsonConfig(
+  inbounds: InboundConfig[],
+  users: UserConfig[],
+  warpOptions?: WarpConfigOptions
+) {
   const xrayInbounds: any[] = [
     {
       listen: "127.0.0.1",
@@ -170,6 +183,74 @@ export function generateXrayJsonConfig(inbounds: InboundConfig[], users: UserCon
     });
   }
 
+  const outbounds: any[] = [
+    {
+      protocol: "freedom",
+      tag: "direct"
+    },
+    {
+      protocol: "blackhole",
+      tag: "blocked"
+    }
+  ];
+
+  const routingRules: any[] = [
+    {
+      type: "field",
+      inboundTag: ["api"],
+      outboundTag: "api"
+    },
+    {
+      type: "field",
+      protocol: ["bittorrent"],
+      outboundTag: "blocked"
+    }
+  ];
+
+  // If Cloudflare WARP Outbound is enabled, inject WireGuard outbound protocol & routing rules
+  if (warpOptions && warpOptions.enabled && warpOptions.secretKey) {
+    const warpOutbound = {
+      protocol: "wireguard",
+      settings: {
+        secretKey: warpOptions.secretKey,
+        address: warpOptions.address || ["172.16.0.2/32", "2606:4700:110:8f43:86d7:e76a:be77:8a1/128"],
+        peers: [
+          {
+            publicKey: warpOptions.publicKey || "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=",
+            endpoint: warpOptions.endpoint || "162.159.192.1:2408"
+          }
+        ]
+      },
+      tag: "warp"
+    };
+
+    if (warpOptions.mode === 'ALL') {
+      // Place WARP as the primary default outbound
+      outbounds.unshift(warpOutbound);
+      console.log('[Nyx Config] 🌐 Cloudflare WARP activated as PRIMARY outbound (100% traffic routed through WARP)');
+    } else {
+      // Add WARP outbound & add specific routing rules for sanctioned services (ChatGPT, Netflix, Spotify)
+      outbounds.push(warpOutbound);
+      routingRules.push({
+        type: "field",
+        domain: [
+          "domain:openai.com",
+          "domain:chatgpt.com",
+          "domain:ai.com",
+          "domain:netflix.com",
+          "domain:spotify.com",
+          "domain:ipinfo.io",
+          "domain:cloudflare.com",
+          "geosite:openai",
+          "geosite:netflix",
+          "geosite:spotify"
+        ],
+        outboundTag: "warp"
+      });
+      console.log('[Nyx Config] 🌐 Cloudflare WARP activated for SANCTIONED & STREAMING services (OpenAI, ChatGPT, Netflix, Spotify)');
+    }
+  }
+
   const fullConfig = {
     log: {
       loglevel: "warning"
@@ -194,30 +275,10 @@ export function generateXrayJsonConfig(inbounds: InboundConfig[], users: UserCon
       }
     },
     inbounds: xrayInbounds,
-    outbounds: [
-      {
-        protocol: "freedom",
-        tag: "direct"
-      },
-      {
-        protocol: "blackhole",
-        tag: "blocked"
-      }
-    ],
+    outbounds,
     routing: {
       domainStrategy: "IPIfNonMatch",
-      rules: [
-        {
-          type: "field",
-          inboundTag: ["api"],
-          outboundTag: "api"
-        },
-        {
-          type: "field",
-          protocol: ["bittorrent"],
-          outboundTag: "blocked"
-        }
-      ]
+      rules: routingRules
     }
   };
 

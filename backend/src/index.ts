@@ -11,6 +11,7 @@ import { TunnelManager } from './services/tunnelManager';
 import { XrayStatsService } from './services/xrayStatsService';
 import { initTelegramBot, stopTelegramBot } from './services/telegramBot';
 import { autoFailoverService } from './services/autoFailoverService';
+import { WarpService } from './services/warpService';
 import { execFile, ChildProcess } from 'child_process';
 import tls from 'tls';
 import os from 'os';
@@ -478,6 +479,37 @@ app.post('/api/sni/auto-failover/trigger', async (req, res) => {
   }
 });
 
+// Cloudflare WARP Outbound Endpoints
+app.get('/api/warp/status', async (req, res) => {
+  try {
+    const warpConfig = await WarpService.getWarpConfig(prisma);
+    res.json(warpConfig || { enabled: false, mode: 'ALL' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/warp/toggle', async (req, res) => {
+  try {
+    const { enabled, mode } = req.body;
+    const updatedConfig = await WarpService.updateWarpStatus(prisma, Boolean(enabled), mode || 'ALL');
+    await reloadXrayService();
+    res.json({ success: true, config: updatedConfig });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/warp/register', async (req, res) => {
+  try {
+    const newConfig = await WarpService.registerWarpAccount(prisma);
+    await reloadXrayService();
+    res.json({ success: true, config: newConfig });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 5. Multi-Node & Tunnel Generator APIs
 app.get('/api/nodes', async (req, res) => {
   try {
@@ -747,7 +779,17 @@ async function reloadXrayService() {
       email: u.username
     }));
 
-    const jsonConfig = generateXrayJsonConfig(formattedInbounds, formattedUsers);
+    const warpSetting = await WarpService.getWarpConfig(prisma);
+    const warpOptions = warpSetting && warpSetting.enabled ? {
+      enabled: true,
+      mode: warpSetting.mode,
+      secretKey: warpSetting.privateKey,
+      address: [warpSetting.ipv4, warpSetting.ipv6],
+      publicKey: warpSetting.peerPublicKey,
+      endpoint: warpSetting.endpoint
+    } : undefined;
+
+    const jsonConfig = generateXrayJsonConfig(formattedInbounds, formattedUsers, warpOptions);
     const configPath = saveXrayConfig(jsonConfig);
     console.log(`[Nyx Server] Saved updated Xray configuration to: ${configPath}`);
 
