@@ -21,7 +21,7 @@ echo " ╚██████╗   ██║   ██║ ╚████║██
 echo "  ╚═════╝   ╚═╝   ╚═╝  ╚═══╝╚══════╝   ╚═╝   "
 echo -e "${NC}"
 echo -e "${YELLOW}       🔥 CYNET SECURITY TEAM PRESENTS 🔥${NC}"
-echo -e "${CYAN}       🚀 NYX PANEL v2.0 - NEXT-GEN VPN 🚀${NC}"
+echo -e "${CYAN}       🚀 NYX PANEL v2.1 - NEXT-GEN VPN 🚀${NC}"
 echo -e "${CYAN}====================================================${NC}"
 
 # 1. Check Root Privileges

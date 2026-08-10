@@ -8,7 +8,7 @@
 ### سامانه مدیریت اتصالات Xray-core متمرکز بر شبکه ایران
 #### 🔐 توسعه‌داده‌شده توسط تیم امنیتی ساینت (Cynet Security Team)
 
-[![Version](https://img.shields.io/badge/version-2.0.0-cyberViolet?style=for-the-badge&logo=shield)](https://github.com/icynetx/Nyx)
+[![Version](https://img.shields.io/badge/version-2.1.0-cyberViolet?style=for-the-badge&logo=shield)](https://github.com/icynetx/Nyx)
 [![Telegram](https://img.shields.io/badge/Telegram-cynetx-2CA5E0?style=for-the-badge&logo=telegram)](https://t.me/cynetx)
 [![YouTube Video](https://img.shields.io/badge/Watch_Video-pFEeQrtCg14-FF0000?style=for-the-badge&logo=youtube)](https://youtu.be/pFEeQrtCg14)
 [![Website](https://img.shields.io/badge/Website-cynetx.ir-cyberCyan?style=for-the-badge)](https://cynetx.ir)
@@ -77,10 +77,11 @@
 
 <div dir="ltr" align="center">
 
-| Feature / Capability | 🛡️ Nyx Panel v2.0 | 3x-ui (Sanaei) | Marzban |
+| Feature / Capability | 🛡️ Nyx Panel v2.1 | 3x-ui (Sanaei) | Marzban |
 |---|:---:|:---:|:---:|
 | **Cross-Platform (Linux + Windows Server)** | **Yes (Native PowerShell + Bash)** | Linux Only | Linux Only |
 | **RAM Footprint (Memory)** | **Lightweight (~70 MB)** | Moderate (~250 MB) | Heavy (~400 MB+) |
+| **Smart Auto-Failover SNI Daemon** | **Yes (DPI Blackout Auto-Switch)** | No | No |
 | **Token-based Authentication** | **Yes (Secure Auth)** | Yes | Yes |
 | **Live Traffic Sync via gRPC** | **Yes (Every 20 seconds)** | Yes | Yes |
 | **Live TLS SNI Handshake Tester** | **Built-in Panel Tool** | No | No |
@@ -108,7 +109,7 @@
 <div dir="ltr">
 
 ```bash
-curl -sSL "https://raw.githubusercontent.com/icynetx/Nyx/main/install.sh?v=3" | sudo bash
+curl -sSL "https://raw.githubusercontent.com/icynetx/Nyx/main/install.sh?v=2.1" | sudo bash
 ```
 
 </div>
@@ -134,7 +135,14 @@ iwr -useb https://raw.githubusercontent.com/icynetx/Nyx/main/install.ps1 | iex
 
 ## 🧩 توضیحات تفصیلی امکانات پنل
 
-### 🔒 ۱. پروتکل `VLESS + REALITY` با کلیدهای اختصاصی `X25519`
+### 🛡️ ۱. سامانه هوشمند سوئیچ اتوماتیک SNI در زمان قطعی نت (Smart Auto-Failover v2.1)
+- **پایش لایو پس‌زمینه (Background Daemon):** تست مداوم دست‌تکانی TLS 1.3 تمام اینباندهای فعال در هر ۶۰ ثانیه.
+- **تشخیص اتوماتیک مسدودی اپراتورها (DPI Detection):** در صورت فیلتر شدن دامنه فعال توسط همراه اول یا ایرانسل، پنل بلافاصله مسدودی را تشخیص می‌دهد.
+- **سوئیچ بدون تغییر لینک کاربران (Seamless Whitelist Fallback):** به صورت هوشمند سالم‌ترین دامنه لیست سفید (مانند `ebanking.banksepah.ir` یا `arvancloud.ir`) را جایگزین دامنه مسدودشده کرده و هسته Xray را ریلود می‌کند. **لینک سابسکریپشن کاربران بدون نیاز به ویرایش مجدد متصل می‌ماند!**
+- **هشدار فوری تلگرام:** ارسال گزارش کامل سوئیچ به همراه میزان تاخیر میلی‌ثانیه‌ای به پیوی تلگرام ادمین.
+- **دکمه اجرای دستی ۱-کلیکه:** امکان اجرای پایش و سوئیچ آنی از طریق وب‌پنل و دکمه `🛡️ Auto-Failover SNI` در ربات تلگرام.
+
+### 🔒 ۲. پروتکل `VLESS + REALITY` با کلیدهای اختصاصی `X25519`
 - **عدم نیاز به دامنه یا گواهی SSL:** شبیه‌سازی دست‌تکانی TLS به سمت دامنه‌های معتبر جهانی بدون نیاز به ثبت دامنه.
 - **دسته‌بندی هوشمند دامنه‌های وانمودی (SNI):**
   - **مخازن نرم‌افزاری و توسعه:** `archive.ubuntu.com`, `pypi.org`, `registry.npmjs.org`, `download.docker.com`
