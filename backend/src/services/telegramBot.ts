@@ -600,7 +600,7 @@ ${webUrl}`;
         ]
       }
     };
-    bot.sendMessage(chatId, '⚡ *تست آنلاین دست‌تکانی TLS و سلامت دامنه‌های SNI:*\n\nیک دامنه را انتخاب کنید تا زنده پینگ و اتصال TLS آن سنجیده شود:', { parse_mode: 'Markdown', ...opts });
+    bot.sendMessage(chatId, '⚡ *تست آنلاین اتصال TLS و سلامت دامنه‌های SNI:*\n\nیک دامنه را انتخاب کنید تا زنده پینگ و اتصال TLS آن سنجیده شود:', { parse_mode: 'Markdown', ...opts });
   }
 
   function executeSniTest(chatId: number, domain: string) {
@@ -622,7 +622,7 @@ ${webUrl}`;
       const res = `✅ *تست اتصال موفقیت‌آمیز بود!*
 
 🌐 دامنه SNI: \`${domain}\`
-⚡ تاخیر دست‌تکانی TLS: *${latency} ms*
+⚡ تاخیر برقراری اتصال TLS: *${latency} ms*
 📜 صادرکننده گواهی: *${issuer}*
 🟢 وضعیت: *آماده عبور از قطعی اینترنت*`;
 
@@ -636,7 +636,7 @@ ${webUrl}`;
 
     socket.on('timeout', () => {
       socket.destroy();
-      bot.sendMessage(chatId, `⏱ *پاسخ‌دهی به پایان رسید (Timeout)*\n\n🌐 دامنه: \`${domain}\`\n⚠️ پکت دست‌تکانی TLS تا ۴ ثانیه پاسخ دریافت نکرد.`, { parse_mode: 'Markdown' });
+      bot.sendMessage(chatId, `⏱ *پاسخ‌دهی به پایان رسید (Timeout)*\n\n🌐 دامنه: \`${domain}\`\n⚠️ اتصال TLS در مهلت ۴ ثانیه‌ای پاسخ دریافت نکرد (احتمال اختلال شبکه).`, { parse_mode: 'Markdown' });
     });
   }
 
@@ -849,7 +849,7 @@ ${infoWebUrl}`, { parse_mode: 'Markdown' });
   }
 
   async function handleAutoFailoverTrigger(chatId: number) {
-    bot.sendMessage(chatId, '⏳ *در حال تست دست‌تکانی SNIها و پایش سوئیچ اتوماتیک...*\nلطفاً چند ثانیه شکیبا باشید...', { parse_mode: 'Markdown' });
+    bot.sendMessage(chatId, '⏳ *در حال پایش و تست برقراری اتصال TLS دامنه‌ها...*\nلطفاً چند ثانیه شکیبا باشید...', { parse_mode: 'Markdown' });
     try {
       const result = await autoFailoverService.checkAndFailoverInbounds(prisma, reloadXrayCallback || (async () => {}));
       let msg = `✅ *گزارش سوئیچ هوشمند و پایش SNI (Auto-Failover):*\n\n` +

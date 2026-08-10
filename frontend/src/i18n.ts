@@ -292,10 +292,10 @@ export const tMap = {
     nodesCount: 'نود',
     systemHealth: 'وضعیت سلامت هسته سیستم و سرویس‌ها',
     xrayEngineStatus: 'وضعیت هسته Xray',
-    sniTesterTitle: 'تست زنده دست‌تکانی TLS SNI',
-    sniTesterSub: 'سنجش زنده تأخیر دست‌تکانی روی پورت ۴۴۳',
+    sniTesterTitle: 'تست زنده اتصال و پایش TLS SNI',
+    sniTesterSub: 'سنجش زنده تاخیر و پایداری شبکه روی پورت ۴۴۳',
     sniInputPlaceholder: 'مثلاً yahoo.com یا pypi.org',
-    testSniButton: 'شروع تست دست‌تکانی',
+    testSniButton: 'شروع تست اتصال',
 
     // Users View
     usersTitle: 'مدیریت مشترکین و کاربران',
@@ -431,7 +431,7 @@ export const tMap = {
     sniTip3Title: '⚡ نکته فنی ۳: الزام ترکیب SNI با تکنولوژی Packet Fragment',
     sniTip3Sub: 'استفاده از SNI بدون فعال بودن تکنولوژی Fragment ممکن است توسط سیستم‌های DPI زیرساخت شناسایی شود. حتماً چک‌باکس Fragment را روی اینباند فعال نگه دارید.',
     sniTip4Title: '💡 نکته فنی ۴: پشتیبانی از گواهی TLS 1.3 در پروتکل REALITY',
-    sniTip4Sub: 'در پروتکل VLESS-REALITY حتماً دامنه‌هایی را انتخاب کنید که از TLS 1.3 و Cipherهای مدرن پشتیبانی می‌کنند تا دست‌تکانی SSL بدون اختلال برقرار گردد.',
+    sniTip4Sub: 'در پروتکل VLESS-REALITY حتماً دامنه‌هایی را انتخاب کنید که از TLS 1.3 و Cipherهای مدرن پشتیبانی می‌کنند تا برقراری اتصال SSL (TLS Handshake) بدون اختلال انجام شود.',
 
     // Auto-Failover Keys
     autoFailoverTitle: 'سامانه هوشمند سوئیچ اتوماتیک SNI در زمان قطعی نت (Auto-Failover)',
