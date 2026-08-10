@@ -751,7 +751,7 @@ app.post('/api/settings', async (req, res) => {
   }
 });
 
-// --- HELPER TO RELOAD XRAY CONFIG & PROCESS WITH GRACEFUL SOCKET RELEASE ---
+// Xray service process manager
 async function reloadXrayService() {
   try {
     const inbounds = await prisma.inbound.findMany({ where: { enabled: true } });

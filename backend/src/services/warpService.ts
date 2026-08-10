@@ -13,17 +13,7 @@ export interface WarpAccountConfig {
   mode: 'ALL' | 'SANCTIONED';
 }
 
-// Fallback high-performance Cloudflare WARP credentials if Cloudflare API is unreachable
-const FALLBACK_WARP_PROFILE: WarpAccountConfig = {
-  privateKey: 'eD93...fallback_placeholder', // Will be generated dynamically if needed
-  publicKey: 'bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=',
-  ipv4: '172.16.0.2/32',
-  ipv6: '2606:4700:110:8f43:86d7:e76a:be77:8a1/128',
-  peerPublicKey: 'bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=',
-  endpoint: '162.159.192.1:2408',
-  enabled: false,
-  mode: 'ALL'
-};
+
 
 function generateWgKeypair(): { privateKey: string; publicKey: string } {
   try {
