@@ -236,6 +236,13 @@ export const tMap = {
     downloadBackupBtn: '📦 Download Database Backup (.db)',
     sendBackupTelegramBtn: '🚀 Trigger Instant Telegram Backup',
 
+    // System Maintenance Keys
+    systemControlTitle: 'System Service Control & Maintenance',
+    systemControlSub: 'Restart panel service, reload Xray core listeners, or manage system processes.',
+    restartSystemBtn: '🔄 Restart Panel Service',
+    reloadXrayCoreBtn: '⚡ Reload Xray Core',
+    confirmRestartPrompt: 'Are you sure you want to restart the Nyx Panel service? The connection will refresh in 5 seconds.',
+
     // Tunnels View Keys
     tunnelPortLabel: 'Tunnel Communication Port',
     kharejInboundPortLabel: 'Kharej Inbound Port',
@@ -472,6 +479,13 @@ export const tMap = {
     backupSub: 'فایل بکاپ کامل دیتابیس به صورت اتوماتیک به تلگرام ارسال می‌شود. امکان دانلود مستقیم یا ریستور 1-کلیکه دیتابیس.',
     downloadBackupBtn: '📦 دانلود فایل بکاپ (.db)',
     sendBackupTelegramBtn: '🚀 ارسال آنی فایل بکاپ به تلگرام',
+
+    // System Maintenance Keys
+    systemControlTitle: 'مدیریت و راه‌اندازی مجدد سرویس پنل (System Maintenance)',
+    systemControlSub: 'بازنشانی و راه‌اندازی مجدد پروسه پنل، ریلود هسته Xray و مدیریت سرویس‌های سیستم.',
+    restartSystemBtn: '🔄 راه‌اندازی مجدد پنل (Restart Service)',
+    reloadXrayCoreBtn: '⚡ ریلود هسته Xray',
+    confirmRestartPrompt: 'آیا از راه‌اندازی مجدد سرویس Nyx Panel اطمینان دارید؟ اتصال پنل در ۵ ثانیه بازنشانی می‌شود.',
 
     // Tunnels View Keys
     tunnelPortLabel: 'پورت ارتباطی تونل',

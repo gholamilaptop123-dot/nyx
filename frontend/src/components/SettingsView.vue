@@ -197,13 +197,52 @@
         </button>
       </div>
     </div>
+
+    <!-- System Service Control & Maintenance Card -->
+    <div class="glass-panel p-6 rounded-3xl border border-red-500/30 bg-gradient-to-r from-black/80 via-red-950/20 to-black/80 space-y-6">
+      <div class="flex items-center justify-between border-b border-white/10 pb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-red-500/20 text-red-400 border border-red-500/30 flex items-center justify-center font-bold">
+            <Power class="w-5 h-5" />
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span>{{ t('systemControlTitle') }}</span>
+            </h3>
+            <p class="text-xs text-gray-300 max-w-2xl leading-relaxed mt-0.5">
+              {{ t('systemControlSub') }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+        <button 
+          @click="reloadXrayCore" 
+          :disabled="reloadingXray"
+          class="px-5 py-2.5 rounded-2xl bg-white/5 hover:bg-white/10 text-cyan-300 text-xs border border-cyan-500/30 flex items-center gap-2 disabled:opacity-50"
+        >
+          <RefreshCw class="w-4 h-4 text-cyan-400" :class="{ 'animate-spin': reloadingXray }" />
+          <span>{{ t('reloadXrayCoreBtn') }}</span>
+        </button>
+
+        <button 
+          @click="restartSystem" 
+          :disabled="restartingSystem"
+          class="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 text-white font-extrabold text-xs shadow-lg shadow-red-600/20 hover:opacity-90 transition-all flex items-center gap-2 border border-red-400/40 disabled:opacity-50"
+        >
+          <Power class="w-4 h-4 text-white" :class="{ 'animate-spin': restartingSystem }" />
+          <span>{{ t('restartSystemBtn') }}</span>
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import { Bot, Send, Info, Shield, Save, RefreshCw, Globe, Zap, Database, Download } from 'lucide-vue-next';
+import { Bot, Send, Info, Shield, Save, RefreshCw, Globe, Zap, Database, Download, Power } from 'lucide-vue-next';
 import { t, currentLang } from '../i18n';
 
 const props = defineProps<{ toast?: (msg: string, type?: 'success' | 'error' | 'info') => void }>();
@@ -320,6 +359,38 @@ async function triggerTelegramBackup() {
     }
   } finally {
     telegramBackupSending.value = false;
+  }
+}
+
+// System Maintenance State
+const restartingSystem = ref(false);
+const reloadingXray = ref(false);
+
+async function reloadXrayCore() {
+  reloadingXray.value = true;
+  try {
+    await axios.post('/api/system/reload-xray');
+    props.toast?.(currentLang.value === 'fa' ? 'هسته Xray با موفقیت ریلود شد.' : 'Xray core reloaded successfully.', 'success');
+  } catch (err: any) {
+    props.toast?.(err?.response?.data?.error || 'Failed to reload Xray core', 'error');
+  } finally {
+    reloadingXray.value = false;
+  }
+}
+
+async function restartSystem() {
+  if (!confirm(t('confirmRestartPrompt'))) return;
+
+  restartingSystem.value = true;
+  try {
+    await axios.post('/api/system/restart');
+    props.toast?.(currentLang.value === 'fa' ? 'سرویس پنل در حال راه‌اندازی مجدد است... ۵ ثانیه شکیبا باشید.' : 'Panel service is restarting... Please wait 5 seconds.', 'info');
+    setTimeout(() => {
+      window.location.reload();
+    }, 5000);
+  } catch (err: any) {
+    props.toast?.('Failed to send restart signal', 'error');
+    restartingSystem.value = false;
   }
 }
 

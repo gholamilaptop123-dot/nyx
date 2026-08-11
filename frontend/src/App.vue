@@ -90,7 +90,7 @@
     <!-- Footer -->
     <footer class="border-t border-white/10 py-4 px-6 text-center text-xs text-gray-400 flex flex-col md:flex-row justify-between items-center gap-3 bg-black/20">
       <div class="flex items-center gap-2">
-        <span class="font-semibold text-gray-200">Nyx Panel v2.0</span>
+        <span class="font-semibold text-gray-200">Nyx Panel v2.2.0</span>
         <span class="text-gray-600">|</span>
         <span>{{ t('byCynet') }}</span>
       </div>

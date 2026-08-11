@@ -535,6 +535,32 @@ app.post('/api/backup/telegram-now', async (req, res) => {
   }
 });
 
+// System Control & Maintenance APIs
+app.post('/api/system/restart', (req, res) => {
+  res.json({ success: true, message: 'Nyx Panel service is restarting...' });
+  setTimeout(() => {
+    console.log('[Nyx Server] 🔄 System restart requested via Web UI. Restarting process...');
+    if (process.platform !== 'win32') {
+      execFile('systemctl', ['restart', 'nyx'], (err) => {
+        if (err) {
+          process.exit(0);
+        }
+      });
+    } else {
+      process.exit(0);
+    }
+  }, 1000);
+});
+
+app.post('/api/system/reload-xray', async (req, res) => {
+  try {
+    await reloadXrayService();
+    res.json({ success: true, message: 'Xray core reloaded successfully.' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 5. Multi-Node & Tunnel Generator APIs
 app.get('/api/nodes', async (req, res) => {
   try {
