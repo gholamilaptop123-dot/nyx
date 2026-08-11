@@ -71,9 +71,9 @@
 <br />
 
 <p align="center">
-  <img src="media_warp_backup.png" alt="Nyx Panel v2.2 New Features Dashboard" width="100%" />
+  <img src="media_warp_backup.png" alt="Nyx Panel Dashboard" width="100%" />
   <br />
-  <i>Live UI Screenshot of Nyx Panel v2.2: 1-Click Cloudflare WARP Outbound & Automated Database Backup cards</i>
+  <i>Nyx Panel Control Center: Cloudflare WARP Outbound & Database Backup modules</i>
 </p>
 
 ---
