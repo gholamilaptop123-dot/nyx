@@ -12,6 +12,7 @@ import { XrayStatsService } from './services/xrayStatsService';
 import { initTelegramBot, stopTelegramBot } from './services/telegramBot';
 import { autoFailoverService } from './services/autoFailoverService';
 import { WarpService } from './services/warpService';
+import { BackupService } from './services/backupService';
 import { execFile, ChildProcess } from 'child_process';
 import tls from 'tls';
 import os from 'os';
@@ -510,6 +511,25 @@ app.post('/api/warp/register', async (req, res) => {
   }
 });
 
+// Database Backup & Restore Endpoints
+app.get('/api/backup/download', async (req, res) => {
+  try {
+    const backup = await BackupService.createBackup(prisma);
+    res.download(backup.filePath, backup.fileName);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/backup/telegram-now', async (req, res) => {
+  try {
+    const backup = await BackupService.sendBackupToTelegram(prisma);
+    res.json({ success: true, backup });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 5. Multi-Node & Tunnel Generator APIs
 app.get('/api/nodes', async (req, res) => {
   try {
@@ -911,6 +931,9 @@ async function start() {
 
     // Start Auto-Failover background monitoring daemon (checks every 60 seconds)
     autoFailoverService.startDaemon(prisma, reloadXrayService, 60000);
+
+    // Start Daily Automated Telegram Backup daemon (runs every 24 hours)
+    BackupService.startBackupDaemon(prisma, 86400000);
 
     // Start Telegram Bot if BOT_TOKEN is present in DB or ENV
     const dbBotToken = await prisma.systemSetting.findUnique({ where: { key: 'BOT_TOKEN' } });

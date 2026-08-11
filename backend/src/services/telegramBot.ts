@@ -7,6 +7,9 @@ import { SubscriptionService } from './subscriptionService';
 import { TunnelManager } from './tunnelManager';
 import { autoFailoverService } from './autoFailoverService';
 import { WarpService } from './warpService';
+import { BackupService } from './backupService';
+import fs from 'fs';
+import path from 'path';
 
 const prisma = new PrismaClient();
 let currentBotInstance: TelegramBot | null = null;
@@ -23,6 +26,23 @@ export function sendAdminNotification(message: string): Promise<boolean> {
       currentBotInstance.sendMessage(dbAdminChatId, message, { parse_mode: 'HTML' })
         .then(() => resolve(true))
         .catch(() => resolve(false));
+    } else {
+      resolve(false);
+    }
+  });
+}
+
+export function sendAdminDocument(filePath: string, filename: string, caption?: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (!currentBotInstance) return resolve(false);
+    const dbAdminChatId = process.env.ADMIN_CHAT_ID;
+    if (dbAdminChatId) {
+      currentBotInstance.sendDocument(dbAdminChatId, filePath, { caption, parse_mode: 'HTML' }, { filename })
+        .then(() => resolve(true))
+        .catch((err) => {
+          console.error('[Telegram Bot] Error sending document:', err);
+          resolve(false);
+        });
     } else {
       resolve(false);
     }
@@ -74,8 +94,9 @@ export function initTelegramBot(
         [{ text: '📊 Server Stats' }, { text: '🌐 Inbounds & Configs' }],
         [{ text: '➕ Create Config / Inbound' }, { text: '⚡ Live SNI Tester' }],
         [{ text: '🛡️ Auto-Failover SNI' }, { text: '🌐 Cloudflare WARP' }],
-        [{ text: '🚀 Tunnel Scripts' }, { text: '🖥️ Servers & Nodes' }],
-        [{ text: '👥 Users List' }, { text: '🚪 Admin Logout' }]
+        [{ text: '📦 Backup DB Now' }, { text: '🚀 Tunnel Scripts' }],
+        [{ text: '🖥️ Servers & Nodes' }, { text: '👥 Users List' }],
+        [{ text: '🚪 Admin Logout' }]
       ],
       resize_keyboard: true
     };
@@ -101,12 +122,50 @@ export function initTelegramBot(
 
     const welcomeText = `🛡️ *Welcome to Nyx Panel Management Bot!*
 
-All web panel features (config creation, traffic monitoring, live SNI testing, tunnel scripts, and statistics) are accessible via the buttons below.`;
+All web panel features (config creation, traffic monitoring, live SNI testing, backup/restore, tunnel scripts, and statistics) are accessible via the buttons below.`;
 
     bot.sendMessage(chatId, welcomeText, {
       parse_mode: 'Markdown',
       reply_markup: getUserReplyKeyboard(chatId)
     });
+  });
+
+  // --- 1-Click Restore File Upload Listener ---
+  bot.on('document', async (msg) => {
+    const chatId = msg.chat.id;
+    if (!isAdmin(chatId)) return;
+
+    const doc = msg.document;
+    if (!doc || !doc.file_name) return;
+
+    if (doc.file_name.endsWith('.db') || doc.file_name.endsWith('.nyx') || doc.file_name.includes('backup')) {
+      bot.sendMessage(chatId, '⏳ *در حال دانلود و بازگردانی (Restore) دیتابیس...*\nلطفاً چند ثانیه شکیبا باشید...', { parse_mode: 'Markdown' });
+      try {
+        const fileStream = bot.getFileStream(doc.file_id);
+        const backupDir = path.join(process.cwd(), 'backups');
+        if (!fs.existsSync(backupDir)) {
+          fs.mkdirSync(backupDir, { recursive: true });
+        }
+        const tempPath = path.join(backupDir, `uploaded-${doc.file_name}`);
+        const writeStream = fs.createWriteStream(tempPath);
+        fileStream.pipe(writeStream);
+
+        writeStream.on('finish', async () => {
+          try {
+            const res = await BackupService.restoreBackup(prisma, tempPath, reloadXrayCallback || (async () => {}));
+            const msgText = `✅ *بازگردانی دیتابیس با موفقیت انجام شد! (Restore Complete)*\n\n` +
+              `👥 *کاربران بازگردانی‌شده:* ${res.userCount}\n` +
+              `🌐 *اینباندهای بازگردانی‌شده:* ${res.inboundCount}\n` +
+              `🚀 هسته Xray مجدداً ریلود و تمام اتصالات زنده شدند.`;
+            bot.sendMessage(chatId, msgText, { parse_mode: 'Markdown' });
+          } catch (err: any) {
+            bot.sendMessage(chatId, `❌ *خطا در بازگردانی دیتابیس:* ${err.message}`, { parse_mode: 'Markdown' });
+          }
+        });
+      } catch (err: any) {
+        bot.sendMessage(chatId, `❌ خطا در دریافت فایل از تلگرام: ${err.message}`);
+      }
+    }
   });
 
   // --- Main Message Listener ---
@@ -149,6 +208,7 @@ All web panel features (config creation, traffic monitoring, live SNI testing, t
       if (text === '⚡ Live SNI Tester' || text === '⚡ تست SNI آنلاین') return sendSniTesterMenu(chatId);
       if (text === '🛡️ Auto-Failover SNI' || text === '🛡️ سوئیچ اتوماتیک SNI') return handleAutoFailoverTrigger(chatId);
       if (text === '🌐 Cloudflare WARP' || text === '🌐 کلودفلر WARP') return handleWarpControl(chatId);
+      if (text === '📦 Backup DB Now' || text === '📦 پشتیبان‌گیری دیتابیس') return handleBackupNow(chatId);
       if (text === '🚀 Tunnel Scripts' || text === '🚀 اسکریپت تونل‌زنی') return startTunnelWizard(chatId);
       if (text === '🖥️ Servers & Nodes' || text === '🖥️ سرورها و نودها') return sendAdminNodesList(chatId);
       if (text === '👥 Users List' || text === '👥 لیست کاربران') return sendAdminUsersList(chatId);
@@ -920,6 +980,16 @@ _با فعال‌سازی این سرویس، ترافیک سرور شما از 
       bot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: keyboard });
     } catch (err) {
       bot.sendMessage(chatId, '❌ خطا در دریافت وضعیت Cloudflare WARP.');
+    }
+  }
+
+  async function handleBackupNow(chatId: number) {
+    bot.sendMessage(chatId, '⏳ *در حال ایجاد فایل پشتیبان دیتابیس...*\nلطفاً چند ثانیه شکیبا باشید...', { parse_mode: 'Markdown' });
+    try {
+      const backup = await BackupService.sendBackupToTelegram(prisma);
+      bot.sendMessage(chatId, `✅ *پشتیبان‌گیری دیتابیس با موفقیت انجام شد!*\nفایل \`${backup.fileName}\` در پیوی ارسال گردید.\n\n💡 *نکته:* جهت بازگردانی (Restore) در سرور جدید، کافیست همین فایل دیتابیس را برای ربات بفرستید!`, { parse_mode: 'Markdown' });
+    } catch (err: any) {
+      bot.sendMessage(chatId, `❌ *خطا در ساخت فایل پشتیبان:* ${err.message}`, { parse_mode: 'Markdown' });
     }
   }
 

@@ -1,6 +1,6 @@
 {
   "name": "nyx-backend",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Nyx Panel - Advanced Anti-Censorship Xray Management Backend",
   "main": "dist/index.js",
   "scripts": {

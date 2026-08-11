@@ -230,6 +230,12 @@ export const tMap = {
     warpModeSanctioned: 'Sanctioned Sites Only (ChatGPT, Netflix, Spotify)',
     warpAssignedIp: 'Assigned Cloudflare IPv4',
 
+    // Backup & Restore Keys
+    backupTitle: 'Automated Database Backup & 1-Click Restore',
+    backupSub: 'Periodic SQLite database backups are automatically dispatched to Telegram. Download or upload backup files anytime.',
+    downloadBackupBtn: '📦 Download Database Backup (.db)',
+    sendBackupTelegramBtn: '🚀 Trigger Instant Telegram Backup',
+
     // Tunnels View Keys
     tunnelPortLabel: 'Tunnel Communication Port',
     kharejInboundPortLabel: 'Kharej Inbound Port',
@@ -460,6 +466,12 @@ export const tMap = {
     warpModeAll: 'روت ۱۰۰٪ ترافیک (حداکثر امنیت و مخفی‌سازی IP)',
     warpModeSanctioned: 'فقط سایت‌های تحریمی (ChatGPT، نتفلیکس، اسپاتیفای)',
     warpAssignedIp: 'آدرس IP اختصاصی کلودفلر (v4)',
+
+    // Backup & Restore Keys
+    backupTitle: 'پشتیبان‌گیری اتوماتیک دیتابیس و بازگردانی ۱-کلیکه (Backup & Restore)',
+    backupSub: 'فایل پشتیبان دیتابیس به صورت اتوماتیک به تلگرام ارسال می‌شود. امکان دانلود مستقیم یا بازگردانی ۱-کلیکه دیتابیس.',
+    downloadBackupBtn: '📦 دانلود فایل پشتیبان (.db)',
+    sendBackupTelegramBtn: '🚀 ارسال آنی فایل پشتیبان به تلگرام',
 
     // Tunnels View Keys
     tunnelPortLabel: 'پورت ارتباطی تونل',

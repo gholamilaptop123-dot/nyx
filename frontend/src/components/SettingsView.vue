@@ -158,13 +158,52 @@
         </button>
       </div>
     </div>
+
+    <!-- Database Backup & Restore Card -->
+    <div class="glass-panel p-6 rounded-3xl border border-purple-500/30 bg-gradient-to-r from-black/80 via-purple-950/20 to-black/80 space-y-6">
+      <div class="flex items-center justify-between border-b border-white/10 pb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-purple-500/20 text-purple-400 border border-purple-500/30 flex items-center justify-center font-bold">
+            <Database class="w-5 h-5" />
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span>{{ t('backupTitle') }}</span>
+            </h3>
+            <p class="text-xs text-gray-300 max-w-2xl leading-relaxed mt-0.5">
+              {{ t('backupSub') }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+        <button 
+          @click="downloadBackup" 
+          :disabled="backupDownloading"
+          class="px-5 py-2.5 rounded-2xl bg-white/5 hover:bg-white/10 text-purple-300 text-xs border border-purple-500/30 flex items-center gap-2 disabled:opacity-50"
+        >
+          <Download class="w-4 h-4 text-purple-400" />
+          <span>{{ t('downloadBackupBtn') }}</span>
+        </button>
+
+        <button 
+          @click="triggerTelegramBackup" 
+          :disabled="telegramBackupSending"
+          class="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 text-white font-extrabold text-xs shadow-lg shadow-purple-600/20 hover:opacity-90 transition-all flex items-center gap-2 border border-purple-400/40 disabled:opacity-50"
+        >
+          <Send class="w-4 h-4 text-white" :class="{ 'animate-spin': telegramBackupSending }" />
+          <span>{{ t('sendBackupTelegramBtn') }}</span>
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import { Bot, Send, Info, Shield, Save, RefreshCw, Globe, Zap } from 'lucide-vue-next';
+import { Bot, Send, Info, Shield, Save, RefreshCw, Globe, Zap, Database, Download } from 'lucide-vue-next';
 import { t, currentLang } from '../i18n';
 
 const props = defineProps<{ toast?: (msg: string, type?: 'success' | 'error' | 'info') => void }>();
@@ -181,6 +220,10 @@ const warpEnabled = ref(false);
 const warpMode = ref<'ALL' | 'SANCTIONED'>('ALL');
 const warpSaving = ref(false);
 const warpRegistering = ref(false);
+
+// Backup State
+const backupDownloading = ref(false);
+const telegramBackupSending = ref(false);
 
 async function fetchSettings() {
   try {
@@ -243,6 +286,30 @@ async function registerWarp() {
     props.toast?.(err?.response?.data?.error || 'Failed to register WARP account', 'error');
   } finally {
     warpRegistering.value = false;
+  }
+}
+
+async function downloadBackup() {
+  backupDownloading.value = true;
+  try {
+    window.location.href = '/api/backup/download';
+    props.toast?.(currentLang.value === 'fa' ? 'دانلود فایل پشتیبان شروع شد.' : 'Database backup download started.', 'success');
+  } catch (err: any) {
+    props.toast?.('Failed to download backup', 'error');
+  } finally {
+    setTimeout(() => { backupDownloading.value = false; }, 1500);
+  }
+}
+
+async function triggerTelegramBackup() {
+  telegramBackupSending.value = true;
+  try {
+    const res = await axios.post('/api/backup/telegram-now');
+    props.toast?.(currentLang.value === 'fa' ? `فایل پشتیبان ${res.data.backup.fileName} در پیوی تلگرام ارسال شد.` : `Backup sent to Telegram successfully.`, 'success');
+  } catch (err: any) {
+    props.toast?.(err?.response?.data?.error || 'Failed to send backup to Telegram', 'error');
+  } finally {
+    telegramBackupSending.value = false;
   }
 }
 

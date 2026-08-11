@@ -8,7 +8,7 @@
 ### سامانه مدیریت اتصالات Xray-core متمرکز بر شبکه ایران
 #### 🔐 توسعه‌داده‌شده توسط تیم امنیتی ساینت (Cynet Security Team)
 
-[![Version](https://img.shields.io/badge/version-2.1.0-cyberViolet?style=for-the-badge&logo=shield)](https://github.com/icynetx/Nyx)
+[![Version](https://img.shields.io/badge/version-2.2.0-cyberViolet?style=for-the-badge&logo=shield)](https://github.com/icynetx/Nyx)
 [![Telegram](https://img.shields.io/badge/Telegram-cynetx-2CA5E0?style=for-the-badge&logo=telegram)](https://t.me/cynetx)
 [![YouTube Video](https://img.shields.io/badge/Watch_Video-pFEeQrtCg14-FF0000?style=for-the-badge&logo=youtube)](https://youtu.be/pFEeQrtCg14)
 [![Website](https://img.shields.io/badge/Website-cynetx.ir-cyberCyan?style=for-the-badge)](https://cynetx.ir)
@@ -77,10 +77,11 @@
 
 <div dir="ltr" align="center">
 
-| Feature / Capability | 🛡️ Nyx Panel v2.1 | 3x-ui (Sanaei) | Marzban |
+| Feature / Capability | 🛡️ Nyx Panel v2.2 | 3x-ui (Sanaei) | Marzban |
 |---|:---:|:---:|:---:|
 | **Cross-Platform (Linux + Windows Server)** | **Yes (Native PowerShell + Bash)** | Linux Only | Linux Only |
 | **RAM Footprint (Memory)** | **Lightweight (~70 MB)** | Moderate (~250 MB) | Heavy (~400 MB+) |
+| **Automated Telegram DB Backup & 1-Click Restore** | **Yes (Auto 24h & Telegram Upload)** | Complex Manual | Manual Script |
 | **Smart Auto-Failover SNI Daemon** | **Yes (DPI Blackout Auto-Switch)** | No | No |
 | **1-Click Cloudflare WARP Outbound** | **Yes (Anti-Sanction & IP Shield)** | Complex Manual | Complex Manual |
 | **Token-based Authentication** | **Yes (Secure Auth)** | Yes | Yes |
@@ -135,6 +136,12 @@ iwr -useb https://raw.githubusercontent.com/icynetx/Nyx/main/install.ps1 | iex
 <div dir="rtl">
 
 ## 🧩 توضیحات تفصیلی امکانات پنل
+
+### 📦 ۰. پشتیبان‌گیری اتوماتیک دیتابیس در تلگرام و بازگردانی ۱-کلیکه (Auto DB Backup & 1-Click Restore v2.2)
+- **ارسال اتوماتیک فایل دیتابیس به تلگرام:** سرویس پس‌زمینه هوشمند که هر ۲۴ ساعت یک‌بار فایل دیتابیس رمزشده (`.db`) شامل تمام کاربران، حجم‌ها، تاریخ‌ها و اینباندها را مستقیم به پیوی تلگرام ادمین ارسال می‌کند.
+- **بازگردانی ۱-کلیکه در سرور جدید (1-Click Restore):** در صورت سوختن هارد سرور یا خرید VPS جدید، فقط کافیست فایل `.db` بکاپ را در ربات تلگرام آپلود کنید؛ پنل در ۳ ثانیه دیتابیس را بازگردانی کرده و تمام ۱۰۰+ کاربر را زنده می‌کند!
+- **محاسبه کد سلامت SHA-256:** تضمین عدم خراب شدن فایل هنگام انتقال شبکه.
+- **دانلود مستقیم و کلید دستی در وب‌پنل:** امکان دریافت فایل بکاپ از تب تنظیمات و ارسال دکمه‌ای به تلگرام.
 
 ### 🛡️ ۱. سامانه هوشمند سوئیچ اتوماتیک SNI در زمان قطعی نت (Smart Auto-Failover v2.1)
 - **پایش لایو پس‌زمینه (Background Daemon):** تست مداوم برقراری اتصال TLS 1.3 تمام اینباندهای فعال در هر ۶۰ ثانیه.
