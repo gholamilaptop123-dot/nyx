@@ -68,6 +68,10 @@
 > * **Unlocks Sanctioned Services:** Bypasses region locks for `ChatGPT`, `OpenAI`, `Netflix`, `Spotify`, and IP check sites automatically.
 > * **VPS IP Masking:** Routes server outbound traffic through Cloudflare WireGuard mesh, keeping your origin VPS IP hidden from ISP blocklists.
 
+> [!NOTE]
+> ### 🔄 4. 1-Click System Service Control & Reload (System Maintenance)
+> * **Restart Panel from Web Dashboard:** Trigger safe service restarts for Nyx Panel and live reloads for Xray core listeners directly from the Web UI settings tab without SSH terminal access.
+
 <br />
 
 <p align="center">
