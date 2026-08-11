@@ -262,19 +262,6 @@ Remove-Item -Path "C:\Nyx" -Recurse -Force -ErrorAction SilentlyContinue
 
 ---
 
-## 💖 Donation & Support
-
-Nyx Panel is 100% open-source and free. If this project helps you bypass network censorship, consider supporting our continuous development:
-
-- 💎 **TRON Wallet (TRX / USDT - TRC20):**
-  ```text
-  TPUQsZdRATTs1NgE9sNgjn6Qs6RYs7fMVC
-  ```
-
-Thank you for your generous support! 🌹
-
----
-
 ## 📢 Cynet Security Team & Community
 
 Developed with ❤️ by **Cynet Security Team**.
