@@ -130,7 +130,7 @@ export class BackupService {
 
     const sent = await sendAdminDocument(backup.filePath, backup.fileName, caption);
     if (!sent) {
-      console.warn('[Backup Service] Could not send backup file to Telegram (Admin Chat ID not configured).');
+      throw new Error('ربات تلگرام یا Admin Chat ID تنظیم نشده است. لطفاً ابتدا توکن ربات و Chat ID را وارد کنید.');
     }
     return backup;
   }
