@@ -1,3 +1,7 @@
+/**
+ * Nyx Panel Database Backup & Restore Engine
+ * Developed by Cynet Security Team (cynetx)
+ */
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';

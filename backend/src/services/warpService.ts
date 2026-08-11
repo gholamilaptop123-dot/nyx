@@ -1,3 +1,7 @@
+/**
+ * Nyx Panel Cloudflare WARP Outbound & WireGuard Mesh Engine
+ * Developed by Cynet Security Team (cynetx)
+ */
 import axios from 'axios';
 import crypto from 'crypto';
 import { PrismaClient } from '@prisma/client';

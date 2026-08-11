@@ -1,3 +1,7 @@
+/**
+ * Nyx Panel Smart Dynamic Anti-Blackout Auto-Failover SNI Engine
+ * Developed by Cynet Security Team (cynetx)
+ */
 import tls from 'tls';
 import { PrismaClient } from '@prisma/client';
 import { sendAdminNotification } from './telegramBot';

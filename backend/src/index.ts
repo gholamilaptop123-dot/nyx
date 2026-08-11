@@ -1,3 +1,8 @@
+/**
+ * Nyx Panel Core API Server
+ * Advanced Anti-Censorship Xray Management Backend
+ * Developed by Cynet Security Team (cynetx)
+ */
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
