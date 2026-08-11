@@ -1,0 +1,114 @@
+{
+  "log": {
+    "loglevel": "warning"
+  },
+  "stats": {},
+  "api": {
+    "tag": "api",
+    "services": [
+      "HandlerService",
+      "StatsService",
+      "LoggerService"
+    ]
+  },
+  "policy": {
+    "levels": {
+      "0": {
+        "statsUserUplink": true,
+        "statsUserDownlink": true
+      }
+    },
+    "system": {
+      "statsInboundUplink": true,
+      "statsInboundDownlink": true,
+      "statsOutboundUplink": true,
+      "statsOutboundDownlink": true
+    }
+  },
+  "inbounds": [
+    {
+      "listen": "127.0.0.1",
+      "port": 10085,
+      "protocol": "dokodemo-door",
+      "settings": {
+        "address": "127.0.0.1"
+      },
+      "tag": "api"
+    },
+    {
+      "listen": "0.0.0.0",
+      "tag": "inbound-77ae4617-e282-4de8-9aad-3f5e51f32950",
+      "port": 443,
+      "protocol": "vless",
+      "settings": {
+        "clients": [
+          {
+            "id": "bfdf3c1d-9f17-486e-b35f-420ece6add64",
+            "flow": "xtls-rprx-vision",
+            "email": "⚡ Cynet-Default-VIP"
+          }
+        ],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "reality",
+        "realitySettings": {
+          "show": false,
+          "dest": "bmi.ir:443",
+          "xver": 0,
+          "serverNames": [
+            "bmi.ir"
+          ],
+          "privateKey": "yEcrISgxxjIVQfWUQtRF0VDrJXbWvRZf6KIL2VswvWQ",
+          "minClientVer": "",
+          "maxClientVer": "",
+          "maxTimeDiff": 0,
+          "shortIds": [
+            "6ba7b810"
+          ]
+        },
+        "sockopt": {
+          "tcpKeepAliveIdle": 100
+        }
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "http",
+          "tls",
+          "quic"
+        ]
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "protocol": "freedom",
+      "tag": "direct"
+    },
+    {
+      "protocol": "blackhole",
+      "tag": "blocked"
+    }
+  ],
+  "routing": {
+    "domainStrategy": "IPIfNonMatch",
+    "rules": [
+      {
+        "type": "field",
+        "inboundTag": [
+          "api"
+        ],
+        "outboundTag": "api"
+      },
+      {
+        "type": "field",
+        "protocol": [
+          "bittorrent"
+        ],
+        "outboundTag": "blocked"
+      }
+    ]
+  }
+}

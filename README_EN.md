@@ -68,6 +68,14 @@
 > * **Unlocks Sanctioned Services:** Bypasses region locks for `ChatGPT`, `OpenAI`, `Netflix`, `Spotify`, and IP check sites automatically.
 > * **VPS IP Masking:** Routes server outbound traffic through Cloudflare WireGuard mesh, keeping your origin VPS IP hidden from ISP blocklists.
 
+<br />
+
+<p align="center">
+  <img src="media_warp_backup.png" alt="Nyx Panel v2.2 New Features Dashboard" width="100%" />
+  <br />
+  <i>Live UI Screenshot of Nyx Panel v2.2: 1-Click Cloudflare WARP Outbound & Automated Database Backup cards</i>
+</p>
+
 ---
 
 ## 📌 Why Nyx Panel?

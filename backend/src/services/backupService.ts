@@ -130,7 +130,7 @@ export class BackupService {
 
     const sent = await sendAdminDocument(backup.filePath, backup.fileName, caption);
     if (!sent) {
-      throw new Error('ربات تلگرام یا Admin Chat ID تنظیم نشده است. لطفاً ابتدا توکن ربات و Chat ID را وارد کنید.');
+      throw new Error('BOT_NOT_CONFIGURED');
     }
     return backup;
   }

@@ -307,7 +307,17 @@ async function triggerTelegramBackup() {
     const res = await axios.post('/api/backup/telegram-now');
     props.toast?.(currentLang.value === 'fa' ? `فایل بکاپ ${res.data.backup.fileName} در پیوی تلگرام ارسال شد.` : `Backup sent to Telegram successfully.`, 'success');
   } catch (err: any) {
-    props.toast?.(err?.response?.data?.error || 'Failed to send backup to Telegram', 'error');
+    const errMsg = err?.response?.data?.error;
+    if (errMsg === 'BOT_NOT_CONFIGURED') {
+      props.toast?.(
+        currentLang.value === 'fa' 
+          ? 'ربات تلگرام یا Admin Chat ID تنظیم نشده است. لطفاً ابتدا توکن ربات و Chat ID را وارد کنید.' 
+          : 'Telegram Bot or Admin Chat ID is not configured. Please enter Bot Token and Chat ID first.', 
+        'error'
+      );
+    } else {
+      props.toast?.(errMsg || (currentLang.value === 'fa' ? 'خطا در ارسال بکاپ به تلگرام' : 'Failed to send backup to Telegram'), 'error');
+    }
   } finally {
     telegramBackupSending.value = false;
   }
