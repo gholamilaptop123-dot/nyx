@@ -468,10 +468,10 @@ export const tMap = {
     warpAssignedIp: 'آدرس IP اختصاصی کلودفلر (v4)',
 
     // Backup & Restore Keys
-    backupTitle: 'پشتیبان‌گیری اتوماتیک دیتابیس و بازگردانی ۱-کلیکه (Backup & Restore)',
-    backupSub: 'فایل پشتیبان دیتابیس به صورت اتوماتیک به تلگرام ارسال می‌شود. امکان دانلود مستقیم یا بازگردانی ۱-کلیکه دیتابیس.',
-    downloadBackupBtn: '📦 دانلود فایل پشتیبان (.db)',
-    sendBackupTelegramBtn: '🚀 ارسال آنی فایل پشتیبان به تلگرام',
+    backupTitle: 'بکاپ‌گیری اتوماتیک دیتابیس و ریستور 1-کلیکه (Backup & Restore)',
+    backupSub: 'فایل بکاپ کامل دیتابیس به صورت اتوماتیک به تلگرام ارسال می‌شود. امکان دانلود مستقیم یا ریستور 1-کلیکه دیتابیس.',
+    downloadBackupBtn: '📦 دانلود فایل بکاپ (.db)',
+    sendBackupTelegramBtn: '🚀 ارسال آنی فایل بکاپ به تلگرام',
 
     // Tunnels View Keys
     tunnelPortLabel: 'پورت ارتباطی تونل',

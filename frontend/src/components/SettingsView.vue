@@ -293,7 +293,7 @@ async function downloadBackup() {
   backupDownloading.value = true;
   try {
     window.location.href = '/api/backup/download';
-    props.toast?.(currentLang.value === 'fa' ? 'دانلود فایل پشتیبان شروع شد.' : 'Database backup download started.', 'success');
+    props.toast?.(currentLang.value === 'fa' ? 'دانلود فایل بکاپ دیتابیس شروع شد.' : 'Database backup download started.', 'success');
   } catch (err: any) {
     props.toast?.('Failed to download backup', 'error');
   } finally {
@@ -305,7 +305,7 @@ async function triggerTelegramBackup() {
   telegramBackupSending.value = true;
   try {
     const res = await axios.post('/api/backup/telegram-now');
-    props.toast?.(currentLang.value === 'fa' ? `فایل پشتیبان ${res.data.backup.fileName} در پیوی تلگرام ارسال شد.` : `Backup sent to Telegram successfully.`, 'success');
+    props.toast?.(currentLang.value === 'fa' ? `فایل بکاپ ${res.data.backup.fileName} در پیوی تلگرام ارسال شد.` : `Backup sent to Telegram successfully.`, 'success');
   } catch (err: any) {
     props.toast?.(err?.response?.data?.error || 'Failed to send backup to Telegram', 'error');
   } finally {

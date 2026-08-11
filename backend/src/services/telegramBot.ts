@@ -208,7 +208,7 @@ All web panel features (config creation, traffic monitoring, live SNI testing, b
       if (text === '⚡ Live SNI Tester' || text === '⚡ تست SNI آنلاین') return sendSniTesterMenu(chatId);
       if (text === '🛡️ Auto-Failover SNI' || text === '🛡️ سوئیچ اتوماتیک SNI') return handleAutoFailoverTrigger(chatId);
       if (text === '🌐 Cloudflare WARP' || text === '🌐 کلودفلر WARP') return handleWarpControl(chatId);
-      if (text === '📦 Backup DB Now' || text === '📦 پشتیبان‌گیری دیتابیس') return handleBackupNow(chatId);
+      if (text === '📦 Backup DB Now' || text === '📦 بکاپ‌گیری دیتابیس') return handleBackupNow(chatId);
       if (text === '🚀 Tunnel Scripts' || text === '🚀 اسکریپت تونل‌زنی') return startTunnelWizard(chatId);
       if (text === '🖥️ Servers & Nodes' || text === '🖥️ سرورها و نودها') return sendAdminNodesList(chatId);
       if (text === '👥 Users List' || text === '👥 لیست کاربران') return sendAdminUsersList(chatId);
@@ -984,12 +984,12 @@ _با فعال‌سازی این سرویس، ترافیک سرور شما از 
   }
 
   async function handleBackupNow(chatId: number) {
-    bot.sendMessage(chatId, '⏳ *در حال ایجاد فایل پشتیبان دیتابیس...*\nلطفاً چند ثانیه شکیبا باشید...', { parse_mode: 'Markdown' });
+    bot.sendMessage(chatId, '⏳ *در حال ساخت فایل بکاپ دیتابیس...*\nلطفاً چند ثانیه شکیبا باشید...', { parse_mode: 'Markdown' });
     try {
       const backup = await BackupService.sendBackupToTelegram(prisma);
-      bot.sendMessage(chatId, `✅ *پشتیبان‌گیری دیتابیس با موفقیت انجام شد!*\nفایل \`${backup.fileName}\` در پیوی ارسال گردید.\n\n💡 *نکته:* جهت بازگردانی (Restore) در سرور جدید، کافیست همین فایل دیتابیس را برای ربات بفرستید!`, { parse_mode: 'Markdown' });
+      bot.sendMessage(chatId, `✅ *بکاپ‌گیری دیتابیس با موفقیت انجام شد!*\nفایل \`${backup.fileName}\` در پیوی ارسال گردید.\n\n💡 *نکته:* جهت ریستور (Restore) در سرور جدید، کافیست همین فایل دیتابیس را برای ربات بفرستید!`, { parse_mode: 'Markdown' });
     } catch (err: any) {
-      bot.sendMessage(chatId, `❌ *خطا در ساخت فایل پشتیبان:* ${err.message}`, { parse_mode: 'Markdown' });
+      bot.sendMessage(chatId, `❌ *خطا در ساخت فایل بکاپ:* ${err.message}`, { parse_mode: 'Markdown' });
     }
   }
 
