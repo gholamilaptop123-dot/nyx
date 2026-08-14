@@ -101,6 +101,11 @@ A **quantum multi-route engine** that simultaneously monitors **4 independent co
 > * **Animated Real-Time Path Cards:** Live latency in milliseconds, dynamic color-coded score bars (green/yellow/red), and `★ BEST` badge for the optimal route.
 > * **1-Click Force Recheck:** Admins can trigger an immediate multi-route diagnostic directly from the Web UI.
 
+> [!TIP]
+> ### 🎨 5. Warm Luxury Glassmorphism & Modern Soft UI/UX
+> * **Warm Ergonomic Color Palette:** Replaced harsh neon glare with deep warm obsidian, gentle amber gold, soothing emerald, and rose accents alongside subtle ambient radial backlights.
+> * **100% Mobile Responsive:** Redesigned responsive touch cards, mobile navigation bar, and modals tailored for seamless operation on phones, tablets, and desktops.
+
 ---
 
 ## 📦 Key Highlights from Version 2.2.0 (Previous Release)
@@ -143,6 +148,7 @@ Under extreme network censorship, Deep Packet Inspection (`DPI`) algorithms dyna
 | **⚛️ Quantum MultiPath 4-Route Engine** | **Yes (4 Parallel Live Routes)** | No | No |
 | **⚖️ Smart Health Load Balancer for Subscriptions** | **Yes (Auto-sorts healthiest server)** | No | No |
 | **🚨 Panic Mode Blackout Detection & Telegram Alert** | **Yes (Hysteresis-based)** | No | No |
+| **🎨 Warm Luxury Glassmorphism & Soft UI** | **Yes (100% Responsive)** | Classic Dark | Basic Dashboard |
 | **Cross-Platform (Linux + Windows Server)** | **Yes (Native PowerShell + Bash)** | Linux Only | Linux Only |
 | **RAM Footprint (Memory)** | **Lightweight (~70 MB)** | Moderate (~250 MB) | Heavy (~400 MB+) |
 | **Automated Telegram DB Backup & 1-Click Restore** | **Yes (Auto 24h & Telegram Upload)** | Complex Manual | Manual Script |
@@ -164,7 +170,8 @@ Under extreme network censorship, Deep Packet Inspection (`DPI`) algorithms dyna
 Run the following 1-line command as **root** in your terminal:
 
 ```bash
-curl -sSL "https://raw.githubusercontent.com/icynetx/Nyx/main/install.sh?v=2.2" | sudo bash
+bash <(curl -Ls https://raw.githubusercontent.com/icynetx/Nyx/main/install.sh)
+```
 ```
 
 ---
