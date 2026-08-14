@@ -81,25 +81,42 @@ A **quantum multi-route engine** that simultaneously monitors **4 independent co
 ## 🚀 What's New in Version 2.3.0 (Release Highlights)
 
 > [!TIP]
-> ### 📦 1. Automated Database Backup & 1-Click Instant Restore (Auto DB Backup & Restore)
-> * **24-Hour Automated Backup:** The intelligent background daemon creates encrypted, point-in-time SQLite database backups (`.db`) complete with SHA-256 integrity checksums and automatically dispatches them directly to the **Admin's Telegram Chat**.
-> * **3-Second 1-Click Server Migration:** Server crashed or bought a new VPS? Simply forward or upload the `.db` backup file to your Telegram Bot. The panel restores all 100+ users, quotas, expiry dates, and inbounds in **under 3 seconds**!
+> ### ⚛️ 1. Quantum MultiPath 4-Route Parallel Engine
+> * **15-Second Parallel Health Benchmarking:** Continuously checks 4 distinct routing layers concurrently via non-blocking asynchronous promises (`Promise.allSettled`).
+> * **Full Network Layer Coverage:** Route 1 (Direct VLESS Reality), Route 2 (Domestic ArvanCloud PoP CDN), Route 3 (Port 53 DNS Tunnel), and Route 4 (L3 ICMP Ping).
+> * **Seamless Failover:** Traffic automatically switches to the best-performing path with zero user friction.
+
+> [!IMPORTANT]
+> ### ⚖️ 2. Health-Scored Smart Subscription Load Balancer
+> * **Real-Time Dynamic Server Scoring:** All enabled inbounds receive an ongoing 0–100 health score computed from real-time TLS handshake latency, rolling uptime percentage, and historical stability.
+> * **Best Server Delivered #1:** Whenever users or clients refresh their subscription link, the healthiest, lowest-latency server is automatically positioned at the top of the config list.
+
+> [!CAUTION]
+> ### 🚨 3. Panic Mode Total Blackout Detection & Telegram Alerts
+> * **100% International Outage Detection:** Utilizes hysteresis logic (requires 3 consecutive failed checks to prevent false alarms).
+> * **Instant Telegram Alerts:** Sends instant emergency notification to the Admin Telegram bot when blackout occurs, and dispatches a celebration/recovery summary with exact outage duration (minutes & seconds) once connectivity is restored.
+
+> [!NOTE]
+> ### 📊 4. Live MultiPath Health Dashboard UI
+> * **Animated Real-Time Path Cards:** Live latency in milliseconds, dynamic color-coded score bars (green/yellow/red), and `★ BEST` badge for the optimal route.
+> * **1-Click Force Recheck:** Admins can trigger an immediate multi-route diagnostic directly from the Web UI.
+
+---
+
+## 📦 Key Highlights from Version 2.2.0 (Previous Release)
+
+> [!TIP]
+> ### 💾 1. Automated Database Backup & 1-Click Instant Restore (Auto DB Backup & Restore)
+> * **24-Hour Automated Backup:** Dispatches encrypted SQLite `.db` backups with SHA-256 integrity checksums straight to the Admin Telegram bot.
+> * **3-Second 1-Click Server Migration:** Upload `.db` file to Telegram Bot to restore all users and configurations in under 3 seconds!
 
 > [!IMPORTANT]
 > ### 🛡️ 2. Smart Dynamic Anti-Blackout Auto-Failover SNI Daemon (Smart Auto-Failover)
-> * **Live Background Daemon:** Continuously monitors TLS 1.3 handshakes on port 443 across all active inbounds every 60 seconds.
-> * **Automatic DPI Blackout Detection:** Instantly detects when active SNI domains are blocked by ISP DPI filters.
-> * **Zero Link Change Fallback:** Seamlessly switches blocked SNIs to the healthiest Whitelist domain (e.g. `ebanking.banksepah.ir` or `arvancloud.ir`) and reloads Xray core. **User subscription links remain 100% operational without needing updates!**
+> * Continuously monitors TLS 1.3 handshakes across inbounds and auto-switches blocked SNIs to Whitelist domains without modifying user links.
 
 > [!NOTE]
-> ### 🌐 3. 1-Click Cloudflare WARP Outbound & IP Shielding (Anti-Sanction & IP Mask)
-> * **Automatic Cloudflare WireGuard Account Registration:** Direct API registration for dedicated Cloudflare IPv4 & IPv6 credentials.
-> * **Unlocks Sanctioned Services:** Bypasses region locks for `ChatGPT`, `OpenAI`, `Netflix`, `Spotify`, and IP check sites automatically.
-> * **VPS IP Masking:** Routes server outbound traffic through Cloudflare WireGuard mesh, keeping your origin VPS IP hidden from ISP blocklists.
-
-> [!NOTE]
-> ### 🔄 4. 1-Click System Service Control & Reload (System Maintenance)
-> * **Restart Panel from Web Dashboard:** Trigger safe service restarts for Nyx Panel and live reloads for Xray core listeners directly from the Web UI settings tab without SSH terminal access.
+> ### 🌐 3. 1-Click Cloudflare WARP Outbound & System Control
+> * Complete unblocking for OpenAI, ChatGPT, Netflix, and VPS IP shielding, alongside 1-click panel restart from the web interface.
 
 <br />
 
