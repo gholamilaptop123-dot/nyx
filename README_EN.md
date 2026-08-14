@@ -8,7 +8,7 @@
 ### Advanced Anti-Censorship Xray-core Management Panel Tailored for High-Restricted Networks
 #### 🔐 Developed by Cynet Security Team
 
-[![Version](https://img.shields.io/badge/version-2.2.0-cyberViolet?style=for-the-badge&logo=shield)](https://github.com/icynetx/Nyx)
+[![Version](https://img.shields.io/badge/version-2.3.0-blueviolet?style=for-the-badge&logo=shield)](https://github.com/icynetx/Nyx)
 [![Telegram](https://img.shields.io/badge/Telegram-cynetx-2CA5E0?style=for-the-badge&logo=telegram)](https://t.me/cynetx)
 [![YouTube Video](https://img.shields.io/badge/Watch_Video-pFEeQrtCg14-FF0000?style=for-the-badge&logo=youtube)](https://youtu.be/pFEeQrtCg14)
 [![Website](https://img.shields.io/badge/Website-cynetx.ir-cyberCyan?style=for-the-badge)](https://cynetx.ir)
@@ -38,7 +38,8 @@
 </p>
 
 [⚡ Quick Installation](#-quick-installation-guide-linux--windows) •
-[🚀 What's New in v2.2](#-whats-new-in-version-220-release-highlights) •
+[⚛️ Quantum MultiPath Engine](#-quantum-multipath-engine-v230---the-core-breakthrough) •
+[🚀 What's New in v2.3](#-whats-new-in-version-230-release-highlights) •
 [📊 Comparison Table](#-feature-comparison-table) •
 [🧩 Detailed Features](#-detailed-feature-breakdown) •
 [🤖 Telegram Bot Guide](#-telegram-bot-configuration--usage-guide) •
@@ -49,7 +50,35 @@
 
 ---
 
-## 🚀 What's New in Version 2.2.0 (Release Highlights)
+## ⚛️ Quantum MultiPath Engine v2.3.0 — The Core Breakthrough
+
+> 🔥 **The ultimate anti-blackout innovation no other panel provides.**
+
+### The Real Challenge:
+During extreme ISP censorship in Iran (e.g., nationwide internet throttling by MCI/Irancell), even state-of-the-art protocols like `VLESS Reality` and `Packet Fragment` experience connection loss. Users are left disconnected with no fallback.
+
+### The Solution — Nyx Quantum MultiPath Engine:
+A **quantum multi-route engine** that simultaneously monitors **4 independent connection paths** in real time:
+
+```
+🛡️ Route 1 (Standard):    Direct VLESS + REALITY ──► Free Internet ✅
+☁️ Route 2 (DPI Blocked): Domestic Iran CDN (ArvanCloud PoP) ──► Server ──► Internet ✅
+🌐 Route 3 (Heavy Cut):   DNS Tunnel via Port 53 ──► Internet ✅  
+📡 Route 4 (Emergency):   L3 ICMP Ping Tunnel ──► Internet ✅
+```
+
+### Key Pillars:
+
+| Feature | Description |
+|---|---|
+| **🔄 Auto-Switch** | Concurrently tests all 4 paths every 15s. Selects optimal route automatically. |
+| **📊 Smart Subscriptions** | Subscription links automatically deliver the healthiest server ranked #1. |
+| **🚨 Panic Mode** | If 100% of routes go down, sends instant Telegram alert + auto-recovery notification. |
+| **📡 Live Dashboard** | Real-time web UI showing path latencies, health scores, and operational status. |
+
+---
+
+## 🚀 What's New in Version 2.3.0 (Release Highlights)
 
 > [!TIP]
 > ### 📦 1. Automated Database Backup & 1-Click Instant Restore (Auto DB Backup & Restore)
@@ -92,8 +121,11 @@ Under extreme network censorship, Deep Packet Inspection (`DPI`) algorithms dyna
 
 ## 📊 Feature Comparison Table
 
-| Feature / Capability | 🛡️ Nyx Panel v2.2 | 3x-ui (Sanaei) | Marzban |
+| Feature / Capability | 🛡️ Nyx Panel v2.3 | 3x-ui (Sanaei) | Marzban |
 |---|:---:|:---:|:---:|
+| **⚛️ Quantum MultiPath 4-Route Engine** | **Yes (4 Parallel Live Routes)** | No | No |
+| **⚖️ Smart Health Load Balancer for Subscriptions** | **Yes (Auto-sorts healthiest server)** | No | No |
+| **🚨 Panic Mode Blackout Detection & Telegram Alert** | **Yes (Hysteresis-based)** | No | No |
 | **Cross-Platform (Linux + Windows Server)** | **Yes (Native PowerShell + Bash)** | Linux Only | Linux Only |
 | **RAM Footprint (Memory)** | **Lightweight (~70 MB)** | Moderate (~250 MB) | Heavy (~400 MB+) |
 | **Automated Telegram DB Backup & 1-Click Restore** | **Yes (Auto 24h & Telegram Upload)** | Complex Manual | Manual Script |
