@@ -448,7 +448,7 @@
             : 'bg-white/5 border-white/10 text-gray-300'
         ]">
           <span class="font-bold">{{ t('multiPathRecommendation') }}:</span>
-          {{ currentLang === 'fa' ? networkHealth.recommendation_fa : networkHealth.recommendation }}
+          {{ currentLang.value === 'fa' ? networkHealth.recommendation_fa : networkHealth.recommendation }}
         </div>
 
         <!-- Panic Mode Alert -->
