@@ -330,7 +330,9 @@ app.get('/api/users/:id/configs', async (req, res) => {
     const base64Sub = SubscriptionService.generateBase64Sub(user as any, inbounds as any[], hostIp, isp);
     const singboxJson = SubscriptionService.generateSingBoxJson(user as any, inbounds as any[], hostIp, isp);
     const clashYaml = SubscriptionService.generateClashYaml(user as any, inbounds as any[], hostIp, isp);
-    const subUrl = `http://${hostIp}:${PORT}/api/sub/${user.uuid}?isp=${isp}`;
+    const subUrl = isPaaS
+      ? `https://${hostIp}/api/sub/${user.uuid}?isp=${isp}`
+      : `http://${hostIp}:${PORT}/api/sub/${user.uuid}?isp=${isp}`;
 
     res.json({ username: user.username, uuid: user.uuid, subUrl, base64Sub, vlessLinks, singboxJson, clashYaml, serverIp: hostIp });
   } catch (error: any) {
@@ -753,7 +755,9 @@ app.get('/api/subinfo/:uuid', async (req, res) => {
       const base64Sub = SubscriptionService.generateBase64Sub(user as any, inbounds as any[], hostIp, isp);
       const singboxJson = SubscriptionService.generateSingBoxJson(user as any, inbounds as any[], hostIp, isp);
       const clashYaml = SubscriptionService.generateClashYaml(user as any, inbounds as any[], hostIp, isp);
-      const subUrl = `http://${hostIp}:${PORT}/api/sub/${user.uuid}?isp=${isp}`;
+      const subUrl = isPaaS
+        ? `https://${hostIp}/api/sub/${user.uuid}?isp=${isp}`
+        : `http://${hostIp}:${PORT}/api/sub/${user.uuid}?isp=${isp}`;
 
       return res.json({
         user: {
@@ -787,7 +791,9 @@ app.get('/api/subinfo/:uuid', async (req, res) => {
     const base64Sub = Buffer.from(vlessLink).toString('base64');
     const singboxJson = SubscriptionService.generateSingBoxJson(inbound as any, [inbound] as any[], hostIp, isp);
     const clashYaml = SubscriptionService.generateClashYaml(inbound as any, [inbound] as any[], hostIp, isp);
-    const subUrl = `http://${hostIp}:${PORT}/api/sub/${inbound.uuid || inbound.id}?isp=${isp}`;
+    const subUrl = isPaaS
+      ? `https://${hostIp}/api/sub/${inbound.uuid || inbound.id}?isp=${isp}`
+      : `http://${hostIp}:${PORT}/api/sub/${inbound.uuid || inbound.id}?isp=${isp}`;
 
     return res.json({
       user: {
