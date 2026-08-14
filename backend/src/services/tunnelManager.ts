@@ -12,33 +12,63 @@ export interface TunnelParams {
 
 export class TunnelManager {
   /**
-   * Generates a 1-click Linux command script for setting up an Iran Relay Node
+   * Generates a 1-click Linux command script for setting up an Iran Relay Node with auto-restart service
    */
   static generateIranScript(params: TunnelParams): string {
     const { kharejIp, tunnelPort, targetInboundPort, secret, tunnelType, whiteDnsServer, whiteDomain } = params;
 
     if (tunnelType === 'GOST') {
       return `#!/bin/bash
-# Nyx Panel - Iran Relay Node Auto-Tunnel Setup (Gost v3)
-echo "=== Installing Gost v3 on Iran Server ==="
+# ====================================================
+# 🔥 Nyx Panel — Iran Relay Node Auto-Setup (Gost v3)
+# ====================================================
+set -e
+echo "🚀 [1/3] Downloading & Installing Gost v3..."
 curl -s https://raw.githubusercontent.com/go-gost/gost/master/install.sh | bash -s -- --version 3.0.0
 
-echo "=== Launching Encrypted Tunnel to Kharej (${kharejIp}) ==="
-# Forwarding Iran inbound port ${targetInboundPort} to Kharej Server
-nohup gost -L="tcp://:${targetInboundPort}/127.0.0.1:${targetInboundPort}" -F="relay+mws://${kharejIp}:${tunnelPort}?secrets=${secret}" > /var/log/gost_iran.log 2>&1 &
-echo "✅ Nyx Gost Relay Tunnel is active on port ${targetInboundPort}!"
+echo "⚙️  [2/3] Configuring Nyx Gost Relay Service..."
+cat <<EOF > /etc/systemd/system/nyx-gost-relay.service
+[Unit]
+Description=Nyx Gost Relay Client Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/gost -L=tcp://:${targetInboundPort}/127.0.0.1:${targetInboundPort} -F=relay+mws://${kharejIp}:${tunnelPort}?secrets=${secret}
+Restart=always
+RestartSec=3
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+echo "⚡ [3/3] Starting & Enabling Systemd Service..."
+systemctl daemon-reload
+systemctl enable --now nyx-gost-relay.service
+
+echo "===================================================="
+echo "✅ Nyx Gost Relay Tunnel is ONLINE on Port ${targetInboundPort}!"
+echo "📡 Traffic forwarded to Kharej (${kharejIp}:${tunnelPort})"
+echo "📋 Status check: systemctl status nyx-gost-relay.service"
+echo "===================================================="
 `;
     }
 
     if (tunnelType === 'RATHOLE') {
       return `#!/bin/bash
-# Nyx Panel - Iran Relay Node (Rathole Client)
-echo "=== Installing Rathole on Iran Server ==="
+# ====================================================
+# 🔥 Nyx Panel — Iran Relay Node (Rathole Client)
+# ====================================================
+set -e
+echo "🚀 [1/3] Installing Rathole Client..."
 mkdir -p /opt/rathole && cd /opt/rathole
-wget -O rathole.zip https://github.com/rapiz1/rathole/releases/latest/download/rathole-x86_64-unknown-linux-gnu.zip
-unzip -o rathole.zip && chmod +x rathole
+apt-get update -qq && apt-get install -y -qq wget unzip
+wget -q -O rathole.zip https://github.com/rapiz1/rathole/releases/latest/download/rathole-x86_64-unknown-linux-gnu.zip
+unzip -o -q rathole.zip && chmod +x rathole
 
-cat <<EOF > client.toml
+echo "⚙️  [2/3] Creating Rathole Client Configuration..."
+cat <<EOF > /opt/rathole/client.toml
 [client]
 remote_addr = "${kharejIp}:${tunnelPort}"
 default_token = "${secret}"
@@ -48,51 +78,137 @@ type = "tcp"
 local_addr = "127.0.0.1:${targetInboundPort}"
 EOF
 
-nohup ./rathole client.toml > /var/log/rathole_iran.log 2>&1 &
-echo "✅ Nyx Rathole Intranet Client is active!"
+cat <<EOF > /etc/systemd/system/nyx-rathole-client.service
+[Unit]
+Description=Nyx Rathole Client Tunnel
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/rathole
+ExecStart=/opt/rathole/rathole /opt/rathole/client.toml
+Restart=always
+RestartSec=3
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+echo "⚡ [3/3] Starting Systemd Service..."
+systemctl daemon-reload
+systemctl enable --now nyx-rathole-client.service
+
+echo "===================================================="
+echo "✅ Nyx Rathole Client Tunnel is ONLINE!"
+echo "📡 Connected to Kharej Server (${kharejIp})"
+echo "===================================================="
 `;
     }
 
     if (tunnelType === 'ICMP_TUNNEL') {
       return `#!/bin/bash
-# Nyx Panel - ICMP Ping Tunnel Setup (Bypasses TCP/UDP Blackouts)
-echo "=== Installing PingTunnel (ICMP Tunneling) on Iran Server ==="
+# ====================================================
+# 🔥 Nyx Panel — ICMP Ping Tunnel Client (Iran Node)
+# ====================================================
+set -e
+echo "🚀 [1/3] Installing PingTunnel on Iran Server..."
 mkdir -p /opt/pingtunnel && cd /opt/pingtunnel
-wget https://github.com/esrrhs/pingtunnel/releases/latest/download/pingtunnel_linux_amd64.zip
-unzip -o pingtunnel_linux_amd64.zip && chmod +x pingtunnel
+apt-get update -qq && apt-get install -y -qq wget unzip
+wget -q https://github.com/esrrhs/pingtunnel/releases/latest/download/pingtunnel_linux_amd64.zip
+unzip -o -q pingtunnel_linux_amd64.zip && chmod +x pingtunnel
 
-echo "=== Starting PingTunnel Client (Forwarding TCP ${targetInboundPort} over ICMP Ping) ==="
-# Client listens locally on port ${targetInboundPort} and forwards to Kharej via ICMP pings
-nohup ./pingtunnel -type client -l :${targetInboundPort} -s ${kharejIp} -t 127.0.0.1:${targetInboundPort} -key ${secret} > /var/log/pingtunnel_iran.log 2>&1 &
-echo "✅ ICMP Ping Tunnel Client active on port ${targetInboundPort}!"
+echo "⚙️  [2/3] Creating PingTunnel Systemd Service..."
+cat <<EOF > /etc/systemd/system/nyx-pingtunnel-client.service
+[Unit]
+Description=Nyx ICMP PingTunnel Client
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/pingtunnel
+ExecStart=/opt/pingtunnel/pingtunnel -type client -l :${targetInboundPort} -s ${kharejIp} -t 127.0.0.1:${targetInboundPort} -key ${secret}
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+echo "⚡ [3/3] Starting PingTunnel Client..."
+systemctl daemon-reload
+systemctl enable --now nyx-pingtunnel-client.service
+
+echo "===================================================="
+echo "✅ ICMP Ping Tunnel Client active on Port ${targetInboundPort}!"
+echo "📡 Bypassing TCP/UDP filtering over ICMP Echo Pings"
+echo "===================================================="
 `;
     }
 
     if (tunnelType === 'WHITE_DNS_TUNNEL') {
-      const dnsResolver = whiteDnsServer || '178.22.122.100'; // Whitelisted Iranian DNS or 8.8.8.8
+      const dnsResolver = whiteDnsServer || '178.22.122.100';
       const domain = whiteDomain || 'tunnel.nyx.ir';
       return `#!/bin/bash
-# Nyx Panel - White DNS Tunnel Setup (dnstt)
-echo "=== Installing dnstt (DNS Tunneling) on Iran Server ==="
+# ====================================================
+# 🔥 Nyx Panel — White DNS Tunnel Client (Port 53)
+# ====================================================
+set -e
+echo "🚀 [1/3] Installing dnstt client..."
 mkdir -p /opt/dnstt && cd /opt/dnstt
-wget -O dnstt-client https://www.bamsoftware.com/software/dnstt/dnstt-client-linux-amd64
+apt-get update -qq && apt-get install -y -qq wget
+wget -q -O dnstt-client https://www.bamsoftware.com/software/dnstt/dnstt-client-linux-amd64
 chmod +x dnstt-client
 
-echo "=== Starting DNS Tunnel Client via Whitelisted DNS (${dnsResolver}) ==="
-nohup ./dnstt-client -doh https://${dnsResolver}/dns-query ${domain} 127.0.0.1:${targetInboundPort} > /var/log/dnstt_iran.log 2>&1 &
-echo "✅ DNS Tunnel Client active!"
+echo "⚙️  [2/3] Configuring DNS Tunnel Service..."
+cat <<EOF > /etc/systemd/system/nyx-dnstt-client.service
+[Unit]
+Description=Nyx dnstt Client Tunnel
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/dnstt
+ExecStart=/opt/dnstt/dnstt-client -doh https://${dnsResolver}/dns-query ${domain} 127.0.0.1:${targetInboundPort}
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+echo "⚡ [3/3] Starting dnstt client..."
+systemctl daemon-reload
+systemctl enable --now nyx-dnstt-client.service
+echo "✅ DNS Port 53 Tunnel Client is ONLINE!"
 `;
     }
 
-    // Default Fallback: Native IPv6 / IPv4 Forwarding
+    // Default Fallback: Native IPv6 / IPv4 IPTables Forwarding
     return `#!/bin/bash
-# Nyx Panel - Native IPv6 / Intranet Relay Setup
+# ====================================================
+# 🔥 Nyx Panel — Native Linux IPTables IP Forwarding
+# ====================================================
+set -e
+echo "⚙️  Enabling Kernel IPv4 Forwarding..."
 sysctl -w net.ipv4.ip_forward=1
+sed -i '/net.ipv4.ip_forward/d' /etc/sysctl.conf
+echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
+
+echo "⚡ Configuring IPTables NAT Forwarding (Port ${targetInboundPort})..."
+iptables -t nat -D PREROUTING -p tcp --dport ${targetInboundPort} -j DNAT --to-destination ${kharejIp}:${targetInboundPort} 2>/dev/null || true
 iptables -t nat -A PREROUTING -p tcp --dport ${targetInboundPort} -j DNAT --to-destination ${kharejIp}:${targetInboundPort}
+iptables -t nat -D POSTROUTING -p tcp -d ${kharejIp} --dport ${targetInboundPort} -j MASQUERADE 2>/dev/null || true
 iptables -t nat -A POSTROUTING -p tcp -d ${kharejIp} --dport ${targetInboundPort} -j MASQUERADE
+
+iptables -t nat -D PREROUTING -p udp --dport ${targetInboundPort} -j DNAT --to-destination ${kharejIp}:${targetInboundPort} 2>/dev/null || true
 iptables -t nat -A PREROUTING -p udp --dport ${targetInboundPort} -j DNAT --to-destination ${kharejIp}:${targetInboundPort}
+iptables -t nat -D POSTROUTING -p udp -d ${kharejIp} --dport ${targetInboundPort} -j MASQUERADE 2>/dev/null || true
 iptables -t nat -A POSTROUTING -p udp -d ${kharejIp} --dport ${targetInboundPort} -j MASQUERADE
-echo "✅ Native IP Forwarding (TCP & UDP) configured from Iran to Kharej!"
+
+echo "===================================================="
+echo "✅ Native IP Forwarding configured from Iran to Kharej (${kharejIp}:${targetInboundPort})!"
+echo "===================================================="
 `;
   }
 
@@ -104,25 +220,55 @@ echo "✅ Native IP Forwarding (TCP & UDP) configured from Iran to Kharej!"
 
     if (tunnelType === 'GOST') {
       return `#!/bin/bash
-# Nyx Panel - Kharej Server Tunnel Listener (Gost v3)
-echo "=== Installing Gost v3 on Kharej Server ==="
+# ====================================================
+# 🔥 Nyx Panel — Kharej Server Tunnel Listener (Gost v3)
+# ====================================================
+set -e
+echo "🚀 [1/3] Installing Gost v3 on Kharej Server..."
 curl -s https://raw.githubusercontent.com/go-gost/gost/master/install.sh | bash -s -- --version 3.0.0
 
-echo "=== Starting Gost Listener on Port ${tunnelPort} ==="
-nohup gost -L="relay+mws://:${tunnelPort}?secrets=${secret}" > /var/log/gost_kharej.log 2>&1 &
-echo "✅ Kharej Gost Listener active on port ${tunnelPort}!"
+echo "⚙️  [2/3] Configuring Nyx Gost Listener Service (Port ${tunnelPort})..."
+cat <<EOF > /etc/systemd/system/nyx-gost-server.service
+[Unit]
+Description=Nyx Gost Listener Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/gost -L=relay+mws://:${tunnelPort}?secrets=${secret}
+Restart=always
+RestartSec=3
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+echo "⚡ [3/3] Starting & Enabling Systemd Service..."
+systemctl daemon-reload
+systemctl enable --now nyx-gost-server.service
+
+echo "===================================================="
+echo "✅ Kharej Gost Listener is ONLINE on Port ${tunnelPort}!"
+echo "📡 Ready to receive encrypted connections from Iran"
+echo "===================================================="
 `;
     }
 
     if (tunnelType === 'RATHOLE') {
       return `#!/bin/bash
-# Nyx Panel - Kharej Server Tunnel Listener (Rathole Server)
-echo "=== Installing Rathole on Kharej Server ==="
+# ====================================================
+# 🔥 Nyx Panel — Kharej Server Listener (Rathole Server)
+# ====================================================
+set -e
+echo "🚀 [1/3] Installing Rathole on Kharej Server..."
 mkdir -p /opt/rathole && cd /opt/rathole
-wget -O rathole.zip https://github.com/rapiz1/rathole/releases/latest/download/rathole-x86_64-unknown-linux-gnu.zip
-unzip -o rathole.zip && chmod +x rathole
+apt-get update -qq && apt-get install -y -qq wget unzip
+wget -q -O rathole.zip https://github.com/rapiz1/rathole/releases/latest/download/rathole-x86_64-unknown-linux-gnu.zip
+unzip -o -q rathole.zip && chmod +x rathole
 
-cat <<EOF > server.toml
+echo "⚙️  [2/3] Creating Rathole Server Configuration..."
+cat <<EOF > /opt/rathole/server.toml
 [server]
 bind_addr = "0.0.0.0:${tunnelPort}"
 default_token = "${secret}"
@@ -132,48 +278,113 @@ type = "tcp"
 bind_addr = "0.0.0.0:${targetInboundPort}"
 EOF
 
-nohup ./rathole server.toml > /var/log/rathole_kharej.log 2>&1 &
-echo "✅ Nyx Rathole Server Listener active on port ${tunnelPort}!"
+cat <<EOF > /etc/systemd/system/nyx-rathole-server.service
+[Unit]
+Description=Nyx Rathole Server Tunnel
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/rathole
+ExecStart=/opt/rathole/rathole /opt/rathole/server.toml
+Restart=always
+RestartSec=3
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+echo "⚡ [3/3] Starting Systemd Service..."
+systemctl daemon-reload
+systemctl enable --now nyx-rathole-server.service
+
+echo "===================================================="
+echo "✅ Nyx Rathole Server Listener is ONLINE on Port ${tunnelPort}!"
+echo "===================================================="
 `;
     }
 
     if (tunnelType === 'ICMP_TUNNEL') {
       return `#!/bin/bash
-# Nyx Panel - ICMP Ping Tunnel Server (Kharej Node)
-echo "=== Installing PingTunnel Server on Kharej Server ==="
+# ====================================================
+# 🔥 Nyx Panel — ICMP Ping Tunnel Server (Kharej Node)
+# ====================================================
+set -e
+echo "🚀 [1/3] Installing PingTunnel on Kharej Server..."
 mkdir -p /opt/pingtunnel && cd /opt/pingtunnel
-wget https://github.com/esrrhs/pingtunnel/releases/latest/download/pingtunnel_linux_amd64.zip
-unzip -o pingtunnel_linux_amd64.zip && chmod +x pingtunnel
+apt-get update -qq && apt-get install -y -qq wget unzip
+wget -q https://github.com/esrrhs/pingtunnel/releases/latest/download/pingtunnel_linux_amd64.zip
+unzip -o -q pingtunnel_linux_amd64.zip && chmod +x pingtunnel
 
-echo "=== Starting PingTunnel ICMP Server Listener ==="
-# Disable OS ICMP response to avoid conflict
+echo "⚙️  [2/3] Configuring Kernel ICMP..."
 sysctl -w net.ipv4.icmp_echo_ignore_all=1
-nohup ./pingtunnel -type server -key ${secret} > /var/log/pingtunnel_kharej.log 2>&1 &
-echo "✅ ICMP Ping Tunnel Server active!"
+sed -i '/net.ipv4.icmp_echo_ignore_all/d' /etc/sysctl.conf
+echo "net.ipv4.icmp_echo_ignore_all=1" >> /etc/sysctl.conf
+
+cat <<EOF > /etc/systemd/system/nyx-pingtunnel-server.service
+[Unit]
+Description=Nyx ICMP PingTunnel Server
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/pingtunnel
+ExecStart=/opt/pingtunnel/pingtunnel -type server -key ${secret}
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+echo "⚡ [3/3] Starting PingTunnel Server..."
+systemctl daemon-reload
+systemctl enable --now nyx-pingtunnel-server.service
+echo "===================================================="
+echo "✅ ICMP Ping Tunnel Server is ONLINE!"
+echo "===================================================="
 `;
     }
 
     if (tunnelType === 'WHITE_DNS_TUNNEL') {
       const domain = whiteDomain || 'tunnel.nyx.ir';
       return `#!/bin/bash
-# Nyx Panel - White DNS Tunnel Server (Kharej Node)
-echo "=== Installing dnstt-server on Kharej Server ==="
+# ====================================================
+# 🔥 Nyx Panel — White DNS Tunnel Server (Kharej Node)
+# ====================================================
+set -e
 mkdir -p /opt/dnstt && cd /opt/dnstt
-wget -O dnstt-server https://www.bamsoftware.com/software/dnstt/dnstt-server-linux-amd64
+wget -q -O dnstt-server https://www.bamsoftware.com/software/dnstt/dnstt-server-linux-amd64
 chmod +x dnstt-server
 
-echo "=== Generating DNS Keypair if missing ==="
 if [ ! -f key.priv ]; then
   ./dnstt-server -gen-key -privkey-file key.priv -pubkey-file key.pub
 fi
 
-echo "=== Starting dnstt DNS Server Listener ==="
-nohup ./dnstt-server -udp :53 -privkey-file key.priv ${domain} 127.0.0.1:${targetInboundPort} > /var/log/dnstt_kharej.log 2>&1 &
-echo "✅ DNS Tunnel Server active on UDP port 53!"
+cat <<EOF > /etc/systemd/system/nyx-dnstt-server.service
+[Unit]
+Description=Nyx dnstt Server Tunnel
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/dnstt
+ExecStart=/opt/dnstt/dnstt-server -udp :53 -privkey-file key.priv ${domain} 127.0.0.1:${targetInboundPort}
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload
+systemctl enable --now nyx-dnstt-server.service
+echo "✅ DNS Port 53 Tunnel Server is ONLINE!"
 `;
     }
 
-    return `# Kharej Node is ready to accept incoming connections on port ${targetInboundPort}`;
+    return `echo "✅ Kharej Server is natively ready on port ${targetInboundPort}. No extra service required."`;
   }
 
   /**
