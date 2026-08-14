@@ -175,7 +175,6 @@ Run the following 1-line command as **root** in your terminal:
 ```bash
 bash <(curl -Ls https://raw.githubusercontent.com/icynetx/Nyx/main/install.sh)
 ```
-```
 
 ---
 
@@ -337,20 +336,26 @@ graph LR
 ---
 
 ## 🌐 Intranet Traffic Relay Setup Guide
-
+ 
 If direct connection to your foreign VPS is disrupted, relay user traffic through an Iranian Intranet server via secure tunnels:
-
+ 
 ```mermaid
 flowchart LR
     User["👤 Client (Iran)"] -->|VLESS/REALITY| IranServer["🇮🇷 Iran Server (Relay)"]
     IranServer -->|Gost v3 / ICMP Tunnel| KharejServer["🌐 Foreign VPS (Master)"]
     KharejServer -->|Uncensored Traffic| Internet["🌍 Free Internet"]
 ```
-
+ 
 1. Open **"Intranet Tunnels"** tab in Nyx Panel.
-2. Enter Foreign VPS IP, Inbound Port, and Tunnel Port.
-3. Select tunnel protocol (Gost v3, Rathole, or ICMP Ping Tunnel) and click **"Generate Scripts"**.
-4. Execute generated bash scripts on Iran and Foreign servers respectively.
+2. Enter **Iran Relay Server IP** and **Foreign Master Server IP**.
+3. Select your desired tunnel protocol:
+   * ⚡ **Gost v3 (Websocket + TLS):** Most stable with TLS transport encryption.
+   * 🕳️ **Rathole (Secure Reverse Proxy):** Ultra-fast and lightweight reverse proxy tunnel.
+   * 📡 **PingTunnel (ICMP):** Layer 3 ICMP Ping encapsulation to evade severe port filtering.
+   * 🌐 **dnstt (DNS Tunnel):** Port 53 DNS tunneling for extreme intranet blackout bypass.
+   * 🔀 **IPTables NAT Forward:** Zero-dependency kernel-level high-throughput port forwarding.
+4. Click **"Generate System Scripts"**.
+5. Copy and execute the generated bash commands on the Iran server and Foreign server respectively (auto-configured via Systemd).
 
 ---
 
