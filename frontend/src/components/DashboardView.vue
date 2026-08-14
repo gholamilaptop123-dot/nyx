@@ -327,7 +327,7 @@
     </div>
 
     <!-- ⚛️ Quantum MultiPath Engine — Full Real-Time Network Health Dashboard -->
-    <div class="glass-panel rounded-3xl p-6 border border-cyberYellow/40 relative overflow-hidden">
+    <div class="glass-panel rounded-3xl p-4 sm:p-6 border border-cyberYellow/40 relative overflow-hidden">
       <!-- Animated background glow -->
       <div class="absolute inset-0 pointer-events-none">
         <div :class="[
@@ -340,14 +340,14 @@
 
       <div class="relative z-10">
         <!-- Header Row -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
-              <span class="text-2xl">⚛️</span>
+            <h3 class="text-base sm:text-lg font-extrabold text-white flex flex-wrap items-center gap-2">
+              <span class="text-xl sm:text-2xl">⚛️</span>
               <span>{{ t('multiPathTitle') }}</span>
               <span
                 :class="[
-                  'text-xs px-2.5 py-0.5 rounded-full border font-bold ml-2 transition-all duration-500',
+                  'text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full border font-bold transition-all duration-500',
                   networkHealth.overallHealth === 'EXCELLENT' ? 'bg-cyberGreen/20 text-cyberGreen border-cyberGreen/50 animate-pulse' :
                   networkHealth.overallHealth === 'GOOD' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' :
                   networkHealth.overallHealth === 'DEGRADED' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40' :
@@ -362,7 +362,7 @@
             </h3>
             <p class="text-xs text-gray-400 mt-1">{{ t('multiPathSub') }}</p>
           </div>
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-end">
             <span class="text-[10px] text-gray-500 font-mono" dir="ltr">
               #{{ networkHealth.checkCount }} {{ t('multiPathChecks') }}
             </span>
