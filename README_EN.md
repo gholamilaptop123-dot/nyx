@@ -187,42 +187,55 @@ iwr -useb https://raw.githubusercontent.com/icynetx/Nyx/main/install.ps1 | iex
 
 ---
 
-### ☁️ 3. 1-Click Cloud PaaS & Docker Deployment (Railway / Render / Fly.io / Docker):
+### ☁️ 3. Free Cloud PaaS Deployment (Railway / Render / Docker):
 
-If you do not have a dedicated VPS or prefer running on cloud container platforms like **Railway**:
+If you do not have a dedicated VPS or want to run Nyx Panel on free cloud container platforms like **Railway.app**:
 
-#### ⚡ Step-by-Step Guide for Railway (Under 1 Minute):
+#### 💡 Key Advantages of Cloud PaaS Deployment:
+* 💸 **Zero VPS Hosting Costs:** Deploy and run full anti-censorship nodes without purchasing expensive dedicated servers.
+* 🛡️ **Cloudflare CDN Edge Acceleration:** User traffic runs over **VLESS WebSocket on standard Port 443 with TLS** over Railway edge proxy (`*.up.railway.app`).
+* ⚡ **High Reliability & Anti-Blocking:** Features smart HTTP/WS multiplexing to seamlessly route proxy traffic and avoid ISP IP bans.
+
+---
+
+#### 🚀 Step-by-Step Railway Deployment Guide (Under 1 Minute):
 
 > [!NOTE]
-> To use Railway, simply sign in with your **GitHub** account (no credit card required).
+> All you need is a free **GitHub account** to sign into Railway (no credit card required).
 
-1. Click the button below (or visit [railway.com](https://railway.com)):
+1. **Sign in to Railway:** Visit [railway.com](https://railway.com) and click **Login with GitHub**.
+2. **Create New Project:** Click the purple **`+ New Project`** button in the dashboard.
+3. **Deploy from GitHub:** Select the **`Deploy from GitHub repo`** option.
+4. **Choose Nyx Repository:** Search for and select:
+   ```text
+   icynetx/Nyx
+   ```
+   *(or paste the repository URL `https://github.com/icynetx/Nyx`)*
+5. **Start Deployment:** Click **`Deploy Now`**. Railway will automatically build the multi-stage Dockerfile and start Xray-core (takes ~60-90 seconds).
+6. **Generate Free HTTPS Public Domain:**
+   * Once the deployment status turns green (`Active 🟢`), click on the project box.
+   * Go to the **Settings** tab.
+   * Scroll down to the **Networking** section.
+   * Click **Generate Domain**. Railway will instantly assign a free HTTPS URL (e.g. `nyx-production.up.railway.app`).
+7. **Access Dashboard & Connect Users:**
+   * Open the generated domain in your web browser.
+   * Log in with default credentials:
+     * **Username:** `admin`
+     * **Password:** `nyx2026!`
+   * Go to the **Users** tab, copy the subscription link, and import it into your client app (v2rayNG, Streisand, Shadowrocket, etc.).
+   * The `⚡ Railway-Cloud-WSS` configuration is automatically ready to connect!
 
-<div align="center">
-  <br />
-  <a href="https://railway.com/new/template?template=https%3A%2F%2Fgithub.com%2Ficynetx%2FNyx" target="_blank">
-    <img src="https://railway.com/button.svg" alt="Deploy on Railway" height="38" />
-  </a>
-  <br />
-</div>
+---
 
-2. Click **Deploy Now**.
-   *(Or from Railway Dashboard: click **New Project** ➜ **Deploy from GitHub repo** ➜ select `https://github.com/icynetx/Nyx`).*
-3. Once the build completes, click your service, navigate to **Settings**, and under **Networking** click **Generate Domain** to get a free HTTPS domain (e.g. `nyx-production.up.railway.app`).
-4. Open the domain in your browser and sign in with default credentials (`admin` / `nyx2026!`)!
+#### 🐳 Self-Hosted Docker / Docker Compose:
 
-> [!TIP]
-> **💡 Key Advantage on Railway:**
-> * Automatically serves **VLESS/VMess WebSocket (`WSS`) on standard Port 443 with TLS** over Railway's edge domains (`*.up.railway.app`) through Cloudflare CDN acceleration.
-> * Users in high-censorship regions connect seamlessly to the free internet without needing to purchase or configure a paid VPS!
-
-#### 🐳 Option B) Self-Hosted Docker / Docker Compose:
+If you prefer running on your own VPS or local server with Docker:
 
 ```bash
-# Run via Docker Compose
+# Quick start with Docker Compose
 docker-compose up -d
 
-# Or run directly using Docker CLI
+# Or run directly with Docker CLI
 docker run -d \
   --name nyx-panel \
   -p 3000:3000 \
