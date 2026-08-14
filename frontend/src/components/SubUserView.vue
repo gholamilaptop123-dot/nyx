@@ -28,21 +28,21 @@
 
     <div v-else-if="userData" class="max-w-2xl w-full space-y-6">
       <!-- Header Info Banner -->
-      <div class="glass-panel p-6 rounded-3xl border border-cyberViolet/30 relative overflow-hidden flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="glass-panel p-5 sm:p-6 rounded-3xl border border-white/[0.08] relative overflow-hidden flex flex-col sm:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-3 md:gap-4">
-          <img src="/logo_trans.png" alt="Nyx Panel Logo" class="w-16 h-16 md:w-20 md:h-20 object-contain drop-shadow-[0_0_20px_rgba(234,179,8,0.5)] shrink-0 hover:scale-105 transition-all" />
+          <img src="/logo_trans.png" alt="Nyx Panel Logo" class="w-14 h-14 md:w-16 md:h-16 object-contain drop-shadow-[0_0_16px_rgba(245,158,11,0.35)] shrink-0 hover:scale-105 transition-all" />
           <div>
-            <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-cyberCyan">
+            <h1 class="text-lg sm:text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 via-amber-400 to-rose-400">
               {{ t('userSubTitle') }}: {{ userData.username }}
             </h1>
             <p class="text-xs text-gray-400 font-mono" dir="ltr">UUID: {{ userData.uuid }}</p>
           </div>
         </div>
 
-        <div class="flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold"
-          :class="userData.status === 'ACTIVE' ? 'bg-cyberGreen/15 border border-cyberGreen/40 text-cyberGreen' : 'bg-red-500/15 border border-red-500/40 text-red-400'"
+        <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold"
+          :class="userData.status === 'ACTIVE' ? 'bg-emerald-500/10 border border-emerald-500/25 text-emerald-300' : 'bg-rose-500/10 border border-rose-500/25 text-rose-300'"
         >
-          <span class="w-2 h-2 rounded-full" :class="userData.status === 'ACTIVE' ? 'bg-cyberGreen animate-ping' : 'bg-red-400'"></span>
+          <span class="w-2 h-2 rounded-full" :class="userData.status === 'ACTIVE' ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'"></span>
           {{ userData.status === 'ACTIVE' ? t('activeStatus') : t('expiredStatus') }}
         </div>
       </div>
@@ -50,32 +50,32 @@
       <!-- Data Usage & Expiration Meter -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Usage Card -->
-        <div class="glass-panel p-5 rounded-3xl border border-white/10 space-y-3">
+        <div class="glass-panel p-5 rounded-3xl border border-white/[0.08] space-y-3">
           <div class="flex items-center justify-between text-xs">
             <span class="text-gray-400">{{ t('trafficHeader') }}</span>
-            <span class="text-cyberCyan font-bold font-mono">{{ usedGb }} GB / {{ limitGbText }}</span>
+            <span class="text-amber-300 font-bold font-mono">{{ usedGb }} GB / {{ limitGbText }}</span>
           </div>
-          <div class="w-full h-3 bg-white/5 rounded-full overflow-hidden p-0.5 border border-white/10">
+          <div class="w-full h-2.5 bg-white/[0.06] rounded-full overflow-hidden p-0.5 border border-white/[0.06]">
             <div 
               class="h-full rounded-full transition-all duration-500"
-              :class="usagePercent > 90 ? 'bg-red-500' : 'bg-gradient-to-r from-cyberViolet to-cyberCyan'"
+              :class="usagePercent > 90 ? 'bg-rose-500' : 'bg-gradient-to-r from-amber-400 to-amber-500'"
               :style="{ width: `${Math.min(100, usagePercent)}%` }"
             ></div>
           </div>
-          <div class="flex justify-between text-[11px] text-gray-500">
-            <span>Usage Percent: {{ usagePercent.toFixed(1) }}%</span>
+          <div class="flex justify-between text-[11px] text-gray-400">
+            <span>Usage: {{ usagePercent.toFixed(1) }}%</span>
             <span>Remaining: {{ remainGbText }}</span>
           </div>
         </div>
 
         <!-- Expiration Card -->
-        <div class="glass-panel p-5 rounded-3xl border border-white/10 space-y-3 flex flex-col justify-between">
+        <div class="glass-panel p-5 rounded-3xl border border-white/[0.08] space-y-3 flex flex-col justify-between">
           <div class="flex items-center justify-between text-xs">
             <span class="text-gray-400">{{ t('expiryHeader') }}</span>
-            <span class="text-cyberPink font-bold">{{ expireText }}</span>
+            <span class="text-rose-300 font-bold">{{ expireText }}</span>
           </div>
           <div class="flex items-center gap-2 text-xs text-gray-300">
-            <Clock class="w-4 h-4 text-cyberPink" />
+            <Clock class="w-4 h-4 text-rose-400" />
             <span>{{ daysLeftText }}</span>
           </div>
         </div>
@@ -83,8 +83,8 @@
 
       <!-- Metadata Row (Creation Date & Max Devices / IP Limit) -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div class="glass-panel p-5 rounded-3xl border border-white/10 flex items-center gap-3">
-          <div class="w-10 h-10 rounded-2xl bg-cyberYellow/10 border border-cyberYellow/30 text-cyberYellow flex items-center justify-center shrink-0">
+        <div class="glass-panel p-5 rounded-3xl border border-white/[0.08] flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-amber-400/10 border border-amber-400/20 text-amber-400 flex items-center justify-center shrink-0">
             <Calendar class="w-5 h-5" />
           </div>
           <div>
@@ -93,23 +93,23 @@
           </div>
         </div>
 
-        <div class="glass-panel p-5 rounded-3xl border border-white/10 flex items-center gap-3">
-          <div class="w-10 h-10 rounded-2xl bg-cyberCyan/10 border border-cyberCyan/30 text-cyberCyan flex items-center justify-center shrink-0">
+        <div class="glass-panel p-5 rounded-3xl border border-white/[0.08] flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-indigo-400/10 border border-indigo-400/20 text-indigo-400 flex items-center justify-center shrink-0">
             <Users class="w-5 h-5" />
           </div>
           <div>
             <span class="text-gray-400 block text-[11px]">{{ t('maxDevices') }} (IP Limit)</span>
-            <span class="text-cyberCyan font-bold text-xs">{{ maxDevicesText }}</span>
+            <span class="text-indigo-300 font-bold text-xs">{{ maxDevicesText }}</span>
           </div>
         </div>
       </div>
 
       <!-- ISP Selector Bar -->
-      <div class="glass-panel p-4 rounded-3xl border border-white/10 space-y-3">
+      <div class="glass-panel p-4 rounded-3xl border border-white/[0.08] space-y-3">
         <label class="block text-xs font-semibold text-gray-300">Auto-configure bypass preset for your ISP:</label>
         <div class="flex flex-wrap gap-2">
           <button v-for="isp in ispOptions" :key="isp.id" @click="selectedIsp = isp.id; loadConfigs()"
-            :class="['px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all', selectedIsp === isp.id ? isp.activeClass : 'bg-white/5 text-gray-400 hover:text-white']"
+            :class="['px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all', selectedIsp === isp.id ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-gray-950 font-bold shadow-sm' : 'bg-white/[0.03] text-gray-300 hover:bg-white/[0.06] border border-white/[0.05]']"
           >
             {{ isp.label }}
           </button>
@@ -117,11 +117,11 @@
       </div>
 
       <!-- Config Formats & QR Code Tabs -->
-      <div class="glass-panel p-6 rounded-3xl border border-white/10 space-y-4">
+      <div class="glass-panel p-5 sm:p-6 rounded-3xl border border-white/[0.08] space-y-4">
         <!-- Tabs -->
-        <div class="flex items-center gap-1 bg-white/5 p-1 rounded-2xl">
+        <div class="flex items-center gap-1.5 bg-white/[0.03] p-1 rounded-2xl border border-white/[0.05]">
           <button v-for="tab in configTabs" :key="tab.id" @click="activeTab = tab.id"
-            :class="['flex-1 py-2 rounded-xl text-xs font-semibold transition-all', activeTab === tab.id ? 'bg-cyberViolet text-white shadow-lg' : 'text-gray-400 hover:text-white']"
+            :class="['flex-1 py-2 rounded-xl text-xs font-bold transition-all', activeTab === tab.id ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-gray-950 shadow-md shadow-amber-500/20' : 'text-gray-400 hover:text-white']"
           >
             {{ tab.label }}
           </button>
@@ -132,9 +132,9 @@
           <div class="space-y-1.5">
             <label class="block text-xs text-gray-400">Universal Subscription URL:</label>
             <div class="flex items-center gap-2">
-              <input readonly :value="subUrl" dir="ltr" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2.5 text-xs font-mono text-left text-cyberCyan outline-none" />
-              <button @click="copy(subUrl, 'Subscription link copied')" class="px-4 py-2.5 rounded-xl bg-cyberViolet text-white text-xs font-bold shrink-0 hover:opacity-90 flex items-center gap-1">
-                <Copy class="w-3.5 h-3.5" /> {{ t('copy') }}
+              <input readonly :value="subUrl" dir="ltr" class="w-full bg-black/30 border border-white/[0.08] rounded-xl px-3 py-2.5 text-xs font-mono text-left text-amber-300 outline-none" />
+              <button @click="copy(subUrl, 'Subscription link copied')" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-gray-950 text-xs font-bold shrink-0 hover:opacity-95 flex items-center gap-1">
+                <Copy class="w-3.5 h-3.5 text-gray-950 font-bold" /> {{ t('copy') }}
               </button>
             </div>
           </div>
@@ -146,12 +146,12 @@
 
         <!-- VLESS Links -->
         <div v-if="activeTab === 'vless'" class="space-y-3">
-          <div v-for="(link, i) in vlessLinks" :key="i" class="bg-black/40 rounded-2xl p-3.5 border border-white/5 space-y-2">
+          <div v-for="(link, i) in vlessLinks" :key="i" class="bg-black/30 rounded-2xl p-3.5 border border-white/[0.06] space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-xs text-cyberCyan font-bold">VLESS Link Gateway {{ i + 1 }}</span>
-              <button @click="copy(link, 'VLESS link copied')" class="px-3 py-1 rounded-xl bg-cyberViolet/30 text-cyberViolet hover:bg-cyberViolet/50 text-xs font-semibold">{{ t('copy') }} Link</button>
+              <span class="text-xs text-amber-300 font-bold">VLESS Link Gateway {{ i + 1 }}</span>
+              <button @click="copy(link, 'VLESS link copied')" class="px-3 py-1 rounded-xl bg-amber-400/10 text-amber-300 hover:bg-amber-400/20 border border-amber-400/20 text-xs font-bold">{{ t('copy') }} Link</button>
             </div>
-            <pre dir="ltr" class="text-[11px] font-mono text-gray-200 break-all whitespace-pre-wrap text-left p-2.5 bg-black/60 rounded-xl border border-white/5 leading-relaxed">{{ link }}</pre>
+            <pre dir="ltr" class="text-[11px] font-mono text-gray-200 break-all whitespace-pre-wrap text-left p-2.5 bg-black/50 rounded-xl border border-white/[0.04] leading-relaxed">{{ link }}</pre>
           </div>
         </div>
 
@@ -159,18 +159,18 @@
         <div v-if="activeTab === 'clash'" class="space-y-3">
           <div class="flex items-center justify-between">
             <span class="text-xs text-gray-400">Full YAML config for Clash / Stash</span>
-            <button @click="copy(clashYaml, 'Clash file copied')" class="px-3 py-1 rounded-xl bg-cyberCyan/20 text-cyberCyan text-xs font-bold">{{ t('copy') }} YAML</button>
+            <button @click="copy(clashYaml, 'Clash file copied')" class="px-3 py-1 rounded-xl bg-amber-400/10 text-amber-300 border border-amber-400/20 text-xs font-bold">{{ t('copy') }} YAML</button>
           </div>
-          <pre dir="ltr" class="bg-black/60 p-4 rounded-2xl text-[11px] font-mono text-cyberGreen text-left overflow-x-auto border border-white/5 max-h-72 leading-relaxed">{{ clashYaml }}</pre>
+          <pre dir="ltr" class="bg-black/50 p-4 rounded-2xl text-[11px] font-mono text-emerald-400 text-left overflow-x-auto border border-white/[0.04] max-h-72 leading-relaxed">{{ clashYaml }}</pre>
         </div>
 
         <!-- Sing-Box JSON -->
         <div v-if="activeTab === 'singbox'" class="space-y-3">
           <div class="flex items-center justify-between">
             <span class="text-xs text-gray-400">Full JSON config for Sing-Box / NekoBox</span>
-            <button @click="copy(JSON.stringify(singboxJson, null, 2), 'Sing-Box file copied')" class="px-3 py-1 rounded-xl bg-cyberViolet/20 text-cyberViolet text-xs font-bold">{{ t('copy') }} JSON</button>
+            <button @click="copy(JSON.stringify(singboxJson, null, 2), 'Sing-Box file copied')" class="px-3 py-1 rounded-xl bg-amber-400/10 text-amber-300 border border-amber-400/20 text-xs font-bold">{{ t('copy') }} JSON</button>
           </div>
-          <pre dir="ltr" class="bg-black/60 p-4 rounded-2xl text-[11px] font-mono text-cyberCyan text-left overflow-x-auto border border-white/5 max-h-72 leading-relaxed">{{ JSON.stringify(singboxJson, null, 2) }}</pre>
+          <pre dir="ltr" class="bg-black/50 p-4 rounded-2xl text-[11px] font-mono text-indigo-300 text-left overflow-x-auto border border-white/[0.04] max-h-72 leading-relaxed">{{ JSON.stringify(singboxJson, null, 2) }}</pre>
         </div>
       </div>
 

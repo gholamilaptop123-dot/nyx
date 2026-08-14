@@ -7,18 +7,20 @@ export default {
   theme: {
     extend: {
       colors: {
-        darkBg: "#06070a",
-        cardBg: "rgba(14, 15, 23, 0.85)",
-        cardBorder: "rgba(250, 204, 21, 0.15)",
-        cyberYellow: "#facc15",
-        cyberRed: "#ff0055",
-        cyberViolet: "#facc15", // Mapped to Cyber Yellow
-        cyberCyan: "#facc15",   // Mapped to Cyber Yellow (Purge Cyan/Blue)
-        cyberGreen: "#10b981",  // Matrix Green for Active status
-        cyberPink: "#ff0055"    // Mapped to Crimson Red
+        darkBg: "#090c15",
+        cardBg: "rgba(16, 21, 34, 0.7)",
+        cardBorder: "rgba(255, 255, 255, 0.08)",
+        cyberYellow: "#fbbf24", // Warm amber gold
+        cyberAmber: "#f59e0b",
+        cyberRed: "#f43f5e",    // Soft warm rose
+        cyberGreen: "#10b981",  // Warm soothing emerald
+        cyberIndigo: "#6366f1",
+        cyberViolet: "#8b5cf6",
+        cyberCyan: "#06b6d4",
+        cyberPink: "#f43f5e"
       },
       fontFamily: {
-        sans: ['Vazirmatn', 'Inter', 'sans-serif']
+        sans: ['Vazirmatn', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif']
       }
     },
   },

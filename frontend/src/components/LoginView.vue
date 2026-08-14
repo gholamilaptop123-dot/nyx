@@ -1,30 +1,30 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-darkBg text-gray-100 px-4 relative">
+  <div class="min-h-screen flex items-center justify-center bg-darkBg text-gray-100 px-4 relative overflow-hidden selection:bg-amber-400/30 selection:text-amber-200">
+    <!-- Ambient Background Light Drops -->
+    <div class="absolute -top-32 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-32 left-1/4 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
     <!-- Language Switcher in Login Screen -->
-    <div class="absolute top-6 right-6">
+    <div class="absolute top-5 right-5 sm:top-6 sm:right-6 z-20">
       <button 
         @click="toggleLanguage" 
-        class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-bold border border-white/15 text-cyberYellow transition-all"
+        class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-xs font-bold border border-white/[0.08] text-amber-300 transition-all hover:border-amber-400/30"
       >
-        <Globe class="w-4 h-4 text-cyberYellow" />
-        <span>{{ currentLang === 'en' ? '🇮🇷 فارسی' : '🇺🇸 English' }}</span>
+        <Globe class="w-3.5 h-3.5 text-amber-400" />
+        <span class="text-[11px]">{{ currentLang === 'en' ? '🇮🇷 فارسی' : '🇺🇸 EN' }}</span>
       </button>
     </div>
 
-    <div class="glass-panel max-w-md w-full p-8 rounded-3xl border border-cyberYellow/30 space-y-6 shadow-2xl relative overflow-hidden">
-      <!-- Ambient Cyberpunk Glow -->
-      <div class="absolute -top-20 -right-20 w-40 h-40 bg-cyberYellow/20 blur-3xl rounded-full"></div>
-      <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-cyberRed/20 blur-3xl rounded-full"></div>
-
-      <div class="text-center space-y-3 relative z-10">
-        <img src="/logo_trans.png" alt="Nyx Panel Logo" class="w-32 h-32 md:w-36 md:h-36 mx-auto object-contain drop-shadow-[0_0_25px_rgba(234,179,8,0.6)] hover:scale-105 transition-all duration-300 animate-pulse" />
-        <h2 class="text-2xl md:text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-cyberYellow via-red-400 to-cyberRed glow-yellow">
+    <div class="glass-panel max-w-md w-full p-6 sm:p-8 rounded-3xl border border-white/[0.08] space-y-6 shadow-2xl relative z-10">
+      <div class="text-center space-y-2.5">
+        <img src="/logo_trans.png" alt="Nyx Panel Logo" class="w-24 h-24 sm:w-28 sm:h-28 mx-auto object-contain drop-shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:scale-105 transition-all duration-300" />
+        <h2 class="text-2xl sm:text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 via-amber-400 to-rose-400 tracking-wide">
           {{ t('loginTitle') }}
         </h2>
         <p class="text-xs text-gray-400 font-mono">{{ t('loginSub') }}</p>
       </div>
 
-      <form @submit.prevent="handleLogin" class="space-y-4 relative z-10">
+      <form @submit.prevent="handleLogin" class="space-y-4">
         <div class="space-y-1.5">
           <label class="text-xs font-semibold text-gray-300">{{ t('usernameLabel') }}</label>
           <div class="relative">
@@ -34,7 +34,7 @@
               type="text" 
               placeholder="admin" 
               required
-              class="w-full bg-white/5 border border-white/10 rounded-xl px-10 py-2.5 text-xs text-white placeholder-gray-500 focus:border-cyberYellow outline-none"
+              class="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl px-10 py-2.5 text-xs text-white placeholder-gray-500 focus:border-amber-400/60 outline-none"
             />
           </div>
         </div>
@@ -48,33 +48,33 @@
               type="password" 
               placeholder="••••••••" 
               required
-              class="w-full bg-white/5 border border-white/10 rounded-xl px-10 py-2.5 text-xs text-white placeholder-gray-500 focus:border-cyberYellow outline-none"
+              class="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl px-10 py-2.5 text-xs text-white placeholder-gray-500 focus:border-amber-400/60 outline-none"
             />
           </div>
         </div>
 
-        <div v-if="errorMsg" class="p-3 rounded-xl bg-cyberRed/10 border border-cyberRed/30 text-cyberRed text-xs font-medium">
+        <div v-if="errorMsg" class="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/25 text-rose-300 text-xs font-medium">
           {{ errorMsg }}
         </div>
 
         <button 
           type="submit" 
           :disabled="loading"
-          class="w-full py-3 rounded-xl bg-gradient-to-r from-cyberYellow via-red-600 to-cyberRed text-black font-extrabold text-xs shadow-lg shadow-cyberYellow/20 hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+          class="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 text-gray-950 font-bold text-xs shadow-md shadow-amber-500/25 hover:opacity-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
         >
-          <RefreshCw v-if="loading" class="w-4 h-4 animate-spin text-black" />
+          <RefreshCw v-if="loading" class="w-4 h-4 animate-spin text-gray-950" />
           <span>{{ loading ? t('authenticating') : t('loginButton') }}</span>
         </button>
       </form>
 
-      <div class="text-center space-y-2 border-t border-white/5 pt-4 text-xs text-gray-400">
-        <p>{{ t('byCynet') }}</p>
+      <div class="text-center space-y-2 border-t border-white/[0.06] pt-4 text-xs text-gray-400">
+        <p class="text-gray-400">{{ t('byCynet') }}</p>
         <div class="flex items-center justify-center gap-3 text-[11px]">
-          <a href="https://t.me/cynetx" target="_blank" class="hover:text-cyberCyan transition-colors">📢 Telegram</a>
-          <span>•</span>
-          <a href="https://www.youtube.com/@cynetxir" target="_blank" class="hover:text-cyberPink transition-colors">🎥 YouTube</a>
-          <span>•</span>
-          <a href="https://cynetx.ir" target="_blank" class="hover:text-cyberGreen transition-colors font-mono">🌐 cynetx.ir</a>
+          <a href="https://t.me/cynetx" target="_blank" class="hover:text-amber-300 transition-colors">📢 Telegram</a>
+          <span class="text-gray-600">•</span>
+          <a href="https://www.youtube.com/@cynetxir" target="_blank" class="hover:text-rose-400 transition-colors">🎥 YouTube</a>
+          <span class="text-gray-600">•</span>
+          <a href="https://cynetx.ir" target="_blank" class="hover:text-emerald-400 transition-colors font-mono">🌐 cynetx.ir</a>
         </div>
       </div>
     </div>

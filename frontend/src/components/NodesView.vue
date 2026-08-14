@@ -2,12 +2,12 @@
   <div class="space-y-6">
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div>
-        <h2 class="text-2xl font-bold text-white">{{ t('nodesTitle') }}</h2>
-        <p class="text-sm text-gray-400">{{ t('nodesSub') }}</p>
+        <h2 class="text-xl sm:text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-amber-400">{{ t('nodesTitle') }}</h2>
+        <p class="text-xs sm:text-sm text-gray-400 mt-0.5">{{ t('nodesSub') }}</p>
       </div>
       <button 
         @click="showCreateModal = true"
-        class="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-cyberCyan text-black font-bold text-sm shadow-lg shadow-cyberCyan/30 hover:opacity-90 transition-all"
+        class="flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 text-gray-950 font-bold text-xs sm:text-sm shadow-md shadow-amber-500/20 hover:opacity-95 transition-all"
       >
         <Server class="w-4 h-4" />
         {{ t('addNodeBtn') }}

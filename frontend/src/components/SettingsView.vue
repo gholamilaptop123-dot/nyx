@@ -1,32 +1,32 @@
 <template>
   <div class="space-y-6">
-    <div class="glass-panel p-6 rounded-3xl border border-cyberYellow/40 relative overflow-hidden">
+    <div class="glass-panel p-5 sm:p-6 rounded-3xl border border-white/[0.08] relative overflow-hidden">
       <div class="flex items-center gap-3 mb-2">
-        <Bot class="w-6 h-6 text-cyberYellow" />
-        <h2 class="text-xl font-extrabold text-cyberYellow glow-yellow">{{ t('settingsTitle') }}</h2>
+        <Bot class="w-6 h-6 text-amber-400" />
+        <h2 class="text-xl sm:text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-amber-400">{{ t('settingsTitle') }}</h2>
       </div>
-      <p class="text-xs text-gray-300 leading-relaxed">
+      <p class="text-xs sm:text-sm text-gray-400 leading-relaxed">
         {{ t('settingsSub') }}
       </p>
     </div>
 
     <!-- Settings Form -->
-    <div class="glass-panel p-6 rounded-3xl border border-cyberYellow/30 space-y-6">
-      <div class="flex items-center justify-between border-b border-white/10 pb-4">
+    <div class="glass-panel p-5 sm:p-6 rounded-3xl border border-white/[0.08] space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.06] pb-4">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-2xl bg-cyberYellow/20 text-cyberYellow border border-cyberYellow/30 flex items-center justify-center font-bold">
+          <div class="w-10 h-10 rounded-2xl bg-amber-400/10 text-amber-400 border border-amber-400/20 flex items-center justify-center font-bold shrink-0">
             <Send class="w-5 h-5" />
           </div>
           <div>
-            <h3 class="text-base font-bold text-white">Telegram Bot API Configuration</h3>
+            <h3 class="text-sm sm:text-base font-bold text-white">Telegram Bot API Configuration</h3>
             <p class="text-xs text-gray-400">Enter your bot token and admin chat ID</p>
           </div>
         </div>
 
-        <div class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
-          :class="botEnabled ? 'bg-cyberGreen/10 border border-cyberGreen/30 text-cyberGreen' : 'bg-cyberRed/10 border border-cyberRed/30 text-cyberRed'"
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold w-fit"
+          :class="botEnabled ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-300' : 'bg-rose-500/10 border border-rose-500/20 text-rose-300'"
         >
-          <span class="w-2 h-2 rounded-full" :class="botEnabled ? 'bg-cyberGreen animate-pulse' : 'bg-cyberRed'"></span>
+          <span class="w-2 h-2 rounded-full" :class="botEnabled ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'"></span>
           {{ botEnabled ? t('statusOnline') : t('statusOffline') }}
         </div>
       </div>
@@ -41,7 +41,7 @@
               :type="showToken ? 'text' : 'password'" 
               placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyZ..."
               dir="ltr"
-              class="w-full bg-white/5 border border-white/10 rounded-2xl pl-10 pr-12 py-3 text-xs text-white font-mono text-left focus:border-cyberYellow outline-none"
+              class="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl pl-10 pr-12 py-3 text-xs text-white font-mono text-left focus:border-amber-400/50 outline-none"
             />
             <button 
               type="button" 
@@ -61,19 +61,19 @@
             type="text" 
             placeholder="e.g. 987654321"
             dir="ltr"
-            class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-xs text-white font-mono text-left focus:border-cyberYellow outline-none"
+            class="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl px-4 py-3 text-xs text-white font-mono text-left focus:border-amber-400/50 outline-none"
           />
         </div>
       </div>
 
-      <div class="flex items-center justify-end pt-4 border-t border-white/10">
+      <div class="flex items-center justify-end pt-4 border-t border-white/[0.06]">
         <button 
           @click="saveSettings" 
           :disabled="saving"
-          class="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-cyberYellow via-red-600 to-cyberRed text-black font-extrabold text-xs shadow-lg shadow-cyberYellow/20 hover:opacity-90 transition-all disabled:opacity-50 flex items-center gap-2 border border-cyberYellow/40"
+          class="px-5 sm:px-6 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 text-gray-950 font-bold text-xs shadow-md shadow-amber-500/20 hover:opacity-95 transition-all disabled:opacity-50 flex items-center gap-2"
         >
-          <RefreshCw v-if="saving" class="w-4 h-4 animate-spin text-black" />
-          <Save v-else class="w-4 h-4 text-black" />
+          <RefreshCw v-if="saving" class="w-4 h-4 animate-spin text-gray-950" />
+          <Save v-else class="w-4 h-4 text-gray-950" />
           <span>{{ saving ? t('loading') : t('saveSettingsBtn') }}</span>
         </button>
       </div>

@@ -1,325 +1,310 @@
 <template>
   <div class="space-y-6">
     <!-- Top Banner & Server Health Overview -->
-    <div class="glass-panel rounded-3xl p-6 relative overflow-hidden border border-cyberYellow/40">
-      <div class="absolute -left-10 -bottom-10 w-48 h-48 bg-cyberYellow/20 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="glass-panel rounded-3xl p-5 sm:p-6 relative overflow-hidden border border-white/[0.08] bg-gradient-to-r from-amber-500/[0.03] via-white/[0.02] to-indigo-500/[0.03]">
+      <div class="absolute -left-10 -bottom-10 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
         <div>
-          <h2 class="text-2xl font-extrabold text-cyberYellow glow-yellow mb-1 flex items-center gap-2">
+          <h2 class="text-xl sm:text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-amber-400 mb-1 flex items-center gap-2">
             <span>{{ t('dashboardTitle') }}</span>
-            <span class="text-xs px-2.5 py-0.5 rounded-full bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/40 animate-pulse font-normal">Live</span>
+            <span class="text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-medium">Live</span>
           </h2>
-          <p class="text-sm text-gray-300">{{ t('dashboardSub') }}</p>
+          <p class="text-xs sm:text-sm text-gray-400 leading-relaxed">{{ t('dashboardSub') }}</p>
         </div>
-        <div class="flex items-center gap-3">
-          <div class="bg-black/60 backdrop-blur-md px-4 py-2 rounded-2xl border border-cyberYellow/30 text-xs flex items-center gap-2">
+        <div class="flex items-center gap-3 shrink-0">
+          <div class="bg-black/40 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-white/[0.08] text-xs flex items-center gap-2">
             <span class="text-gray-400">{{ t('serverIp') }}:</span>
-            <span class="font-mono text-cyberYellow font-extrabold">{{ stats.serverIp }}</span>
+            <span class="font-mono text-amber-300 font-bold">{{ stats.serverIp }}</span>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Live System Hardware & Speedometer Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
       <!-- CPU Load Metric -->
-      <div class="glass-card p-5 rounded-2xl border border-cyberYellow/30 relative overflow-hidden">
+      <div class="glass-card p-4 sm:p-5 rounded-2xl border border-white/[0.06] relative overflow-hidden">
         <div class="flex items-center justify-between">
           <span class="text-xs text-gray-400 font-medium flex items-center gap-1.5">
-            <Cpu class="w-4 h-4 text-cyberYellow" />
+            <Cpu class="w-4 h-4 text-amber-400" />
             {{ t('cpuLoad') }}
           </span>
-          <span class="text-xs font-mono font-bold text-cyberYellow">{{ stats.systemHealth.cpuPercent }}%</span>
+          <span class="text-xs font-mono font-bold text-amber-300">{{ stats.systemHealth.cpuPercent }}%</span>
         </div>
-        <div class="w-full bg-white/10 rounded-full h-2 mt-3 overflow-hidden">
+        <div class="w-full bg-white/[0.06] rounded-full h-1.5 mt-3 overflow-hidden">
           <div 
-            class="bg-gradient-to-r from-cyberYellow to-cyberRed h-2 rounded-full transition-all duration-500" 
+            class="bg-gradient-to-r from-amber-400 to-amber-500 h-1.5 rounded-full transition-all duration-500" 
             :style="{ width: stats.systemHealth.cpuPercent + '%' }"
           ></div>
         </div>
       </div>
 
       <!-- RAM Usage Metric -->
-      <div class="glass-card p-5 rounded-2xl border border-cyberYellow/30">
+      <div class="glass-card p-4 sm:p-5 rounded-2xl border border-white/[0.06]">
         <div class="flex items-center justify-between">
           <span class="text-xs text-gray-400 font-medium flex items-center gap-1.5">
-            <HardDrive class="w-4 h-4 text-cyberYellow" />
+            <HardDrive class="w-4 h-4 text-amber-400" />
             {{ t('ramUsage') }}
           </span>
-          <span class="text-xs font-mono font-bold text-white">{{ stats.systemHealth.ramPercent }}%</span>
+          <span class="text-xs font-mono font-bold text-gray-200">{{ stats.systemHealth.ramPercent }}%</span>
         </div>
-        <div class="flex items-center justify-between mt-2">
-          <span class="text-xs font-mono text-gray-300" dir="ltr">{{ stats.systemHealth.ramUsageGb }}</span>
-          <span class="text-[10px] text-cyberGreen font-bold">{{ t('stable') }}</span>
+        <div class="flex items-center justify-between mt-2.5">
+          <span class="text-xs font-mono text-gray-400" dir="ltr">{{ stats.systemHealth.ramUsageGb }}</span>
+          <span class="text-[10px] text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">{{ t('stable') }}</span>
         </div>
       </div>
 
       <!-- Live Ping & Latency -->
-      <div class="glass-card p-5 rounded-2xl border border-cyberYellow/30">
+      <div class="glass-card p-4 sm:p-5 rounded-2xl border border-white/[0.06]">
         <div class="flex items-center justify-between">
           <span class="text-xs text-gray-400 font-medium flex items-center gap-1.5">
-            <Activity class="w-4 h-4 text-cyberGreen" />
+            <Activity class="w-4 h-4 text-emerald-400" />
             {{ t('networkPing') }}
           </span>
-          <span class="text-xs font-mono font-extrabold text-cyberGreen" dir="ltr">{{ stats.systemHealth.pingMs }} ms</span>
+          <span class="text-xs font-mono font-extrabold text-emerald-400" dir="ltr">{{ stats.systemHealth.pingMs }} ms</span>
         </div>
-        <div class="flex items-center justify-between mt-2 text-xs">
+        <div class="flex items-center justify-between mt-2.5 text-xs">
           <span class="text-gray-400">{{ t('instantSpeed') }}:</span>
-          <span class="font-mono text-cyberYellow font-bold" dir="ltr">{{ stats.systemHealth.networkSpeedMb }} MB/s</span>
+          <span class="font-mono text-amber-300 font-bold" dir="ltr">{{ stats.systemHealth.networkSpeedMb }} MB/s</span>
         </div>
       </div>
 
       <!-- Server Uptime -->
-      <div class="glass-card p-5 rounded-2xl border border-cyberYellow/30">
+      <div class="glass-card p-4 sm:p-5 rounded-2xl border border-white/[0.06]">
         <div class="flex items-center justify-between">
           <span class="text-xs text-gray-400 font-medium flex items-center gap-1.5">
-            <Clock class="w-4 h-4 text-cyberYellow" />
+            <Clock class="w-4 h-4 text-amber-400" />
             {{ t('serverUptime') }}
           </span>
-          <span class="text-xs font-bold text-cyberYellow">{{ stats.systemHealth.uptimeText }}</span>
+          <span class="text-xs font-bold text-amber-300">{{ stats.systemHealth.uptimeText }}</span>
         </div>
-        <div class="flex items-center justify-between mt-2 text-xs">
+        <div class="flex items-center justify-between mt-2.5 text-xs">
           <span class="text-gray-400">{{ t('networkStability') }}:</span>
-          <span class="font-bold text-cyberGreen" dir="ltr">{{ stats.systemHealth.bypassEfficiency }}</span>
+          <span class="font-bold text-emerald-400" dir="ltr">{{ stats.systemHealth.bypassEfficiency }}</span>
         </div>
       </div>
     </div>
 
     <!-- Quick Stats Overview Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="glass-card p-5 rounded-2xl flex items-center gap-4 border border-cyberYellow/30">
-        <div class="w-12 h-12 rounded-xl bg-cyberYellow/20 text-cyberYellow border border-cyberYellow/30 flex items-center justify-center">
-          <Users class="w-6 h-6" />
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+      <div class="glass-card p-4 sm:p-5 rounded-2xl flex items-center gap-4 border border-white/[0.06]">
+        <div class="w-11 h-11 rounded-xl bg-amber-400/10 text-amber-400 border border-amber-400/20 flex items-center justify-center shrink-0">
+          <Users class="w-5 h-5" />
         </div>
         <div>
           <p class="text-xs text-gray-400 font-medium">{{ t('totalUsers') }}</p>
-          <h3 class="text-2xl font-extrabold text-white mt-1">{{ stats.totalUsers }}</h3>
+          <h3 class="text-xl sm:text-2xl font-extrabold text-white mt-0.5">{{ stats.totalUsers }}</h3>
         </div>
       </div>
 
-      <div class="glass-card p-5 rounded-2xl flex items-center gap-4 border border-cyberYellow/30">
-        <div class="w-12 h-12 rounded-xl bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30 flex items-center justify-center">
-          <CheckCircle class="w-6 h-6" />
+      <div class="glass-card p-4 sm:p-5 rounded-2xl flex items-center gap-4 border border-white/[0.06]">
+        <div class="w-11 h-11 rounded-xl bg-emerald-400/10 text-emerald-400 border border-emerald-400/20 flex items-center justify-center shrink-0">
+          <CheckCircle class="w-5 h-5" />
         </div>
         <div>
           <p class="text-xs text-gray-400 font-medium">{{ t('activeUsers') }}</p>
-          <h3 class="text-2xl font-extrabold text-white mt-1">{{ stats.activeUsers }}</h3>
+          <h3 class="text-xl sm:text-2xl font-extrabold text-white mt-0.5">{{ stats.activeUsers }}</h3>
         </div>
       </div>
 
-      <div class="glass-card p-5 rounded-2xl flex items-center gap-4 border border-cyberRed/30">
-        <div class="w-12 h-12 rounded-xl bg-cyberRed/20 text-cyberRed border border-cyberRed/30 flex items-center justify-center">
-          <Activity class="w-6 h-6" />
+      <div class="glass-card p-4 sm:p-5 rounded-2xl flex items-center gap-4 border border-white/[0.06]">
+        <div class="w-11 h-11 rounded-xl bg-rose-400/10 text-rose-400 border border-rose-400/20 flex items-center justify-center shrink-0">
+          <Activity class="w-5 h-5" />
         </div>
         <div>
           <p class="text-xs text-gray-400 font-medium">{{ t('totalTraffic') }}</p>
-          <h3 class="text-2xl font-extrabold text-white mt-1">{{ stats.totalTransferredGb }} GB</h3>
+          <h3 class="text-xl sm:text-2xl font-extrabold text-white mt-0.5">{{ stats.totalTransferredGb }} GB</h3>
         </div>
       </div>
 
-      <div class="glass-card p-5 rounded-2xl flex items-center gap-4 border border-cyberYellow/30">
-        <div class="w-12 h-12 rounded-xl bg-cyberYellow/20 text-cyberYellow border border-cyberYellow/30 flex items-center justify-center">
-          <Server class="w-6 h-6" />
+      <div class="glass-card p-4 sm:p-5 rounded-2xl flex items-center gap-4 border border-white/[0.06]">
+        <div class="w-11 h-11 rounded-xl bg-indigo-400/10 text-indigo-400 border border-indigo-400/20 flex items-center justify-center shrink-0">
+          <Server class="w-5 h-5" />
         </div>
         <div>
           <p class="text-xs text-gray-400 font-medium">{{ t('nodesAndServers') }}</p>
-          <h3 class="text-2xl font-extrabold text-white mt-1">{{ stats.totalNodes }} {{ t('nodesCount') }}</h3>
+          <h3 class="text-xl sm:text-2xl font-extrabold text-white mt-0.5">{{ stats.totalNodes }} {{ t('nodesCount') }}</h3>
         </div>
       </div>
     </div>
 
     <!-- Detailed Protocols Status Matrix -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div class="glass-panel p-6 rounded-3xl lg:col-span-2 space-y-4 border border-cyberYellow/30">
-        <div class="flex items-center justify-between border-b border-white/10 pb-3">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
+      <div class="glass-panel p-5 sm:p-6 rounded-3xl lg:col-span-2 space-y-4 border border-white/[0.08]">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/[0.06] pb-3.5">
           <div>
-            <h3 class="text-lg font-extrabold text-cyberYellow glow-yellow flex items-center gap-2">
-              <ShieldAlert class="w-5 h-5 text-cyberYellow" />
-              {{ t('protoMatrixTitle') }}
+            <h3 class="text-base sm:text-lg font-extrabold text-white flex items-center gap-2">
+              <ShieldAlert class="w-5 h-5 text-amber-400" />
+              <span>{{ t('protoMatrixTitle') }}</span>
             </h3>
             <p class="text-xs text-gray-400 mt-0.5">{{ t('protoMatrixSub') }}</p>
           </div>
-          <span class="text-xs text-cyberGreen font-bold font-mono bg-cyberGreen/10 border border-cyberGreen/30 px-3 py-1 rounded-full">
+          <span class="text-xs text-emerald-300 font-bold font-mono bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full shrink-0">
             Xray Core: {{ stats.systemHealth.xrayStatus }}
           </span>
         </div>
 
-        <div class="space-y-4 pt-1">
+        <div class="space-y-3.5 pt-1">
           <!-- VLESS REALITY Protocol -->
-          <div class="p-4 rounded-2xl bg-white/5 border border-cyberYellow/20 space-y-2">
+          <div class="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06] hover:border-amber-400/25 transition-all space-y-2">
             <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <span class="w-3 h-3 rounded-full bg-cyberGreen shadow-sm shadow-cyberGreen animate-ping"></span>
-                <h4 class="text-sm font-extrabold text-white flex items-center gap-2">
+              <div class="flex items-center gap-2.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <h4 class="text-xs sm:text-sm font-bold text-white flex flex-wrap items-center gap-2">
                   <span>VLESS + REALITY (X25519)</span>
-                  <span class="text-[10px] bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30 px-2 py-0.5 rounded-md">{{ t('mainProtocol') }}</span>
+                  <span class="text-[10px] bg-emerald-500/15 text-emerald-300 border border-emerald-500/25 px-2 py-0.5 rounded-md">{{ t('mainProtocol') }}</span>
                 </h4>
               </div>
-              <span class="px-3 py-1 text-xs rounded-full bg-cyberGreen/20 text-cyberGreen font-extrabold border border-cyberGreen/30">
-                🟢 {{ t('activeStatus') }}
+              <span class="px-2.5 py-0.5 text-xs rounded-full bg-emerald-500/10 text-emerald-300 font-bold border border-emerald-500/20">
+                {{ t('activeStatus') }}
               </span>
             </div>
-            <p class="text-xs text-gray-300 leading-relaxed pr-6">
+            <p class="text-xs text-gray-300 leading-relaxed pr-5">
               {{ t('vlessRealityDesc') }}
             </p>
-            <div class="flex flex-wrap items-center gap-4 text-[11px] text-gray-400 pr-6 pt-1 border-t border-white/5">
-              <span>⚡ {{ t('avgLatency') }}: <strong class="text-cyberYellow font-mono" dir="ltr">16 ms</strong></span>
-              <span>🔒 {{ t('sslStatus') }}: <strong class="text-cyberGreen">{{ t('domainlessReality') }}</strong></span>
-              <span>📱 {{ t('operatorSupport') }}: <strong class="text-white">{{ t('allOperators') }}</strong></span>
+            <div class="flex flex-wrap items-center gap-3 sm:gap-4 text-[11px] text-gray-400 pr-5 pt-1.5 border-t border-white/[0.04]">
+              <span>⚡ {{ t('avgLatency') }}: <strong class="text-amber-300 font-mono" dir="ltr">16 ms</strong></span>
+              <span>🔒 {{ t('sslStatus') }}: <strong class="text-emerald-400">{{ t('domainlessReality') }}</strong></span>
+              <span>📱 {{ t('operatorSupport') }}: <strong class="text-gray-200">{{ t('allOperators') }}</strong></span>
             </div>
           </div>
 
           <!-- Packet Fragment Engine -->
-          <div class="p-4 rounded-2xl bg-white/5 border border-cyberYellow/20 space-y-2">
+          <div class="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06] hover:border-amber-400/25 transition-all space-y-2">
             <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <span class="w-3 h-3 rounded-full bg-cyberGreen shadow-sm shadow-cyberGreen"></span>
-                <h4 class="text-sm font-extrabold text-white flex items-center gap-2">
+              <div class="flex items-center gap-2.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                <h4 class="text-xs sm:text-sm font-bold text-white flex flex-wrap items-center gap-2">
                   <span>Xray Packet Fragment</span>
-                  <span class="text-[10px] bg-cyberYellow/20 text-cyberYellow border border-cyberYellow/30 px-2 py-0.5 rounded-md">Fragment</span>
+                  <span class="text-[10px] bg-amber-400/15 text-amber-300 border border-amber-400/25 px-2 py-0.5 rounded-md">Fragment</span>
                 </h4>
               </div>
-              <span class="px-3 py-1 text-xs rounded-full bg-cyberGreen/20 text-cyberGreen font-extrabold border border-cyberGreen/30">
-                ⚡ Packet Fragment (100-200 Bytes)
+              <span class="px-2.5 py-0.5 text-xs rounded-full bg-amber-400/10 text-amber-300 font-bold border border-amber-400/20">
+                100-200 Bytes
               </span>
             </div>
-            <p class="text-xs text-gray-300 leading-relaxed pr-6">
+            <p class="text-xs text-gray-300 leading-relaxed pr-5">
               {{ t('fragmentDesc') }}
             </p>
-            <div class="flex flex-wrap items-center gap-4 text-[11px] text-gray-400 pr-6 pt-1 border-t border-white/5">
-              <span>🎯 {{ t('packetSize') }}: <strong class="text-cyberYellow font-mono" dir="ltr">100-200 Bytes</strong></span>
-              <span>📊 {{ t('deliveryRate') }}: <strong class="text-cyberGreen font-mono">99.9%</strong></span>
-              <span>🛡️ {{ t('dpiBypass') }}: <strong class="text-cyberYellow">{{ t('activeStatus') }}</strong></span>
+            <div class="flex flex-wrap items-center gap-3 sm:gap-4 text-[11px] text-gray-400 pr-5 pt-1.5 border-t border-white/[0.04]">
+              <span>🎯 {{ t('packetSize') }}: <strong class="text-amber-300 font-mono" dir="ltr">100-200 Bytes</strong></span>
+              <span>📊 {{ t('deliveryRate') }}: <strong class="text-emerald-400 font-mono">99.9%</strong></span>
+              <span>🛡️ {{ t('dpiBypass') }}: <strong class="text-amber-300">{{ t('activeStatus') }}</strong></span>
             </div>
           </div>
 
           <!-- Gost v3 Intranet Tunnel -->
-          <div class="p-4 rounded-2xl bg-white/5 border border-cyberYellow/20 space-y-2">
+          <div class="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06] hover:border-indigo-400/25 transition-all space-y-2">
             <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <span class="w-3 h-3 rounded-full bg-cyberYellow shadow-sm shadow-cyberYellow"></span>
-                <h4 class="text-sm font-extrabold text-white flex items-center gap-2">
+              <div class="flex items-center gap-2.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-indigo-400"></span>
+                <h4 class="text-xs sm:text-sm font-bold text-white flex flex-wrap items-center gap-2">
                   <span>Gost v3 Intranet Tunnel</span>
-                  <span class="text-[10px] bg-cyberRed/20 text-cyberRed border border-cyberRed/30 px-2 py-0.5 rounded-md">{{ t('dedicatedTunnel') }}</span>
+                  <span class="text-[10px] bg-indigo-400/15 text-indigo-300 border border-indigo-400/25 px-2 py-0.5 rounded-md">{{ t('dedicatedTunnel') }}</span>
                 </h4>
               </div>
-              <span class="px-3 py-1 text-xs rounded-full bg-cyberYellow/20 text-cyberYellow font-extrabold border border-cyberYellow/30">
-                🛡️ {{ t('readyBypass') }}
+              <span class="px-2.5 py-0.5 text-xs rounded-full bg-indigo-400/10 text-indigo-300 font-bold border border-indigo-400/20">
+                {{ t('readyBypass') }}
               </span>
             </div>
-            <p class="text-xs text-gray-300 leading-relaxed pr-6">
+            <p class="text-xs text-gray-300 leading-relaxed pr-5">
               {{ t('gostTunnelDesc') }}
             </p>
-            <div class="flex flex-wrap items-center gap-4 text-[11px] text-gray-400 pr-6 pt-1 border-t border-white/5">
-              <span>🔗 {{ t('tunnelTypeLabel') }}: <strong class="text-cyberYellow font-mono">WebSocket TLS</strong></span>
-              <span>📡 {{ t('nodeLinkStatus') }}: <strong class="text-cyberGreen">{{ t('readyEstablished') }}</strong></span>
+            <div class="flex flex-wrap items-center gap-3 sm:gap-4 text-[11px] text-gray-400 pr-5 pt-1.5 border-t border-white/[0.04]">
+              <span>🔗 {{ t('tunnelTypeLabel') }}: <strong class="text-indigo-300 font-mono">WebSocket TLS</strong></span>
+              <span>📡 {{ t('nodeLinkStatus') }}: <strong class="text-emerald-400">{{ t('readyEstablished') }}</strong></span>
             </div>
           </div>
         </div>
       </div>
 
       <!-- SMART OPERATOR RECOMMENDATIONS & ISP MATRIX -->
-      <div class="space-y-6">
-        <div class="glass-panel p-6 rounded-3xl space-y-4 border border-cyberYellow/40">
-          <div class="flex items-center justify-between border-b border-white/10 pb-3">
-            <h3 class="text-lg font-extrabold text-cyberYellow glow-yellow flex items-center gap-2">
-              <Zap class="w-5 h-5 text-cyberYellow" />
-              {{ t('ispMatrixTitle') }}
+      <div class="space-y-5 sm:space-y-6">
+        <div class="glass-panel p-5 sm:p-6 rounded-3xl space-y-4 border border-white/[0.08]">
+          <div class="flex items-center justify-between border-b border-white/[0.06] pb-3">
+            <h3 class="text-base sm:text-lg font-extrabold text-white flex items-center gap-2">
+              <Zap class="w-5 h-5 text-amber-400" />
+              <span>{{ t('ispMatrixTitle') }}</span>
             </h3>
             <span class="text-[11px] text-gray-400 font-mono">ISP Matrix</span>
           </div>
 
-          <div class="space-y-3.5 text-xs">
+          <div class="space-y-3 text-xs">
             <!-- MCI Operator Recommendation Card -->
-            <div class="p-4 rounded-2xl bg-white/5 border border-cyberYellow/30 space-y-2">
+            <div class="p-3.5 sm:p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06] space-y-2">
               <div class="flex items-center justify-between">
-                <span class="font-extrabold text-cyberYellow flex items-center gap-1.5 text-sm">
+                <span class="font-bold text-amber-300 flex items-center gap-1.5 text-xs sm:text-sm">
                   📱 {{ t('mciNetwork') }}
                 </span>
-                <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30 font-bold">
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 font-medium">
                   99.5% {{ t('stable') }}
                 </span>
               </div>
-              <p class="text-gray-300 leading-relaxed">
-                {{ t('optimalSetup') }}: <strong class="text-white font-semibold">VLESS-REALITY + Packet Fragment</strong> Port 443.
+              <p class="text-gray-300 leading-relaxed text-xs">
+                {{ t('optimalSetup') }}: <strong class="text-white font-medium">VLESS-REALITY + Fragment</strong> Port 443.
               </p>
-              <div class="p-2.5 rounded-xl bg-black/40 border border-white/10 font-mono text-[11px] text-gray-300 flex items-center justify-between" dir="ltr">
-                <span>Fragment: 100-200, length 10-20</span>
-                <button @click="copyText('length: 100-200, interval: 10-20', t('copied'))" class="text-cyberYellow hover:underline text-[10px]">{{ t('copy') }}</button>
+              <div class="p-2 rounded-xl bg-black/30 border border-white/[0.06] font-mono text-[11px] text-gray-300 flex items-center justify-between" dir="ltr">
+                <span>Fragment: 100-200, interval: 10-20</span>
+                <button @click="copyText('length: 100-200, interval: 10-20', t('copied'))" class="text-amber-400 hover:underline text-[10px]">{{ t('copy') }}</button>
               </div>
-              <p class="text-[11px] text-gray-400">{{ t('suggestedSni') }}: <code class="text-cyberYellow">archive.ubuntu.com</code> / <code class="text-cyberYellow">pypi.org</code></p>
+              <p class="text-[11px] text-gray-400">{{ t('suggestedSni') }}: <code class="text-amber-300">archive.ubuntu.com</code> / <code class="text-amber-300">pypi.org</code></p>
             </div>
 
             <!-- Irancell Operator Recommendation Card -->
-            <div class="p-4 rounded-2xl bg-white/5 border border-cyberRed/30 space-y-2">
+            <div class="p-3.5 sm:p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06] space-y-2">
               <div class="flex items-center justify-between">
-                <span class="font-extrabold text-cyberRed flex items-center gap-1.5 text-sm">
+                <span class="font-bold text-rose-300 flex items-center gap-1.5 text-xs sm:text-sm">
                   📡 {{ t('irancellNetwork') }}
                 </span>
-                <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30 font-bold">
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 font-medium">
                   99.2% {{ t('stable') }}
                 </span>
               </div>
-              <p class="text-gray-300 leading-relaxed">
-                {{ t('optimalSetup') }}: <strong class="text-white font-semibold">REALITY (Chrome Fingerprint)</strong> / gRPC / WS.
+              <p class="text-gray-300 leading-relaxed text-xs">
+                {{ t('optimalSetup') }}: <strong class="text-white font-medium">REALITY (Chrome Fingerprint)</strong> / gRPC.
               </p>
-              <div class="p-2.5 rounded-xl bg-black/40 border border-white/10 font-mono text-[11px] text-gray-300 flex items-center justify-between" dir="ltr">
-                <span>Fingerprint: chrome, Port: 2083 / 443</span>
-                <button @click="copyText('ebanking.banksepah.ir', t('copied'))" class="text-cyberRed hover:underline text-[10px]">{{ t('copy') }} SNI</button>
+              <div class="p-2 rounded-xl bg-black/30 border border-white/[0.06] font-mono text-[11px] text-gray-300 flex items-center justify-between" dir="ltr">
+                <span>Fingerprint: chrome, Port: 443</span>
+                <button @click="copyText('ebanking.banksepah.ir', t('copied'))" class="text-rose-400 hover:underline text-[10px]">{{ t('copy') }} SNI</button>
               </div>
-              <p class="text-[11px] text-gray-400">{{ t('suggestedSni') }}: <code class="text-cyberRed">ebanking.banksepah.ir</code> / <code class="text-cyberRed">download.microsoft.com</code></p>
+              <p class="text-[11px] text-gray-400">{{ t('suggestedSni') }}: <code class="text-rose-300">ebanking.banksepah.ir</code> / <code class="text-rose-300">bmi.ir</code></p>
             </div>
 
             <!-- Fixed Broadband ADSL / RightTel Card -->
-            <div class="p-4 rounded-2xl bg-white/5 border border-cyberYellow/30 space-y-2">
+            <div class="p-3.5 sm:p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06] space-y-2">
               <div class="flex items-center justify-between">
-                <span class="font-extrabold text-white flex items-center gap-1.5 text-sm">
+                <span class="font-bold text-gray-200 flex items-center gap-1.5 text-xs sm:text-sm">
                   🌐 {{ t('adslFiberNetwork') }}
                 </span>
-                <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30 font-bold">
-                  100% {{ t('statusOnline') }}
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 font-medium">
+                  {{ t('statusOnline') }}
                 </span>
               </div>
-              <p class="text-gray-300 leading-relaxed">
-                {{ t('optimalSetup') }}: <strong class="text-white font-semibold">VLESS REALITY TCP / HTTP2</strong> (Port 8080 / 8443).
-              </p>
-            </div>
-
-            <!-- National Internet Blackout Emergency Card -->
-            <div class="p-4 rounded-2xl bg-cyberRed/10 border border-cyberRed/40 space-y-2">
-              <div class="flex items-center justify-between">
-                <span class="font-extrabold text-cyberRed flex items-center gap-1.5 text-sm">
-                  🛡️ {{ t('intranetRelayTitle') }}
-                </span>
-                <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyberYellow/20 text-cyberYellow border border-cyberYellow/30 font-bold">
-                  {{ t('relayTunnelBadge') }}
-                </span>
-              </div>
-              <p class="text-gray-200 leading-relaxed">
-                <strong class="text-cyberYellow">Gost WebSocket Encrypted Tunnel</strong> Relay Path.
+              <p class="text-gray-300 leading-relaxed text-xs">
+                {{ t('optimalSetup') }}: <strong class="text-white font-medium">VLESS REALITY TCP</strong> (Port 8443 / 443).
               </p>
             </div>
           </div>
         </div>
 
         <!-- Live Activity Ticker -->
-        <div class="glass-panel p-5 rounded-3xl space-y-3 border border-cyberYellow/30 text-xs">
-          <h4 class="font-extrabold text-white flex items-center gap-2">
-            <Terminal class="w-4 h-4 text-cyberYellow" />
+        <div class="glass-panel p-4 sm:p-5 rounded-3xl space-y-3 border border-white/[0.08] text-xs">
+          <h4 class="font-bold text-white flex items-center gap-2">
+            <Terminal class="w-4 h-4 text-amber-400" />
             {{ t('liveActivityFeed') }}
           </h4>
           <div class="space-y-2 font-mono text-[11px]">
-            <div class="flex items-center justify-between text-gray-400 bg-white/5 p-2 rounded-xl">
+            <div class="flex items-center justify-between text-gray-400 bg-white/[0.03] p-2 rounded-xl border border-white/[0.04]">
               <span>{{ t('autoTrafficSync') }}</span>
-              <span class="text-cyberGreen font-bold">{{ t('successText') }}</span>
+              <span class="text-emerald-400 font-bold">{{ t('successText') }}</span>
             </div>
-            <div class="flex items-center justify-between text-gray-400 bg-white/5 p-2 rounded-xl">
+            <div class="flex items-center justify-between text-gray-400 bg-white/[0.03] p-2 rounded-xl border border-white/[0.04]">
               <span>{{ t('realityKeypair') }}</span>
-              <span class="text-cyberYellow font-bold">{{ t('generatedText') }}</span>
+              <span class="text-amber-300 font-bold">{{ t('generatedText') }}</span>
             </div>
-            <div class="flex items-center justify-between text-gray-400 bg-white/5 p-2 rounded-xl">
+            <div class="flex items-center justify-between text-gray-400 bg-white/[0.03] p-2 rounded-xl border border-white/[0.04]">
               <span>{{ t('botConnectionStatus') }}</span>
-              <span class="text-cyberGreen font-bold">{{ t('activeStatus') }}</span>
+              <span class="text-emerald-400 font-bold">{{ t('activeStatus') }}</span>
             </div>
           </div>
         </div>
@@ -327,7 +312,7 @@
     </div>
 
     <!-- ⚛️ Quantum MultiPath Engine — Full Real-Time Network Health Dashboard -->
-    <div class="glass-panel rounded-3xl p-4 sm:p-6 border border-cyberYellow/40 relative overflow-hidden">
+    <div class="glass-panel rounded-3xl p-4 sm:p-6 border border-white/[0.08] relative overflow-hidden bg-gradient-to-br from-amber-500/[0.02] via-transparent to-indigo-500/[0.02]">
       <!-- Animated background glow -->
       <div class="absolute inset-0 pointer-events-none">
         <div :class="[
@@ -382,30 +367,30 @@
             v-for="(path, key) in networkHealth.paths"
             :key="key"
             :class="[
-              'p-4 rounded-2xl border transition-all duration-500 relative overflow-hidden',
+              'p-4 rounded-2xl border transition-all duration-300 relative overflow-hidden',
               path.healthy
-                ? 'bg-white/5 border-cyberGreen/30 hover:border-cyberGreen/60'
-                : 'bg-black/30 border-cyberRed/20 hover:border-cyberRed/40'
+                ? 'bg-white/[0.03] border-white/[0.06] hover:border-emerald-400/30 hover:bg-white/[0.05]'
+                : 'bg-black/40 border-rose-500/20 hover:border-rose-500/40'
             ]"
           >
             <!-- Subtle glow on healthy paths -->
-            <div v-if="path.healthy" class="absolute -bottom-4 -right-4 w-16 h-16 bg-cyberGreen/10 rounded-full blur-xl pointer-events-none"></div>
+            <div v-if="path.healthy" class="absolute -bottom-4 -right-4 w-16 h-16 bg-emerald-500/5 rounded-full blur-xl pointer-events-none"></div>
 
             <div class="relative z-10">
               <div class="flex items-center justify-between mb-2">
-                <span class="text-lg">{{ path.emoji }}</span>
+                <span class="text-base sm:text-lg">{{ path.emoji }}</span>
                 <div class="flex items-center gap-2">
                   <span
                     :class="[
                       'w-2 h-2 rounded-full',
-                      path.healthy ? 'bg-cyberGreen animate-pulse' : 'bg-cyberRed'
+                      path.healthy ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'
                     ]"
                   ></span>
                   <span
                     :class="[
                       'text-xs font-mono font-extrabold',
-                      path.latencyMs < 200 ? 'text-cyberGreen' :
-                      path.latencyMs < 600 ? 'text-yellow-400' : 'text-cyberRed'
+                      path.latencyMs < 200 ? 'text-emerald-400' :
+                      path.latencyMs < 600 ? 'text-amber-300' : 'text-rose-400'
                     ]"
                     dir="ltr"
                   >
@@ -415,24 +400,24 @@
               </div>
 
               <!-- Score bar -->
-              <div class="w-full bg-white/10 rounded-full h-1 mb-2 overflow-hidden">
+              <div class="w-full bg-white/[0.06] rounded-full h-1.5 mb-2 overflow-hidden">
                 <div
                   :class="[
-                    'h-1 rounded-full transition-all duration-700',
-                    path.score >= 80 ? 'bg-cyberGreen' :
-                    path.score >= 50 ? 'bg-yellow-400' :
-                    path.score >= 20 ? 'bg-orange-500' : 'bg-cyberRed'
+                    'h-1.5 rounded-full transition-all duration-500',
+                    path.score >= 80 ? 'bg-gradient-to-r from-emerald-400 to-teal-400' :
+                    path.score >= 50 ? 'bg-gradient-to-r from-amber-400 to-amber-500' :
+                    path.score >= 20 ? 'bg-gradient-to-r from-orange-400 to-rose-400' : 'bg-rose-500'
                   ]"
                   :style="{ width: path.score + '%' }"
                 ></div>
               </div>
 
-              <p class="text-[10px] text-gray-400 leading-snug">{{ path.label_fa }}</p>
-              <p v-if="!path.healthy && path.error" class="text-[9px] text-cyberRed/70 mt-0.5 truncate">{{ path.error }}</p>
+              <p class="text-[11px] text-gray-300 leading-snug">{{ path.label_fa }}</p>
+              <p v-if="!path.healthy && path.error" class="text-[9px] text-rose-400/80 mt-0.5 truncate">{{ path.error }}</p>
 
               <!-- Best path crown -->
-              <div v-if="networkHealth.bestPath === key" class="mt-1.5">
-                <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-cyberYellow/20 text-cyberYellow border border-cyberYellow/30 font-bold">★ BEST</span>
+              <div v-if="networkHealth.bestPath === key" class="mt-2">
+                <span class="text-[9px] px-2 py-0.5 rounded-full bg-amber-400/15 text-amber-300 border border-amber-400/25 font-bold">★ BEST</span>
               </div>
             </div>
           </div>
@@ -440,25 +425,25 @@
 
         <!-- Recommendation Banner -->
         <div :class="[
-          'rounded-2xl px-4 py-3 text-xs leading-relaxed border transition-all duration-500',
+          'rounded-2xl px-4 py-3 text-xs leading-relaxed border transition-all duration-300',
           networkHealth.panicMode
-            ? 'bg-cyberRed/10 border-cyberRed/30 text-cyberRed'
+            ? 'bg-rose-500/10 border-rose-500/30 text-rose-300'
             : networkHealth.overallHealth === 'CRITICAL'
-            ? 'bg-orange-500/10 border-orange-500/30 text-orange-300'
-            : 'bg-white/5 border-white/10 text-gray-300'
+            ? 'bg-amber-500/10 border-amber-500/30 text-amber-200'
+            : 'bg-white/[0.03] border-white/[0.06] text-gray-300'
         ]">
-          <span class="font-bold">{{ t('multiPathRecommendation') }}:</span>
+          <span class="font-bold text-amber-300">{{ t('multiPathRecommendation') }}:</span>
           {{ currentLang === 'fa' ? networkHealth.recommendation_fa : networkHealth.recommendation }}
         </div>
 
         <!-- Panic Mode Alert -->
-        <div v-if="networkHealth.panicMode" class="mt-3 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cyberRed/20 border border-cyberRed/40 animate-pulse">
-          <span class="text-xl">🚨</span>
-          <span class="text-xs font-extrabold text-cyberRed">{{ t('panicModeActive') }}</span>
+        <div v-if="networkHealth.panicMode" class="mt-3 flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 animate-pulse">
+          <span class="text-lg">🚨</span>
+          <span class="text-xs font-bold">{{ t('panicModeActive') }}</span>
         </div>
-        <div v-else class="mt-3 flex items-center gap-2 px-4 py-2 rounded-xl bg-cyberGreen/10 border border-cyberGreen/20">
-          <span class="text-sm">🟢</span>
-          <span class="text-xs font-bold text-cyberGreen">{{ t('panicModeInactive') }}</span>
+        <div v-else class="mt-3 flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 w-fit">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-xs font-medium">{{ t('panicModeInactive') }}</span>
         </div>
       </div>
     </div>

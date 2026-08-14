@@ -3,25 +3,25 @@
     <!-- Header Action Bar -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div>
-        <h2 class="text-2xl font-extrabold text-cyberYellow glow-yellow">{{ t('inboundsTitle') }}</h2>
-        <p class="text-sm text-gray-400">{{ t('inboundsSub') }}</p>
+        <h2 class="text-xl sm:text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-amber-400">{{ t('inboundsTitle') }}</h2>
+        <p class="text-xs sm:text-sm text-gray-400 mt-0.5">{{ t('inboundsSub') }}</p>
       </div>
       <button 
         @click="showCreateModal = true"
-        class="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-cyberYellow via-red-600 to-cyberRed text-black font-extrabold text-sm shadow-lg shadow-cyberYellow/20 hover:opacity-90 transition-all border border-cyberYellow/40"
+        class="flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 text-gray-950 font-bold text-xs sm:text-sm shadow-md shadow-amber-500/20 hover:opacity-95 transition-all"
       >
-        <Plus class="w-4 h-4 text-black font-bold" />
+        <Plus class="w-4 h-4 text-gray-950 font-bold" />
         {{ t('createInboundBtn') }}
       </button>
     </div>
 
     <!-- Smart Auto-Failover Banner Card -->
-    <div class="glass-panel rounded-3xl p-5 border border-cyberGreen/40 bg-gradient-to-r from-black/80 via-cyberGreen/10 to-black/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <div class="glass-panel rounded-3xl p-4 sm:p-5 border border-emerald-500/20 bg-gradient-to-r from-black/60 via-emerald-950/20 to-black/60 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
       <div class="space-y-1">
-        <h3 class="text-base font-extrabold text-cyberGreen glow-green flex items-center gap-2">
-          <ShieldAlert class="w-5 h-5 text-cyberGreen animate-pulse" />
+        <h3 class="text-sm sm:text-base font-bold text-emerald-300 flex items-center gap-2">
+          <ShieldAlert class="w-5 h-5 text-emerald-400 animate-pulse" />
           <span>{{ t('autoFailoverTitle') }}</span>
-          <span class="px-2.5 py-0.5 rounded-full text-[10px] bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30 font-mono">{{ t('autoFailoverStatusActive') }}</span>
+          <span class="px-2 py-0.5 rounded-full text-[10px] bg-emerald-500/15 text-emerald-300 border border-emerald-500/25 font-mono">{{ t('autoFailoverStatusActive') }}</span>
         </h3>
         <p class="text-xs text-gray-300 max-w-3xl leading-relaxed">
           {{ t('autoFailoverSub') }}
@@ -30,19 +30,19 @@
       <button 
         @click="triggerAutoFailover" 
         :disabled="failoverTriggering"
-        class="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-cyberGreen via-emerald-500 to-teal-500 text-black font-extrabold text-xs shadow-lg shadow-cyberGreen/20 hover:opacity-90 transition-all flex items-center gap-2 whitespace-nowrap border border-cyberGreen/40 disabled:opacity-50"
+        class="px-4 sm:px-5 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-500 text-gray-950 font-bold text-xs shadow-md shadow-emerald-500/20 hover:opacity-95 transition-all flex items-center gap-2 whitespace-nowrap disabled:opacity-50"
       >
-        <Zap class="w-4 h-4 text-black font-bold" :class="{ 'animate-spin': failoverTriggering }" />
+        <Zap class="w-4 h-4 text-gray-950 font-bold" :class="{ 'animate-spin': failoverTriggering }" />
         <span>{{ t('triggerFailoverBtn') }}</span>
       </button>
     </div>
 
     <!-- Live SNI Connection Tester Panel -->
-    <div class="glass-panel rounded-3xl p-6 border border-cyberYellow/30 space-y-4">
+    <div class="glass-panel rounded-3xl p-4 sm:p-6 border border-white/[0.08] space-y-4">
       <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
-            <Activity class="w-5 h-5 text-cyberYellow" />
+          <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+            <Activity class="w-5 h-5 text-amber-400" />
             <span>{{ t('sniTesterHeading') }}</span>
           </h3>
           <p class="text-xs text-gray-400 mt-1">
@@ -52,12 +52,12 @@
       </div>
 
       <!-- Category Filter Tabs -->
-      <div class="flex flex-wrap items-center gap-2">
+      <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
         <button 
           v-for="cat in sniCategories" 
           :key="cat.id" 
           @click="activeSniCat = cat.id"
-          :class="['px-3 py-1.5 rounded-xl text-xs font-semibold transition-all', activeSniCat === cat.id ? 'bg-cyberYellow text-black font-bold shadow-md shadow-cyberYellow/20' : 'bg-white/5 text-gray-300 hover:bg-white/10']"
+          :class="['px-3 py-1.5 rounded-xl text-xs font-semibold transition-all', activeSniCat === cat.id ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-gray-950 font-bold shadow-sm' : 'bg-white/[0.03] text-gray-300 hover:bg-white/[0.06] border border-white/[0.05]']"
         >
           {{ cat.label }}
         </button>
@@ -65,12 +65,12 @@
 
       <!-- SNI Presets Grid & Custom Test -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div class="md:col-span-2 flex flex-wrap gap-2 p-3 bg-black/40 rounded-2xl border border-white/5 max-h-40 overflow-y-auto">
+        <div class="md:col-span-2 flex flex-wrap gap-2 p-3 bg-black/30 rounded-2xl border border-white/[0.05] max-h-40 overflow-y-auto">
           <button 
             v-for="domain in filteredSniList" 
             :key="domain"
             @click="testDomainInput = domain; runSniTest(domain)"
-            :class="['px-3 py-1.5 rounded-xl text-xs font-mono transition-all flex items-center gap-1.5 border', testDomainInput === domain ? 'bg-cyberYellow/20 text-cyberYellow border-cyberYellow' : 'bg-white/5 text-gray-300 border-white/10 hover:border-white/30']"
+            :class="['px-2.5 py-1.5 rounded-xl text-xs font-mono transition-all flex items-center gap-1.5 border', testDomainInput === domain ? 'bg-amber-400/15 text-amber-300 border-amber-400/30 font-bold' : 'bg-white/[0.03] text-gray-300 border-white/[0.06] hover:border-white/[0.15]']"
           >
             <span>{{ domain }}</span>
             <Play class="w-3 h-3 opacity-60" />
@@ -78,7 +78,7 @@
         </div>
 
         <!-- Custom Domain Test Box -->
-        <div class="p-3 bg-black/60 rounded-2xl border border-white/10 flex flex-col justify-between space-y-2">
+        <div class="p-3 bg-black/40 rounded-2xl border border-white/[0.06] flex flex-col justify-between space-y-2">
           <label class="text-xs text-gray-400">{{ t('customSniTestLabel') }}</label>
           <div class="flex items-center gap-2">
             <input 
@@ -86,20 +86,19 @@
               type="text" 
               placeholder="ebanking.banksepah.ir"
               dir="ltr"
-              class="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-mono text-left outline-none focus:border-cyberYellow"
+              class="flex-1 bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-1.5 text-xs text-white font-mono text-left outline-none focus:border-amber-400/50"
             />
             <button 
               @click="runSniTest(testDomainInput)"
               :disabled="testingSni"
-              class="px-3 py-1.5 rounded-xl bg-cyberYellow text-black font-bold text-xs hover:opacity-90 transition-all shrink-0 flex items-center gap-1"
+              class="px-3 py-1.5 rounded-xl bg-amber-400 text-gray-950 font-bold text-xs hover:opacity-90 transition-all shrink-0 flex items-center gap-1"
             >
-              <RefreshCw v-if="testingSni" class="w-3.5 h-3.5 animate-spin" />
+              <RefreshCw v-if="testingSni" class="w-3.5 h-3.5 animate-spin text-gray-950" />
               <span>{{ t('testBtn') }}</span>
             </button>
           </div>
-
           <!-- Test Result Box -->
-          <div v-if="sniTestResult" :class="['p-2.5 rounded-xl border text-xs font-mono space-y-1', sniTestResult.success ? 'bg-cyberGreen/10 border-cyberGreen/30 text-cyberGreen' : 'bg-cyberRed/10 border-cyberRed/30 text-cyberRed']">
+          <div v-if="sniTestResult" :class="['p-2 rounded-xl border text-xs font-mono space-y-1 mt-2', sniTestResult.success ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-300' : 'bg-rose-500/10 border-rose-500/25 text-rose-300']">
             <div class="flex items-center justify-between font-bold">
               <span>{{ sniTestResult.domain }}</span>
               <span>{{ sniTestResult.latencyMs }} ms</span>
@@ -110,10 +109,10 @@
       </div>
 
       <!-- Technical Warnings & Engineering Best Practices for SNI -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 border-t border-white/10 text-xs">
-        <div class="p-3 rounded-2xl bg-cyberYellow/10 border border-cyberYellow/30 space-y-1">
-          <div class="flex items-center gap-1.5 text-cyberYellow font-bold">
-            <AlertTriangle class="w-4 h-4 shrink-0" />
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 border-t border-white/[0.06] text-xs">
+        <div class="p-3 rounded-2xl bg-amber-400/5 border border-amber-400/15 space-y-1">
+          <div class="flex items-center gap-1.5 text-amber-300 font-bold">
+            <AlertTriangle class="w-4 h-4 shrink-0 text-amber-400" />
             <span>{{ t('sniWarning1Title') }}</span>
           </div>
           <p class="text-[11px] text-gray-300 leading-relaxed">
@@ -121,9 +120,9 @@
           </p>
         </div>
 
-        <div class="p-3 rounded-2xl bg-cyberRed/10 border border-cyberRed/30 space-y-1">
-          <div class="flex items-center gap-1.5 text-cyberRed font-bold">
-            <ShieldAlert class="w-4 h-4 shrink-0" />
+        <div class="p-3 rounded-2xl bg-rose-500/5 border border-rose-500/15 space-y-1">
+          <div class="flex items-center gap-1.5 text-rose-300 font-bold">
+            <ShieldAlert class="w-4 h-4 shrink-0 text-rose-400" />
             <span>{{ t('sniWarning2Title') }}</span>
           </div>
           <p class="text-[11px] text-gray-300 leading-relaxed">
@@ -131,9 +130,9 @@
           </p>
         </div>
 
-        <div class="p-3 rounded-2xl bg-cyberGreen/10 border border-cyberGreen/30 space-y-1">
-          <div class="flex items-center gap-1.5 text-cyberGreen font-bold">
-            <Zap class="w-4 h-4 shrink-0" />
+        <div class="p-3 rounded-2xl bg-emerald-500/5 border border-emerald-500/15 space-y-1">
+          <div class="flex items-center gap-1.5 text-emerald-300 font-bold">
+            <Zap class="w-4 h-4 shrink-0 text-emerald-400" />
             <span>{{ t('sniTip3Title') }}</span>
           </div>
           <p class="text-[11px] text-gray-300 leading-relaxed">
@@ -141,9 +140,9 @@
           </p>
         </div>
 
-        <div class="p-3 rounded-2xl bg-blue-500/10 border border-blue-500/30 space-y-1">
-          <div class="flex items-center gap-1.5 text-blue-400 font-bold">
-            <Info class="w-4 h-4 shrink-0" />
+        <div class="p-3 rounded-2xl bg-indigo-500/5 border border-indigo-500/15 space-y-1">
+          <div class="flex items-center gap-1.5 text-indigo-300 font-bold">
+            <Info class="w-4 h-4 shrink-0 text-indigo-400" />
             <span>{{ t('sniTip4Title') }}</span>
           </div>
           <p class="text-[11px] text-gray-300 leading-relaxed">
@@ -154,11 +153,11 @@
     </div>
 
     <!-- Inbound Cards Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
       <div 
         v-for="inbound in inbounds" 
         :key="inbound.id"
-        class="glass-panel rounded-3xl p-5 border border-white/10 hover:border-cyberYellow/40 transition-all flex flex-col justify-between space-y-4"
+        class="glass-panel rounded-3xl p-5 border border-white/[0.08] hover:border-amber-400/30 transition-all flex flex-col justify-between space-y-4"
       >
         <!-- Card Top Section -->
         <div class="space-y-3">
@@ -198,9 +197,9 @@
                 {{ (Number(inbound.usedDataBytes || 0) / (1024*1024*1024)).toFixed(2) }} GB / {{ inbound.dataLimitGb > 0 ? inbound.dataLimitGb + ' GB' : t('unlimited') }}
               </span>
             </div>
-            <div class="w-full bg-white/10 h-2 rounded-full overflow-hidden">
+            <div class="w-full bg-white/[0.06] h-1.5 rounded-full overflow-hidden">
               <div 
-                class="bg-gradient-to-r from-cyberYellow to-cyberRed h-full transition-all"
+                class="bg-gradient-to-r from-amber-400 to-amber-500 h-full transition-all duration-500" 
                 :style="{ width: inbound.dataLimitGb > 0 ? Math.min(100, ((Number(inbound.usedDataBytes || 0)/(1024*1024*1024)) / inbound.dataLimitGb)*100) + '%' : '15%' }"
               ></div>
             </div>
@@ -212,19 +211,19 @@
         </div>
 
         <!-- Quick Action Buttons -->
-        <div class="pt-3 border-t border-white/10 flex flex-wrap items-center gap-2">
-          <button @click="openConfigModal(inbound)" class="flex-1 py-2 px-3 rounded-xl bg-cyberYellow/20 border border-cyberYellow/40 text-cyberYellow hover:bg-cyberYellow/30 text-xs font-extrabold flex items-center justify-center gap-1 transition-all">
+        <div class="pt-3 border-t border-white/[0.06] flex flex-wrap items-center gap-1.5 sm:gap-2">
+          <button @click="openConfigModal(inbound)" class="flex-1 py-2 px-3 rounded-xl bg-amber-400/10 border border-amber-400/20 text-amber-300 hover:bg-amber-400/20 text-xs font-bold flex items-center justify-center gap-1 transition-all">
             <Download class="w-3.5 h-3.5" />
-            Get Config Link
+            Get Config
           </button>
-          <button @click="copyInboundInfoPage(inbound)" class="py-2 px-3 rounded-xl bg-cyberGreen/20 border border-cyberGreen/40 text-cyberGreen hover:bg-cyberGreen/30 text-xs font-extrabold flex items-center justify-center gap-1 transition-all" title="User Info Web Page">
+          <button @click="copyInboundInfoPage(inbound)" class="py-2 px-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 hover:bg-emerald-500/20 text-xs font-bold flex items-center justify-center gap-1 transition-all" title="User Info Web Page">
             <ExternalLink class="w-3.5 h-3.5" />
             Web Portal
           </button>
-          <button @click="openEditModal(inbound)" class="p-2 rounded-xl bg-white/10 text-gray-300 hover:text-white transition-all" title="Edit Inbound">
+          <button @click="openEditModal(inbound)" class="p-2 rounded-xl bg-white/[0.04] text-gray-300 hover:text-white border border-white/[0.06] transition-all" title="Edit Inbound">
             <Edit3 class="w-4 h-4" />
           </button>
-          <button @click="deleteInbound(inbound.id)" class="p-2 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all" title="Delete Inbound">
+          <button @click="deleteInbound(inbound.id)" class="p-2 rounded-xl bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/20 transition-all" title="Delete Inbound">
             <Trash2 class="w-4 h-4" />
           </button>
         </div>
@@ -237,9 +236,9 @@
 
     <!-- Create Inbound Modal -->
     <div v-if="showCreateModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
-      <div class="glass-panel max-w-lg w-full rounded-3xl p-6 border border-cyberYellow/40 space-y-4 max-h-[90vh] overflow-y-auto">
-        <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
-          <Plus class="w-5 h-5 text-cyberYellow" />
+      <div class="glass-panel max-w-lg w-full rounded-3xl p-5 sm:p-6 border border-white/[0.08] space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
+        <h3 class="text-base sm:text-lg font-extrabold text-white flex items-center gap-2">
+          <Plus class="w-5 h-5 text-amber-400" />
           <span>{{ t('createInboundBtn') }}</span>
         </h3>
 

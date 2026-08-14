@@ -1,17 +1,17 @@
 <template>
   <div class="space-y-6">
-    <div class="glass-panel p-6 rounded-3xl border border-cyberYellow/40 relative overflow-hidden">
+    <div class="glass-panel p-5 sm:p-6 rounded-3xl border border-white/[0.08] relative overflow-hidden">
       <div class="flex items-center gap-3 mb-2">
-        <Zap class="w-6 h-6 text-cyberYellow" />
-        <h2 class="text-xl font-extrabold text-cyberYellow glow-yellow">{{ t('tunnelsTitle') }}</h2>
+        <Zap class="w-6 h-6 text-amber-400" />
+        <h2 class="text-xl sm:text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-amber-400">{{ t('tunnelsTitle') }}</h2>
       </div>
-      <p class="text-xs text-gray-300 leading-relaxed">
+      <p class="text-xs sm:text-sm text-gray-400 leading-relaxed">
         {{ t('tunnelsSub') }}
       </p>
     </div>
 
     <!-- Generator Input Form -->
-    <div class="glass-panel p-6 rounded-3xl border border-cyberYellow/30 space-y-4">
+    <div class="glass-panel p-5 sm:p-6 rounded-3xl border border-white/[0.08] space-y-4">
       <h3 class="text-base font-bold text-white">{{ t('tunnelsTitle') }}</h3>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

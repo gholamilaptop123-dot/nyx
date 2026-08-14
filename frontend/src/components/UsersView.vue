@@ -3,24 +3,24 @@
     <!-- Header Action Bar -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div>
-        <h2 class="text-2xl font-extrabold text-cyberYellow glow-yellow">{{ t('usersTitle') }}</h2>
-        <p class="text-sm text-gray-400">{{ t('usersSub') }}</p>
+        <h2 class="text-xl sm:text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-amber-400">{{ t('usersTitle') }}</h2>
+        <p class="text-xs sm:text-sm text-gray-400 mt-0.5">{{ t('usersSub') }}</p>
       </div>
       <button 
         @click="showCreateModal = true"
-        class="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-cyberYellow via-red-600 to-cyberRed text-black font-extrabold text-sm shadow-lg shadow-cyberYellow/20 hover:opacity-90 transition-all border border-cyberYellow/40"
+        class="flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 text-gray-950 font-bold text-xs sm:text-sm shadow-md shadow-amber-500/20 hover:opacity-95 transition-all"
       >
-        <UserPlus class="w-4 h-4 text-black font-bold" />
+        <UserPlus class="w-4 h-4 text-gray-950 font-bold" />
         {{ t('createUserBtn') }}
       </button>
     </div>
 
     <!-- User List Table / Cards -->
-    <div class="glass-panel rounded-3xl overflow-hidden border border-cyberYellow/30">
+    <div class="glass-panel rounded-3xl overflow-hidden border border-white/[0.08]">
       <div class="overflow-x-auto">
         <table class="w-full min-w-[750px] text-right border-collapse">
           <thead>
-            <tr class="bg-white/5 border-b border-cyberYellow/20 text-xs text-cyberYellow font-bold">
+            <tr class="bg-white/[0.02] border-b border-white/[0.06] text-xs text-amber-300 font-bold">
               <th class="p-4">{{ t('usernameHeader') }}</th>
               <th class="p-4">{{ t('trafficHeader') }}</th>
               <th class="p-4">{{ t('expiryHeader') }}</th>
@@ -29,54 +29,54 @@
               <th class="p-4 text-center">{{ t('actions') }}</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-white/5 text-sm">
-            <tr v-for="user in users" :key="user.id" class="hover:bg-white/5 transition-colors">
+          <tbody class="divide-y divide-white/[0.04] text-sm">
+            <tr v-for="user in users" :key="user.id" class="hover:bg-white/[0.02] transition-colors">
               <td class="p-4 font-semibold text-white">
                 <div class="flex items-center gap-2.5">
-                  <div class="w-9 h-9 rounded-2xl bg-cyberYellow/20 border border-cyberYellow/40 text-cyberYellow flex items-center justify-center font-bold text-xs font-mono">
+                  <div class="w-9 h-9 rounded-2xl bg-amber-400/10 border border-amber-400/20 text-amber-300 flex items-center justify-center font-bold text-xs font-mono shrink-0">
                     {{ user.username.charAt(0).toUpperCase() }}
                   </div>
                   <div>
-                    <span class="block font-bold text-white">{{ user.username }}</span>
+                    <span class="block font-bold text-white text-xs sm:text-sm">{{ user.username }}</span>
                     <span class="text-[10px] font-mono text-gray-400" dir="ltr">{{ user.uuid.substring(0, 18) }}…</span>
                   </div>
                 </div>
               </td>
               <td class="p-4">
-                <span class="text-cyberYellow font-mono font-bold" dir="ltr">{{ (Number(user.usedDataBytes) / (1024*1024*1024)).toFixed(2) }} GB</span>
+                <span class="text-amber-300 font-mono font-bold text-xs" dir="ltr">{{ (Number(user.usedDataBytes) / (1024*1024*1024)).toFixed(2) }} GB</span>
                 <span class="text-gray-400 text-xs mr-1">/ {{ user.dataLimitGb > 0 ? user.dataLimitGb + ' GB' : t('unlimited') }}</span>
               </td>
               <td class="p-4 text-xs text-gray-300">
                 {{ user.expireDate ? new Date(user.expireDate).toLocaleDateString() : t('unlimited') }}
               </td>
-              <td class="p-4 text-xs font-mono text-white">
+              <td class="p-4 text-xs font-mono text-gray-200">
                 {{ user.maxDevices || 2 }} Device
               </td>
               <td class="p-4">
                 <span :class="[
-                  'px-3 py-1 text-xs rounded-full font-bold inline-block',
-                  user.status === 'ACTIVE' ? 'bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30' : 'bg-cyberRed/20 text-cyberRed border border-cyberRed/30'
+                  'px-2.5 py-0.5 text-xs rounded-full font-bold inline-block',
+                  user.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-300 border border-rose-500/20'
                 ]">
                   {{ user.status === 'ACTIVE' ? t('activeStatus') : t('disabledStatus') }}
                 </span>
               </td>
-              <td class="p-4 flex items-center justify-center gap-2">
-                <button @click="openConfigModal(user)" class="px-3 py-1.5 rounded-xl bg-cyberYellow/20 border border-cyberYellow/40 text-cyberYellow hover:bg-cyberYellow/30 text-xs font-extrabold flex items-center gap-1 transition-all">
+              <td class="p-4 flex items-center justify-center gap-1.5 sm:gap-2">
+                <button @click="openConfigModal(user)" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-amber-400/10 border border-amber-400/20 text-amber-300 hover:bg-amber-400/20 text-xs font-bold flex items-center gap-1 transition-all">
                   <Download class="w-3.5 h-3.5" />
                   Configs
                 </button>
-                <button @click="openSubModal(user)" class="px-3 py-1.5 rounded-xl bg-cyberRed/20 border border-cyberRed/40 text-cyberRed hover:bg-cyberRed/30 text-xs font-extrabold flex items-center gap-1 transition-all">
+                <button @click="openSubModal(user)" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 hover:bg-rose-500/20 text-xs font-bold flex items-center gap-1 transition-all">
                   <QrCode class="w-3.5 h-3.5" />
                   Sub Link
                 </button>
-                <button @click="copyUserInfoLink(user)" class="px-3 py-1.5 rounded-xl bg-cyberGreen/20 border border-cyberGreen/40 text-cyberGreen hover:bg-cyberGreen/30 text-xs font-extrabold flex items-center gap-1 transition-all" title="User Web Portal">
+                <button @click="copyUserInfoLink(user)" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 hover:bg-emerald-500/20 text-xs font-bold flex items-center gap-1 transition-all" title="User Web Portal">
                   <ExternalLink class="w-3.5 h-3.5" />
                   Web Portal
                 </button>
-                <button @click="openEditModal(user)" class="p-1.5 rounded-xl bg-white/10 text-gray-300 hover:text-white text-xs transition-all" title="Edit User">
+                <button @click="openEditModal(user)" class="p-1.5 rounded-xl bg-white/[0.04] text-gray-300 hover:text-white text-xs border border-white/[0.06] transition-all" title="Edit User">
                   <Edit3 class="w-4 h-4" />
                 </button>
-                <button @click="deleteUser(user.id)" class="p-1.5 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs transition-all" title="Delete User">
+                <button @click="deleteUser(user.id)" class="p-1.5 rounded-xl bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 text-xs border border-rose-500/20 transition-all" title="Delete User">
                   <Trash2 class="w-4 h-4" />
                 </button>
               </td>
@@ -94,9 +94,9 @@
 
     <!-- Create User Modal -->
     <div v-if="showCreateModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
-      <div class="glass-panel max-w-md w-full rounded-3xl p-6 border border-cyberYellow/40 space-y-4">
-        <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
-          <UserPlus class="w-5 h-5 text-cyberYellow" />
+      <div class="glass-panel max-w-md w-full rounded-3xl p-5 sm:p-6 border border-white/[0.08] space-y-4 shadow-2xl">
+        <h3 class="text-base sm:text-lg font-extrabold text-white flex items-center gap-2">
+          <UserPlus class="w-5 h-5 text-amber-400" />
           <span>{{ t('createUserWizard') }}</span>
         </h3>
 
