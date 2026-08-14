@@ -40,6 +40,7 @@
 </p>
 
 [⚡ Quick Installation](#-quick-installation-guide-linux--windows) •
+[☁️ Free Cloud PaaS & Docker](#-3-free-cloud-paas-deployment-railway--render--docker) •
 [⚛️ Quantum MultiPath Engine](#-quantum-multipath-engine-v230---the-core-breakthrough) •
 [🚀 What's New in v2.3](#-whats-new-in-version-230-release-highlights) •
 [📊 Comparison Table](#-feature-comparison-table) •
