@@ -9,7 +9,7 @@
 #### 🔐 توسعه داده‌شده توسط تیم امنیتی ساینت (Cynet Security Team)
 
 [![Version](https://img.shields.io/badge/version-2.3.0-blueviolet?style=for-the-badge&logo=shield)](https://github.com/icynetx/Nyx)
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/new?template=https://github.com/icynetx/Nyx)
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/new/template?template=https%3A%2F%2Fgithub.com%2Ficynetx%2FNyx)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker)](https://github.com/icynetx/Nyx)
 [![Telegram](https://img.shields.io/badge/Telegram-cynetx-2CA5E0?style=for-the-badge&logo=telegram)](https://t.me/cynetx)
 [![YouTube Video](https://img.shields.io/badge/Watch_Video-pFEeQrtCg14-FF0000?style=for-the-badge&logo=youtube)](https://youtu.be/pFEeQrtCg14)
@@ -241,25 +241,34 @@ iwr -useb https://raw.githubusercontent.com/icynetx/Nyx/main/install.ps1 | iex
 
 ### ☁️ 3. استقرار رایگان و ۱-کلیکه روی سرورهای ابری (Railway / Render / Fly.io / Docker):
 
-اگر سرور مجازی (VPS) ندارید یا می‌خواهید پنل را روی پلتفرم‌های ابری رایگان و محبوب مثل **Railway** اجرا کنید:
+اگر سرور مجازی (VPS) ندارید، می‌توانید Nyx Panel را روی پلتفرم‌های ابری رایگان مثل **Railway** اجرا کنید:
 
-#### ⚡ گزینه الف) استقرار ۱-کلیکه در Railway:
-روی دکمه زیر کلیک کنید تا تمام سرویس‌ها، هسته Xray و وب‌داشبورد به صورت خودکار روی ریلوِی راه‌اندازی شوند:
+#### ⚡ راهنمای گام‌به‌گام استقرار روی Railway (در کمتر از ۱ دقیقه):
+
+> [!NOTE]
+> برای استفاده از Railway، کافیست با **اکانت گیت‌هاب (GitHub)** خود وارد شوید (نیازی به کارت اعتباری نیست).
+
+1. روی دکمه زیر کلیک کنید (یا وارد سایت [railway.com](https://railway.com) شوید):
 
 <div align="center">
   <br />
-  <a href="https://railway.app/template/new?template=https://github.com/icynetx/Nyx" target="_blank">
-    <img src="https://railway.app/button.svg" alt="Deploy on Railway" height="38" />
+  <a href="https://railway.com/new/template?template=https%3A%2F%2Fgithub.com%2Ficynetx%2FNyx" target="_blank">
+    <img src="https://railway.com/button.svg" alt="Deploy on Railway" height="38" />
   </a>
   <br />
 </div>
 
-> [!TIP]
-> **💡 مزیت استقرار روی Railway:**
-> * به صورت خودکار ترافیک وب‌سوکت (`WSS`) روی پورت استاندارد **443 با TLS** و دامنه‌های اختصاصی ریلوِی (`*.up.railway.app`) از طریق CDN کلاودفلر رد و بدل می‌شود.
-> * بدون نیاز به خرید سرور VPS یا تنظیم دستی پورت‌ها، کاربران در ایران به اینترنت آزاد وصل می‌شوند!
+2. در صورت باز شدن صفحه ریلوِی، روی **Deploy Now** کلیک کنید.
+   *(اگر مستقیماً از داشبورد ریلوِی می‌روید: روی **New Project** ➜ گزینه **Deploy from GitHub repo** ➜ آدرس `https://github.com/icynetx/Nyx` را انتخاب و دیپلوی کنید).*
+3. پس از اتمام Build، در صفحه پروژه روی سرویس کلیک کرده، وارد تب **Settings** شوید و در بخش **Networking** روی دکمه **Generate Domain** کلیک کنید تا یک دامنه رایگان HTTPS (مثلاً `nyx-production.up.railway.app`) دریافت کنید.
+4. دامنه را در مرورگر باز کنید و با مشخصات پیش‌فرض (`admin` / `nyx2026!`) وارد شوید!
 
-#### 🐳 گزینه ب) اجرای کانتینر با Docker / Docker Compose:
+> [!TIP]
+> **💡 مزیت بزرگ استقرار روی Railway:**
+> * به صورت خودکار ترافیک وب‌سوکت (`WSS`) روی پورت استاندارد **443 با TLS** و دامنه‌های اختصاصی ریلوِی (`*.up.railway.app`) از طریق CDN کلاودفلر رد و بدل می‌شود.
+> * بدون نیاز به خرید سرور VPS، کاربران در ایران به اینترنت آزاد وصل می‌شوند!
+
+#### 🐳 اجرای کانتینر با Docker / Docker Compose:
 
 </div>
 

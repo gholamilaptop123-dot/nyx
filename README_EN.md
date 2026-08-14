@@ -9,7 +9,7 @@
 #### 🔐 Developed by Cynet Security Team
 
 [![Version](https://img.shields.io/badge/version-2.3.0-blueviolet?style=for-the-badge&logo=shield)](https://github.com/icynetx/Nyx)
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/new?template=https://github.com/icynetx/Nyx)
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/new/template?template=https%3A%2F%2Fgithub.com%2Ficynetx%2FNyx)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker)](https://github.com/icynetx/Nyx)
 [![Telegram](https://img.shields.io/badge/Telegram-cynetx-2CA5E0?style=for-the-badge&logo=telegram)](https://t.me/cynetx)
 [![YouTube Video](https://img.shields.io/badge/Watch_Video-pFEeQrtCg14-FF0000?style=for-the-badge&logo=youtube)](https://youtu.be/pFEeQrtCg14)
@@ -189,18 +189,27 @@ iwr -useb https://raw.githubusercontent.com/icynetx/Nyx/main/install.ps1 | iex
 
 ### ☁️ 3. 1-Click Cloud PaaS & Docker Deployment (Railway / Render / Fly.io / Docker):
 
-If you do not have a dedicated VPS or prefer running on popular cloud container platforms like **Railway.app**:
+If you do not have a dedicated VPS or prefer running on cloud container platforms like **Railway**:
 
-#### ⚡ Option A) 1-Click Deploy on Railway:
-Click the button below to automatically provision all services, Xray-core, and Web UI on Railway:
+#### ⚡ Step-by-Step Guide for Railway (Under 1 Minute):
+
+> [!NOTE]
+> To use Railway, simply sign in with your **GitHub** account (no credit card required).
+
+1. Click the button below (or visit [railway.com](https://railway.com)):
 
 <div align="center">
   <br />
-  <a href="https://railway.app/template/new?template=https://github.com/icynetx/Nyx" target="_blank">
-    <img src="https://railway.app/button.svg" alt="Deploy on Railway" height="38" />
+  <a href="https://railway.com/new/template?template=https%3A%2F%2Fgithub.com%2Ficynetx%2FNyx" target="_blank">
+    <img src="https://railway.com/button.svg" alt="Deploy on Railway" height="38" />
   </a>
   <br />
 </div>
+
+2. Click **Deploy Now**.
+   *(Or from Railway Dashboard: click **New Project** ➜ **Deploy from GitHub repo** ➜ select `https://github.com/icynetx/Nyx`).*
+3. Once the build completes, click your service, navigate to **Settings**, and under **Networking** click **Generate Domain** to get a free HTTPS domain (e.g. `nyx-production.up.railway.app`).
+4. Open the domain in your browser and sign in with default credentials (`admin` / `nyx2026!`)!
 
 > [!TIP]
 > **💡 Key Advantage on Railway:**
