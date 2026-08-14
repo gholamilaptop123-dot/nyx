@@ -325,6 +325,143 @@
         </div>
       </div>
     </div>
+
+    <!-- ⚛️ Quantum MultiPath Engine — Full Real-Time Network Health Dashboard -->
+    <div class="glass-panel rounded-3xl p-6 border border-cyberYellow/40 relative overflow-hidden">
+      <!-- Animated background glow -->
+      <div class="absolute inset-0 pointer-events-none">
+        <div :class="[
+          'absolute -top-12 -right-12 w-56 h-56 rounded-full blur-3xl transition-all duration-1000',
+          networkHealth.panicMode ? 'bg-cyberRed/30' :
+          networkHealth.overallHealth === 'CRITICAL' ? 'bg-orange-500/20' :
+          networkHealth.overallHealth === 'EXCELLENT' ? 'bg-cyberGreen/20' : 'bg-cyberYellow/15'
+        ]"></div>
+      </div>
+
+      <div class="relative z-10">
+        <!-- Header Row -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div>
+            <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
+              <span class="text-2xl">⚛️</span>
+              <span>{{ t('multiPathTitle') }}</span>
+              <span
+                :class="[
+                  'text-xs px-2.5 py-0.5 rounded-full border font-bold ml-2 transition-all duration-500',
+                  networkHealth.overallHealth === 'EXCELLENT' ? 'bg-cyberGreen/20 text-cyberGreen border-cyberGreen/50 animate-pulse' :
+                  networkHealth.overallHealth === 'GOOD' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' :
+                  networkHealth.overallHealth === 'DEGRADED' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40' :
+                  networkHealth.overallHealth === 'CRITICAL' ? 'bg-orange-500/20 text-orange-400 border-orange-500/40 animate-pulse' :
+                  'bg-cyberRed/20 text-cyberRed border-cyberRed/50 animate-pulse'
+                ]">
+                {{ networkHealth.overallHealth === 'EXCELLENT' ? t('healthExcellent') :
+                   networkHealth.overallHealth === 'GOOD' ? t('healthGood') :
+                   networkHealth.overallHealth === 'DEGRADED' ? t('healthDegraded') :
+                   networkHealth.overallHealth === 'CRITICAL' ? t('healthCritical') : t('healthPanic') }}
+              </span>
+            </h3>
+            <p class="text-xs text-gray-400 mt-1">{{ t('multiPathSub') }}</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-[10px] text-gray-500 font-mono" dir="ltr">
+              #{{ networkHealth.checkCount }} {{ t('multiPathChecks') }}
+            </span>
+            <button
+              @click="forceMultiPathCheck"
+              :disabled="isCheckingPaths"
+              class="text-xs px-3 py-1.5 bg-cyberYellow/10 hover:bg-cyberYellow/20 border border-cyberYellow/30 rounded-xl text-cyberYellow font-bold transition-all disabled:opacity-50"
+            >
+              {{ isCheckingPaths ? '...' : t('multiPathRefresh') }}
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 Path Health Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+          <div
+            v-for="(path, key) in networkHealth.paths"
+            :key="key"
+            :class="[
+              'p-4 rounded-2xl border transition-all duration-500 relative overflow-hidden',
+              path.healthy
+                ? 'bg-white/5 border-cyberGreen/30 hover:border-cyberGreen/60'
+                : 'bg-black/30 border-cyberRed/20 hover:border-cyberRed/40'
+            ]"
+          >
+            <!-- Subtle glow on healthy paths -->
+            <div v-if="path.healthy" class="absolute -bottom-4 -right-4 w-16 h-16 bg-cyberGreen/10 rounded-full blur-xl pointer-events-none"></div>
+
+            <div class="relative z-10">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-lg">{{ path.emoji }}</span>
+                <div class="flex items-center gap-2">
+                  <span
+                    :class="[
+                      'w-2 h-2 rounded-full',
+                      path.healthy ? 'bg-cyberGreen animate-pulse' : 'bg-cyberRed'
+                    ]"
+                  ></span>
+                  <span
+                    :class="[
+                      'text-xs font-mono font-extrabold',
+                      path.latencyMs < 200 ? 'text-cyberGreen' :
+                      path.latencyMs < 600 ? 'text-yellow-400' : 'text-cyberRed'
+                    ]"
+                    dir="ltr"
+                  >
+                    {{ path.healthy ? path.latencyMs + 'ms' : '—' }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Score bar -->
+              <div class="w-full bg-white/10 rounded-full h-1 mb-2 overflow-hidden">
+                <div
+                  :class="[
+                    'h-1 rounded-full transition-all duration-700',
+                    path.score >= 80 ? 'bg-cyberGreen' :
+                    path.score >= 50 ? 'bg-yellow-400' :
+                    path.score >= 20 ? 'bg-orange-500' : 'bg-cyberRed'
+                  ]"
+                  :style="{ width: path.score + '%' }"
+                ></div>
+              </div>
+
+              <p class="text-[10px] text-gray-400 leading-snug">{{ path.label_fa }}</p>
+              <p v-if="!path.healthy && path.error" class="text-[9px] text-cyberRed/70 mt-0.5 truncate">{{ path.error }}</p>
+
+              <!-- Best path crown -->
+              <div v-if="networkHealth.bestPath === key" class="mt-1.5">
+                <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-cyberYellow/20 text-cyberYellow border border-cyberYellow/30 font-bold">★ BEST</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recommendation Banner -->
+        <div :class="[
+          'rounded-2xl px-4 py-3 text-xs leading-relaxed border transition-all duration-500',
+          networkHealth.panicMode
+            ? 'bg-cyberRed/10 border-cyberRed/30 text-cyberRed'
+            : networkHealth.overallHealth === 'CRITICAL'
+            ? 'bg-orange-500/10 border-orange-500/30 text-orange-300'
+            : 'bg-white/5 border-white/10 text-gray-300'
+        ]">
+          <span class="font-bold">{{ t('multiPathRecommendation') }}:</span>
+          {{ currentLang === 'fa' ? networkHealth.recommendation_fa : networkHealth.recommendation }}
+        </div>
+
+        <!-- Panic Mode Alert -->
+        <div v-if="networkHealth.panicMode" class="mt-3 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cyberRed/20 border border-cyberRed/40 animate-pulse">
+          <span class="text-xl">🚨</span>
+          <span class="text-xs font-extrabold text-cyberRed">{{ t('panicModeActive') }}</span>
+        </div>
+        <div v-else class="mt-3 flex items-center gap-2 px-4 py-2 rounded-xl bg-cyberGreen/10 border border-cyberGreen/20">
+          <span class="text-sm">🟢</span>
+          <span class="text-xs font-bold text-cyberGreen">{{ t('panicModeInactive') }}</span>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -334,6 +471,8 @@ import axios from 'axios';
 import { Users, CheckCircle, Activity, Server, ShieldAlert, Zap, Cpu, HardDrive, Clock, Terminal } from 'lucide-vue-next';
 import { copyToClipboard } from '../utils/clipboard';
 import { t, currentLang } from '../i18n';
+
+// ── Dashboard Stats ────────────────────────────────────────────────────
 
 const stats = ref({
   totalUsers: 0,
@@ -354,7 +493,51 @@ const stats = ref({
   }
 });
 
+// ── Quantum MultiPath Engine State ─────────────────────────────────────
+
+const networkHealth = ref<{
+  overallHealth: string;
+  paths: Record<string, { path: string; label: string; label_fa: string; emoji: string; healthy: boolean; latencyMs: number; error?: string; consecutiveFailures: number; score: number }>;
+  bestPath: string | null;
+  panicMode: boolean;
+  recommendation: string;
+  recommendation_fa: string;
+  lastUpdate: string;
+  checkCount: number;
+}>({
+  overallHealth: 'DEGRADED',
+  paths: {},
+  bestPath: null,
+  panicMode: false,
+  recommendation: 'Loading...',
+  recommendation_fa: 'در حال دریافت...',
+  lastUpdate: new Date().toISOString(),
+  checkCount: 0
+});
+
+const isCheckingPaths = ref(false);
+
+async function fetchNetworkHealth() {
+  try {
+    const res = await axios.get('/api/multipath/status');
+    networkHealth.value = res.data;
+  } catch {
+    // Silent — don't break dashboard if engine is initializing
+  }
+}
+
+async function forceMultiPathCheck() {
+  if (isCheckingPaths.value) return;
+  isCheckingPaths.value = true;
+  try {
+    const res = await axios.post('/api/multipath/check');
+    networkHealth.value = res.data;
+  } catch { /* noop */ }
+  finally { isCheckingPaths.value = false; }
+}
+
 let timer: any = null;
+let multiPathTimer: any = null;
 
 async function fetchStats() {
   try {
@@ -372,10 +555,13 @@ function copyText(text: string, msg: string) {
 
 onMounted(() => {
   fetchStats();
+  fetchNetworkHealth();
   timer = setInterval(fetchStats, 5000);
+  multiPathTimer = setInterval(fetchNetworkHealth, 15000);
 });
 
 onUnmounted(() => {
   if (timer) clearInterval(timer);
+  if (multiPathTimer) clearInterval(multiPathTimer);
 });
 </script>

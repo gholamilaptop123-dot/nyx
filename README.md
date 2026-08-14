@@ -8,7 +8,7 @@
 ### سامانه پیشرفته مدیریت اتصالات Xray-core متمرکز بر شبکه و فیلترینگ ایران
 #### 🔐 توسعه داده‌شده توسط تیم امنیتی ساینت (Cynet Security Team)
 
-[![Version](https://img.shields.io/badge/version-2.2.0-cyberViolet?style=for-the-badge&logo=shield)](https://github.com/icynetx/Nyx)
+[![Version](https://img.shields.io/badge/version-2.3.0-blueviolet?style=for-the-badge&logo=shield)](https://github.com/icynetx/Nyx)
 [![Telegram](https://img.shields.io/badge/Telegram-cynetx-2CA5E0?style=for-the-badge&logo=telegram)](https://t.me/cynetx)
 [![YouTube Video](https://img.shields.io/badge/Watch_Video-pFEeQrtCg14-FF0000?style=for-the-badge&logo=youtube)](https://youtu.be/pFEeQrtCg14)
 [![Website](https://img.shields.io/badge/Website-cynetx.ir-cyberCyan?style=for-the-badge)](https://cynetx.ir)
@@ -43,7 +43,8 @@
 </p>
 
 [⚡ راهنمای نصب سریع](#-راهنمای-نصب-سریع-روی-سرور-لینوکس-و-ویندوز) •
-[🚀 قابلیت‌های جدید v2.2](#-قابلیت‌های-جدید-در-نسخه-v220-release-highlights) •
+[⚛️ موتور Quantum MultiPath](#-موتور-quantum-multipath-engine-v230---بمب-اصلی-این-نسخه) •
+[🚀 قابلیت‌های جدید v2.3](#-قابلیت‌های-جدید-در-نسخه-v230-release-highlights) •
 [📊 جدول مقایسه فنی](#-جدول-مقایسه-فنی-nyx-panel-با-سایر-پنل‌ها) •
 [🧩 توضیحات کامل امکانات](#-توضیحات-تفصیلی-امکانات-پنل) •
 [🤖 راهنمای ربات تلگرام](#-راهنمای-کامل-پیکربندی-و-استفاده-از-ربات-تلگرام) •
@@ -56,7 +57,45 @@
 
 <div dir="rtl">
 
-## 🚀 قابلیت‌های جدید در نسخه v2.2.0 (Release Highlights)
+## ⚛️ موتور Quantum MultiPath Engine v2.3.0 — بمب اصلی این نسخه
+
+> 🔥 **مشکلی که هیچ پنلی حل نکرده بود، امروز حل شد.**
+
+### مشکل واقعی:
+در قطعی‌های سنگین ایران (مانند شب‌های قطعی گسترده همراه اول و ایرانسل)، حتی با بهترین پروتکل‌ها (VLESS Reality، Fragment)، اتصال کاربر کامل قطع می‌شود. کاربر هیچ راهی ندارد و باید منتظر بنشیند.
+
+### راه‌حل — Nyx Quantum MultiPath Engine:
+**موتور مسیریابی چندگانه کوانتومی** که **۴ مسیر اتصال مختلف را به صورت همزمان** پایش می‌کند:
+
+```
+🛡️ مسیر ۱ (عادی):     VLESS + REALITY مستقیم ──► اینترنت آزاد ✅
+☁️ مسیر ۲ (DPI قطعی): CDN ایرانی (ابر آروان PoP) ──► سرور ──► اینترنت ✅
+🌐 مسیر ۳ (سنگین):    DNS Tunnel روی پورت ۵۳ ──► اینترنت ✅  
+📡 مسیر ۴ (اضطراری):  تونل ICMP Ping ──► اینترنت ✅
+```
+
+### قابلیت‌های ۴ گانه:
+
+| قابلیت | توضیح |
+|--------|-------|
+| **🔄 Auto-Switch** | هر ۱۵ ثانیه ۴ مسیر همزمان تست می‌شوند. بهترین مسیر خودکار انتخاب می‌شود. |
+| **📊 Smart Subscription** | سابسکریپشن کاربر همیشه سالم‌ترین سرور را اول نشان می‌دهد (Load Balancer). |
+| **🚨 Panic Mode** | در قطعی ۱۰۰٪، هشدار فوری به تلگرام ادمین + بازیابی خودکار اعلام می‌شود. |
+| **📡 Dashboard Live** | داشبورد زنده وضعیت ۴ مسیر را با لتنسی و امتیاز سلامت نشان می‌دهد. |
+
+### مقایسه قبل و بعد:
+
+| شرایط شبکه | قبل از v2.3 | بعد از v2.3 |
+|------------|-------------|-------------|
+| شرایط عادی | ✅ متصل | ✅ متصل با سریع‌ترین مسیر |
+| DPI سنگین اپراتور | ❌ قطع / تغییر دستی | ✅ سوئیچ خودکار در ۱۵ ثانیه |
+| قطعی سنگین بین‌الملل | ❌ قطع کامل | ✅ سوئیچ به CDN ایرانی |
+| قطعی ۱۰۰٪ بین‌الملل | ❌ قطع / بی‌چاره | ✅ Panic Mode + DNS Tunnel |
+| سرور پر ترافیک | ❌ کند | ✅ Load Balance خودکار |
+
+---
+
+## 🚀 قابلیت‌های جدید در نسخه v2.3.0 (Release Highlights)
 
 > [!TIP]
 > ### 📦 1. بکاپ‌گیری اتوماتیک دیتابیس در تلگرام و ریستور 1-کلیکه (Auto DB Backup & 1-Click Restore)

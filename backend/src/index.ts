@@ -18,6 +18,9 @@ import { initTelegramBot, stopTelegramBot } from './services/telegramBot';
 import { autoFailoverService } from './services/autoFailoverService';
 import { WarpService } from './services/warpService';
 import { BackupService } from './services/backupService';
+import { multiPathEngine } from './services/multiPathService';
+import { panicModeManager } from './services/panicModeService';
+import { loadBalancer } from './services/loadBalancerService';
 import { execFile, ChildProcess } from 'child_process';
 import tls from 'tls';
 import os from 'os';
@@ -485,6 +488,36 @@ app.post('/api/sni/auto-failover/trigger', async (req, res) => {
   }
 });
 
+// ── Quantum MultiPath Engine Endpoints ──────────────────────────────────────
+
+// GET current network health snapshot (all 4 paths)
+app.get('/api/multipath/status', (req, res) => {
+  res.json(multiPathEngine.getSnapshot());
+});
+
+// POST trigger an immediate full path check
+app.post('/api/multipath/check', async (req, res) => {
+  try {
+    const snapshot = await multiPathEngine.checkAllPaths();
+    res.json(snapshot);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'MultiPath check failed' });
+  }
+});
+
+// GET inbound health scores from load balancer
+app.get('/api/loadbalancer/health', (req, res) => {
+  res.json({
+    inbounds: loadBalancer.getAllHealth(),
+    sortedIds: loadBalancer.getSortedIds()
+  });
+});
+
+// GET panic mode status and history
+app.get('/api/panic/status', (req, res) => {
+  res.json(panicModeManager.getStatus());
+});
+
 // Cloudflare WARP Outbound Endpoints
 app.get('/api/warp/status', async (req, res) => {
   try {
@@ -638,7 +671,9 @@ app.get('/api/sub/:uuid', async (req, res) => {
     const user = await prisma.user.findUnique({ where: { uuid: req.params.uuid } });
     if (user) {
       if (user.status !== 'ACTIVE') return res.status(404).send('Subscription disabled or expired');
-      const inbounds = await prisma.inbound.findMany({ where: { enabled: true } });
+      // Sort inbounds by health score — best server first in every subscription
+      const rawInbounds = await prisma.inbound.findMany({ where: { enabled: true } });
+      const inbounds = loadBalancer.sortInbounds(rawInbounds);
       if (format === 'singbox') return res.json(SubscriptionService.generateSingBoxJson(user as any, inbounds as any[], hostIp, isp));
       if (format === 'clash') {
         res.setHeader('Content-Type', 'text/yaml; charset=utf-8');
@@ -965,6 +1000,26 @@ async function start() {
 
     // Start Daily Automated Telegram Backup daemon (runs every 24 hours)
     BackupService.startBackupDaemon(prisma, 86400000);
+
+    // ── Quantum MultiPath Engine — monitors 4 connection paths every 15s ──────
+    const getSniDomain = async () => {
+      try {
+        const first = await prisma.inbound.findFirst({ where: { enabled: true }, orderBy: { createdAt: 'asc' } });
+        return first?.sni || 'ebanking.banksepah.ir';
+      } catch { return 'ebanking.banksepah.ir'; }
+    };
+    // Set dynamic SNI getter so multipath always uses the current active SNI
+    multiPathEngine.setSniDomainGetter(() => 'ebanking.banksepah.ir');
+    getSniDomain().then(sni => multiPathEngine.setSniDomainGetter(() => sni)).catch(() => {});
+    multiPathEngine.startMonitoring(15000);
+
+    // ── Panic Mode Emergency Detector — monitors for full internet blackouts ──
+    panicModeManager.startMonitoring(15000);
+
+    // ── Smart Load Balancer — health-scores inbounds every 30s ───────────────
+    loadBalancer.startMonitoring(prisma, 30000);
+
+    console.log('[Nyx Server] 🚀 Quantum MultiPath Engine + Panic Mode + Load Balancer → ARMED');
 
     // Start Telegram Bot if BOT_TOKEN is present in DB or ENV
     const dbBotToken = await prisma.systemSetting.findUnique({ where: { key: 'BOT_TOKEN' } });

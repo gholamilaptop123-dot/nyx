@@ -55,10 +55,10 @@
         "security": "reality",
         "realitySettings": {
           "show": false,
-          "dest": "bmi.ir:443",
+          "dest": "pypi.org:443",
           "xver": 0,
           "serverNames": [
-            "bmi.ir"
+            "pypi.org"
           ],
           "privateKey": "yEcrISgxxjIVQfWUQtRF0VDrJXbWvRZf6KIL2VswvWQ",
           "minClientVer": "",
