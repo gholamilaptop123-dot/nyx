@@ -9,6 +9,8 @@
 #### 🔐 Developed by Cynet Security Team
 
 [![Version](https://img.shields.io/badge/version-2.3.0-blueviolet?style=for-the-badge&logo=shield)](https://github.com/icynetx/Nyx)
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/new?template=https://github.com/icynetx/Nyx)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker)](https://github.com/icynetx/Nyx)
 [![Telegram](https://img.shields.io/badge/Telegram-cynetx-2CA5E0?style=for-the-badge&logo=telegram)](https://t.me/cynetx)
 [![YouTube Video](https://img.shields.io/badge/Watch_Video-pFEeQrtCg14-FF0000?style=for-the-badge&logo=youtube)](https://youtu.be/pFEeQrtCg14)
 [![Website](https://img.shields.io/badge/Website-cynetx.ir-cyberCyan?style=for-the-badge)](https://cynetx.ir)
@@ -181,6 +183,44 @@ Open **PowerShell** as **Run as Administrator** and execute:
 
 ```powershell
 iwr -useb https://raw.githubusercontent.com/icynetx/Nyx/main/install.ps1 | iex
+```
+
+---
+
+### ☁️ 3. 1-Click Cloud PaaS & Docker Deployment (Railway / Render / Fly.io / Docker):
+
+If you do not have a dedicated VPS or prefer running on popular cloud container platforms like **Railway.app**:
+
+#### ⚡ Option A) 1-Click Deploy on Railway:
+Click the button below to automatically provision all services, Xray-core, and Web UI on Railway:
+
+<div align="center">
+  <br />
+  <a href="https://railway.app/template/new?template=https://github.com/icynetx/Nyx" target="_blank">
+    <img src="https://railway.app/button.svg" alt="Deploy on Railway" height="38" />
+  </a>
+  <br />
+</div>
+
+> [!TIP]
+> **💡 Key Advantage on Railway:**
+> * Automatically serves **VLESS/VMess WebSocket (`WSS`) on standard Port 443 with TLS** over Railway's edge domains (`*.up.railway.app`) through Cloudflare CDN acceleration.
+> * Users in high-censorship regions connect seamlessly to the free internet without needing to purchase or configure a paid VPS!
+
+#### 🐳 Option B) Self-Hosted Docker / Docker Compose:
+
+```bash
+# Run via Docker Compose
+docker-compose up -d
+
+# Or run directly using Docker CLI
+docker run -d \
+  --name nyx-panel \
+  -p 3000:3000 \
+  -p 443:443 \
+  -v nyx_data:/data \
+  --restart unless-stopped \
+  ghcr.io/icynetx/nyx:latest
 ```
 
 ---

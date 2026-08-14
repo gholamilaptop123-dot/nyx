@@ -31,7 +31,7 @@ export class SubscriptionService {
   ];
 
   /**
-   * Generates Base64 VLESS / REALITY link (Supports 3 or 4 arguments)
+   * Generates Base64 VLESS / VMess / REALITY link (Supports 3 or 4 arguments)
    */
   static generateVlessLink(arg1: any, arg2: any, arg3?: string, arg4?: string): string {
     let inbound = arg1;
@@ -46,14 +46,48 @@ export class SubscriptionService {
     }
 
     const uuid = inbound?.uuid || inbound?.id || '11111111-2222-3333-4444-555555555555';
-    const port = inbound?.port || 443;
+    const isPaaS = serverIp.includes('.railway.app') || serverIp.includes('.onrender.com') || serverIp.includes('.fly.dev') || serverIp.includes('.koyeb.app');
+    const port = isPaaS ? 443 : (inbound?.port || 443);
     const remark = encodeURIComponent(`Nyx-${inbound?.remark || 'Config'}-${isp}`);
     
-    let sni = inbound?.sni || 'yahoo.com';
+    let sni = inbound?.sni || (isPaaS ? serverIp : 'yahoo.com');
     if (isp === 'WHITE_SNI') {
       sni = this.WHITE_IRAN_SNIS[0];
     }
 
+    // 1. WebSocket Inbound (PaaS / Cloudflare CDN / WSS)
+    if (inbound?.network === 'ws') {
+      const wsPath = encodeURIComponent('/nyx');
+      const wsHost = encodeURIComponent(sni);
+      const sec = (isPaaS || inbound?.security === 'tls') ? 'tls' : (inbound?.security || 'none');
+
+      if (inbound?.protocol === 'vmess') {
+        const vmessObj = {
+          v: "2",
+          ps: `Nyx-${inbound?.remark || 'VMess'}-${isp}`,
+          add: serverIp,
+          port: String(port),
+          id: uuid,
+          aid: "0",
+          scy: "auto",
+          net: "ws",
+          type: "none",
+          host: sni,
+          path: "/nyx",
+          tls: sec === 'tls' ? "tls" : "",
+          sni: sni
+        };
+        return `vmess://${Buffer.from(JSON.stringify(vmessObj)).toString('base64')}`;
+      }
+
+      if (inbound?.protocol === 'trojan') {
+        return `trojan://${uuid}@${serverIp}:${port}?security=${sec}&sni=${sni}&type=ws&path=${wsPath}&host=${wsHost}#${remark}`;
+      }
+
+      return `vless://${uuid}@${serverIp}:${port}?encryption=none&type=ws&security=${sec}&sni=${sni}&path=${wsPath}&host=${wsHost}#${remark}`;
+    }
+
+    // 2. VLESS + REALITY
     if (inbound?.security === 'reality') {
       const pbk = inbound?.publicKey || '';
       const sid = inbound?.shortId || '6ba7b810';
@@ -85,26 +119,39 @@ export class SubscriptionService {
     let serverIp = typeof arg2 === 'string' ? arg2 : (arg3 || '127.0.0.1');
     let isp = arg4 || (typeof arg3 === 'string' ? arg3 : 'DEFAULT');
 
-    const sni = isp === 'WHITE_SNI' ? this.WHITE_IRAN_SNIS[0] : 'yahoo.com';
+    const isPaaS = serverIp.includes('.railway.app') || serverIp.includes('.onrender.com') || serverIp.includes('.fly.dev') || serverIp.includes('.koyeb.app');
+    const sni = isp === 'WHITE_SNI' ? this.WHITE_IRAN_SNIS[0] : (isPaaS ? serverIp : 'yahoo.com');
 
-    const outbounds: any[] = inbounds.map(inbound => ({
-      type: "vless",
-      tag: `Nyx-${inbound?.remark || 'Config'}`,
-      server: serverIp,
-      server_port: inbound?.port || 443,
-      uuid: inbound?.uuid || inbound?.id,
-      flow: inbound?.security === 'reality' ? "xtls-rprx-vision" : "",
-      tls: {
-        enabled: true,
-        server_name: inbound?.sni || sni,
-        utls: { enabled: true, fingerprint: "chrome" },
-        reality: {
-          enabled: inbound?.security === 'reality',
-          public_key: inbound?.publicKey || "",
-          short_id: inbound?.shortId || ""
-        }
-      }
-    }));
+    const outbounds: any[] = inbounds.map(inbound => {
+      const isWs = inbound?.network === 'ws';
+      const port = isPaaS ? 443 : (inbound?.port || 443);
+      const isReality = inbound?.security === 'reality';
+      const isTls = isPaaS || inbound?.security === 'tls' || isReality;
+
+      return {
+        type: inbound?.protocol === 'trojan' ? 'trojan' : (inbound?.protocol === 'vmess' ? 'vmess' : 'vless'),
+        tag: `Nyx-${inbound?.remark || 'Config'}`,
+        server: serverIp,
+        server_port: port,
+        uuid: inbound?.uuid || inbound?.id,
+        flow: isReality ? "xtls-rprx-vision" : "",
+        tls: {
+          enabled: isTls,
+          server_name: inbound?.sni || sni,
+          utls: { enabled: true, fingerprint: "chrome" },
+          reality: {
+            enabled: isReality,
+            public_key: inbound?.publicKey || "",
+            short_id: inbound?.shortId || ""
+          }
+        },
+        transport: isWs ? {
+          type: "ws",
+          path: "/nyx",
+          headers: { Host: inbound?.sni || sni }
+        } : undefined
+      };
+    });
 
     outbounds.push({ type: "direct", tag: "direct" });
     outbounds.push({ type: "block", tag: "block" });
@@ -138,16 +185,37 @@ export class SubscriptionService {
     let serverIp = typeof arg2 === 'string' ? arg2 : (arg3 || '127.0.0.1');
     let isp = arg4 || (typeof arg3 === 'string' ? arg3 : 'DEFAULT');
 
-    const sni = isp === 'WHITE_SNI' ? this.WHITE_IRAN_SNIS[0] : 'yahoo.com';
+    const isPaaS = serverIp.includes('.railway.app') || serverIp.includes('.onrender.com') || serverIp.includes('.fly.dev') || serverIp.includes('.koyeb.app');
+    const sni = isp === 'WHITE_SNI' ? this.WHITE_IRAN_SNIS[0] : (isPaaS ? serverIp : 'yahoo.com');
 
     const proxies = inbounds.map(inbound => {
       const proxyName = `Nyx-${inbound?.remark || 'Config'}`;
       const uuid = inbound?.uuid || inbound?.id;
+      const port = isPaaS ? 443 : (inbound?.port || 443);
+      const isWs = inbound?.network === 'ws';
+
+      if (isWs) {
+        return `  - name: "${proxyName}"
+    type: vless
+    server: ${serverIp}
+    port: ${port}
+    uuid: ${uuid}
+    network: ws
+    tls: true
+    udp: true
+    servername: ${inbound?.sni || sni}
+    ws-opts:
+      path: "/nyx"
+      headers:
+        Host: ${inbound?.sni || sni}
+    client-fingerprint: chrome`;
+      }
+
       if (inbound?.security === 'reality') {
         return `  - name: "${proxyName}"
     type: vless
     server: ${serverIp}
-    port: ${inbound?.port}
+    port: ${port}
     uuid: ${uuid}
     network: ${inbound?.network || 'tcp'}
     tls: true
@@ -159,10 +227,11 @@ export class SubscriptionService {
       short-id: ${inbound?.shortId || '6ba7b810'}
     client-fingerprint: chrome`;
       }
+
       return `  - name: "${proxyName}"
     type: vless
     server: ${serverIp}
-    port: ${inbound?.port}
+    port: ${port}
     uuid: ${uuid}
     network: ${inbound?.network || 'tcp'}
     tls: ${inbound?.security === 'tls'}

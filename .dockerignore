@@ -1,0 +1,9 @@
+.git
+.github
+node_modules
+**/node_modules
+**/dist
+bin/*.exe
+bin/xray.exe
+*.log
+*.ps1

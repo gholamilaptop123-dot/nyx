@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  nyx-panel:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nyx-panel:latest
+    container_name: nyx-panel
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+      - "443:443"
+      - "8443:8443"
+      - "10085:10085"
+    volumes:
+      - nyx_data:/data
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - ADMIN_USER=admin
+      - ADMIN_PASS=nyx2026!
+      - DATA_DIR=/data
+      - DATABASE_URL=file:/data/nyx.db
+
+volumes:
+  nyx_data:

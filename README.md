@@ -9,6 +9,8 @@
 #### 🔐 توسعه داده‌شده توسط تیم امنیتی ساینت (Cynet Security Team)
 
 [![Version](https://img.shields.io/badge/version-2.3.0-blueviolet?style=for-the-badge&logo=shield)](https://github.com/icynetx/Nyx)
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/new?template=https://github.com/icynetx/Nyx)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker)](https://github.com/icynetx/Nyx)
 [![Telegram](https://img.shields.io/badge/Telegram-cynetx-2CA5E0?style=for-the-badge&logo=telegram)](https://t.me/cynetx)
 [![YouTube Video](https://img.shields.io/badge/Watch_Video-pFEeQrtCg14-FF0000?style=for-the-badge&logo=youtube)](https://youtu.be/pFEeQrtCg14)
 [![Website](https://img.shields.io/badge/Website-cynetx.ir-cyberCyan?style=for-the-badge)](https://cynetx.ir)
@@ -229,6 +231,52 @@ bash <(curl -Ls https://raw.githubusercontent.com/icynetx/Nyx/main/install.sh)
 
 ```powershell
 iwr -useb https://raw.githubusercontent.com/icynetx/Nyx/main/install.ps1 | iex
+```
+
+</div>
+
+<div dir="rtl">
+
+---
+
+### ☁️ 3. استقرار رایگان و ۱-کلیکه روی سرورهای ابری (Railway / Render / Fly.io / Docker):
+
+اگر سرور مجازی (VPS) ندارید یا می‌خواهید پنل را روی پلتفرم‌های ابری رایگان و محبوب مثل **Railway** اجرا کنید:
+
+#### ⚡ گزینه الف) استقرار ۱-کلیکه در Railway:
+روی دکمه زیر کلیک کنید تا تمام سرویس‌ها، هسته Xray و وب‌داشبورد به صورت خودکار روی ریلوِی راه‌اندازی شوند:
+
+<div align="center">
+  <br />
+  <a href="https://railway.app/template/new?template=https://github.com/icynetx/Nyx" target="_blank">
+    <img src="https://railway.app/button.svg" alt="Deploy on Railway" height="38" />
+  </a>
+  <br />
+</div>
+
+> [!TIP]
+> **💡 مزیت استقرار روی Railway:**
+> * به صورت خودکار ترافیک وب‌سوکت (`WSS`) روی پورت استاندارد **443 با TLS** و دامنه‌های اختصاصی ریلوِی (`*.up.railway.app`) از طریق CDN کلاودفلر رد و بدل می‌شود.
+> * بدون نیاز به خرید سرور VPS یا تنظیم دستی پورت‌ها، کاربران در ایران به اینترنت آزاد وصل می‌شوند!
+
+#### 🐳 گزینه ب) اجرای کانتینر با Docker / Docker Compose:
+
+</div>
+
+<div dir="ltr">
+
+```bash
+# اجرا با Docker Compose
+docker-compose up -d
+
+# یا اجرای مستقیم با Docker CLI
+docker run -d \
+  --name nyx-panel \
+  -p 3000:3000 \
+  -p 443:443 \
+  -v nyx_data:/data \
+  --restart unless-stopped \
+  ghcr.io/icynetx/nyx:latest
 ```
 
 </div>

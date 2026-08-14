@@ -22,16 +22,36 @@ import { multiPathEngine } from './services/multiPathService';
 import { panicModeManager } from './services/panicModeService';
 import { loadBalancer } from './services/loadBalancerService';
 import { execFile, ChildProcess } from 'child_process';
+import http from 'http';
+import net from 'net';
 import tls from 'tls';
 import os from 'os';
 import axios from 'axios';
 
 dotenv.config();
 
+// Ensure DATABASE_URL is set (supports persistent volumes like /data on Railway/Render)
+if (process.env.DATA_DIR) {
+  process.env.DATABASE_URL = process.env.DATABASE_URL || `file:${path.join(process.env.DATA_DIR, 'nyx.db')}`;
+} else {
+  process.env.DATABASE_URL = process.env.DATABASE_URL || 'file:./dev.db';
+}
+
 const app = express();
+const server = http.createServer(app);
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3000;
 const SERVER_IP = process.env.SERVER_IP || '127.0.0.1';
+
+// Auto-detect PaaS (Railway / Render / Fly.io / Koyeb)
+export const isPaaS = Boolean(
+  process.env.RAILWAY_ENVIRONMENT ||
+  process.env.RAILWAY_STATIC_URL ||
+  process.env.RAILWAY_PUBLIC_DOMAIN ||
+  process.env.RENDER ||
+  process.env.FLY_APP_NAME ||
+  process.env.PAAS_MODE
+);
 
 let cachedPublicIp = '';
 
@@ -50,6 +70,18 @@ autoDetectPublicIp();
 setInterval(autoDetectPublicIp, 300000);
 
 function getPublicHost(req: express.Request): string {
+  // Priority 1: Cloud/Railway/PaaS environment variables
+  const paasDomain = process.env.RAILWAY_PUBLIC_DOMAIN || process.env.RAILWAY_STATIC_URL || process.env.RENDER_EXTERNAL_HOSTNAME || process.env.PUBLIC_DOMAIN || '';
+  if (paasDomain) {
+    return paasDomain.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+  }
+
+  // Priority 2: X-Forwarded-Host Header from PaaS reverse proxy
+  const fwdHost = (req.headers['x-forwarded-host'] as string) || '';
+  if (fwdHost && !fwdHost.includes('localhost') && !fwdHost.startsWith('127.0.0.1')) {
+    return fwdHost.split(':')[0];
+  }
+
   const reqHost = req.headers.host ? req.headers.host.split(':')[0] : '';
   if (reqHost && reqHost !== 'localhost' && reqHost !== '127.0.0.1' && !reqHost.startsWith('192.168.') && !reqHost.startsWith('10.')) {
     return reqHost;
@@ -965,22 +997,38 @@ async function start() {
     // Seed default inbound if none exists
     const inboundCount = await prisma.inbound.count();
     if (inboundCount === 0) {
-      console.log('[Nyx Server] Creating default VLESS-REALITY inbound on port 443...');
-      const keys = generateX25519Keypair(xrayBinaryPath);
-      await prisma.inbound.create({
-        data: {
-          remark: '⚡ Cynet-Default-VIP',
-          protocol: 'vless', port: 443, network: 'tcp', security: 'reality',
-          sni: 'ebanking.banksepah.ir', privateKey: keys.privateKey, publicKey: keys.publicKey,
-          shortId: '6ba7b810', enableFragment: true, maxDevices: 2
-        }
-      });
+      if (isPaaS) {
+        console.log('[Nyx Server] ☁️ PaaS Cloud Environment Detected (Railway/Render)! Creating default VLESS-WS CDN Inbound on port 10001...');
+        await prisma.inbound.create({
+          data: {
+            remark: '⚡ Railway-Cloud-WSS',
+            protocol: 'vless',
+            port: 10001,
+            network: 'ws',
+            security: 'none',
+            sni: 'ebanking.banksepah.ir',
+            enableFragment: false,
+            maxDevices: 2
+          }
+        });
+      } else {
+        console.log('[Nyx Server] Creating default VLESS-REALITY inbound on port 443...');
+        const keys = generateX25519Keypair(xrayBinaryPath);
+        await prisma.inbound.create({
+          data: {
+            remark: '⚡ Cynet-Default-VIP',
+            protocol: 'vless', port: 443, network: 'tcp', security: 'reality',
+            sni: 'ebanking.banksepah.ir', privateKey: keys.privateKey, publicKey: keys.publicKey,
+            shortId: '6ba7b810', enableFragment: true, maxDevices: 2
+          }
+        });
+      }
     }
 
-    // Refresh and guarantee valid X25519 keys for all inbounds
+    // Refresh and guarantee valid X25519 keys for all REALITY inbounds
     const allInbounds = await prisma.inbound.findMany();
     for (const inbound of allInbounds) {
-      if (!inbound.privateKey || !inbound.publicKey || inbound.privateKey.length !== 43) {
+      if (inbound.security === 'reality' && (!inbound.privateKey || !inbound.publicKey || inbound.privateKey.length !== 43)) {
         const keys = generateX25519Keypair(xrayBinaryPath);
         await prisma.inbound.update({
           where: { id: inbound.id },
@@ -1037,8 +1085,44 @@ async function start() {
       }
     });
 
-    app.listen(Number(PORT), '0.0.0.0', () => {
-      console.log(`🚀 [Nyx Panel] Server running smoothly on http://0.0.0.0:${PORT}`);
+    // ── WebSocket Multiplexer for PaaS (Railway / Render / CDN / Single Port) ──
+    server.on('upgrade', (req, socket, head) => {
+      const url = req.url || '';
+      if (
+        url.startsWith('/nyx') ||
+        url.startsWith('/ws') ||
+        url.startsWith('/vless') ||
+        url.startsWith('/vmess') ||
+        url.startsWith('/trojan')
+      ) {
+        const xraySocket = net.connect({ port: 10001, host: '127.0.0.1' }, () => {
+          xraySocket.write(
+            `${req.method} ${req.url} HTTP/${req.httpVersion}\r\n` +
+            Object.entries(req.headers)
+              .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}\r\n`)
+              .join('') +
+            '\r\n'
+          );
+          if (head && head.length > 0) {
+            xraySocket.write(head);
+          }
+          xraySocket.pipe(socket);
+          socket.pipe(xraySocket);
+        });
+
+        xraySocket.on('error', () => {
+          try { socket.destroy(); } catch (e) {}
+        });
+        socket.on('error', () => {
+          try { xraySocket.destroy(); } catch (e) {}
+        });
+      } else {
+        socket.destroy();
+      }
+    });
+
+    server.listen(Number(PORT), '0.0.0.0', () => {
+      console.log(`🚀 [Nyx Panel] Server running on http://0.0.0.0:${PORT} (Cloud/PaaS Mode: ${isPaaS ? 'ENABLED ☁️' : 'DISABLED 💻'})`);
     });
   } catch (error) {
     console.error('Failed to start Nyx Server:', error);
