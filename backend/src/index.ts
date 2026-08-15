@@ -131,6 +131,10 @@ const requireAuth = (req: express.Request, res: express.Response, next: express.
 
   // Exclude public API endpoints
   if (
+    req.path === '/health' ||
+    req.path === '/api/health' ||
+    req.path === '/api/multipath/health' ||
+    req.path === '/api/multipath/status' ||
     req.path.startsWith('/api/sub/') ||
     req.path.startsWith('/api/subinfo/') ||
     req.path === '/api/auth/login' ||
@@ -173,6 +177,18 @@ app.post('/api/auth/logout', (req, res) => {
   const token = authHeader && authHeader.split(' ')[1];
   if (token) activeTokens.delete(token);
   res.json({ success: true });
+});
+
+// --- HEALTH ENDPOINTS (FOR RAILWAY / PAAS MONITORING) ---
+app.get(['/health', '/api/health', '/api/multipath/health'], (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    service: 'Nyx Panel',
+    uptimeSec: Math.floor(process.uptime()),
+    isXrayRunning,
+    isPaaS,
+    timestamp: new Date().toISOString()
+  });
 });
 
 // --- API ENDPOINTS ---
