@@ -12,7 +12,7 @@
 [![Deploy on Railway](https://railway.com/button.svg)](#-3-راه‌اندازی-رایگان-روی-سرورهای-ابری-railway--render--docker)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker)](https://github.com/icynetx/Nyx)
 [![Telegram](https://img.shields.io/badge/Telegram-cynetx-2CA5E0?style=for-the-badge&logo=telegram)](https://t.me/cynetx)
-[![YouTube Video](https://img.shields.io/badge/Watch_Video-pFEeQrtCg14-FF0000?style=for-the-badge&logo=youtube)](https://youtu.be/pFEeQrtCg14)
+[![YouTube Video](https://img.shields.io/badge/Watch_Video-6Ekgxg--eSx8-FF0000?style=for-the-badge&logo=youtube)](https://youtu.be/6Ekgxg-eSx8)
 [![Website](https://img.shields.io/badge/Website-cynetx.ir-cyberCyan?style=for-the-badge)](https://cynetx.ir)
 [![License](https://img.shields.io/badge/license-MIT-cyberGreen?style=for-the-badge)](https://github.com/icynetx/Nyx/blob/main/LICENSE)
 
@@ -29,17 +29,17 @@
 </p>
 
 <p align="center">
-  <a href="https://youtu.be/pFEeQrtCg14" target="_blank">
-    <img src="https://i.ytimg.com/vi/pFEeQrtCg14/hqdefault.jpg" alt="Nyx Panel YouTube Video Demo" width="85%" />
+  <a href="https://youtu.be/6Ekgxg-eSx8" target="_blank">
+    <img src="https://i.ytimg.com/vi/6Ekgxg-eSx8/hqdefault.jpg" alt="Nyx Panel YouTube Video Demo" width="85%" />
   </a>
   <br />
   <br />
-  <a href="https://youtu.be/pFEeQrtCg14" target="_blank">
+  <a href="https://youtu.be/6Ekgxg-eSx8" target="_blank">
     <img src="https://img.shields.io/badge/YouTube-Watch_Full_Video_Demo-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="Watch on YouTube" />
   </a>
   <br />
   <br />
-  <a href="https://youtu.be/pFEeQrtCg14" target="_blank">
+  <a href="https://youtu.be/6Ekgxg-eSx8" target="_blank">
     <span dir="rtl">🔴 <b>جهت تماشای ویدیو معرفی و آموزش کامل در یوتیوب کلیک کنید</b> 🔴</span>
   </a>
 </p>
@@ -166,6 +166,10 @@
 ---
 
 ## 📊 جدول مقایسه فنی Nyx Panel با سایر پنل‌ها
+
+<p align="center">
+  <img src="media_comparison.jpg" alt="Nyx Panel Comparison Infographic" width="100%" />
+</p>
 
 </div>
 
