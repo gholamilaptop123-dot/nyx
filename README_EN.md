@@ -83,6 +83,10 @@ A **quantum multi-route engine** that simultaneously monitors **4 independent co
 
 ## 🚀 What's New in Version 2.3.0 (Release Highlights)
 
+<p align="center">
+  <img src="media_v23_release.jpg" alt="Nyx Panel v2.3.0 Release Banner" width="100%" />
+</p>
+
 > [!TIP]
 > ### ⚛️ 1. Quantum MultiPath 4-Route Parallel Engine
 > * **15-Second Parallel Health Benchmarking:** Continuously checks 4 distinct routing layers concurrently via non-blocking asynchronous promises (`Promise.allSettled`).
