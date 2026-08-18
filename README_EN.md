@@ -83,6 +83,10 @@ A **quantum multi-route engine** that simultaneously monitors **4 independent co
 
 ## 🚀 What's New in Version 2.4.0 (The Power & Customization Update)
 
+<p align="center">
+  <img src="media_v24_release.jpg" alt="Nyx Panel v2.4.0 Release Banner" width="100%" />
+</p>
+
 > [!TIP]
 > ### 🌐 1. Custom Domain & Cloudflare CDN Host Mapping
 > * **Custom Domain Mapping:** Map custom domains or CDN subdomains (e.g. `vpn.mydomain.com`) directly in Settings to replace the raw VPS server IP across all generated links, Base64 subscriptions, Sing-Box JSON, and Clash YAML configurations.
