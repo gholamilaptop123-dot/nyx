@@ -8,7 +8,7 @@
 ### سامانه پیشرفته مدیریت اتصالات Xray-core متمرکز بر شبکه و فیلترینگ ایران
 #### 🔐 توسعه داده‌شده توسط تیم امنیتی ساینت (Cynet Security Team)
 
-[![Version](https://img.shields.io/badge/version-2.3.0-blueviolet?style=for-the-badge&logo=shield)](https://github.com/icynetx/Nyx)
+[![Version](https://img.shields.io/badge/version-2.4.0-blueviolet?style=for-the-badge&logo=shield)](https://github.com/icynetx/Nyx)
 [![Deploy on Railway](https://railway.com/button.svg)](#-3-راه‌اندازی-رایگان-روی-سرورهای-ابری-railway--render--docker)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker)](https://github.com/icynetx/Nyx)
 [![Telegram](https://img.shields.io/badge/Telegram-cynetx-2CA5E0?style=for-the-badge&logo=telegram)](https://t.me/cynetx)
@@ -106,7 +106,27 @@
 
 ---
 
-## 🚀 قابلیت‌های جدید در نسخه v2.3.0
+## 🚀 قابلیت‌های جدید در نسخه v2.4.0 (The Power & Customization Update)
+
+### 🌐 ۱. پشتیبانی از دامنه اختصاصی و CDN کلودفلر (`Custom Domain & CDN Mapping`)
+* **اتصال دامنه و ساب‌دامین:** امکان تنظیم دامنه سرور (مثلاً `vpn.mydomain.com` یا دامنه CDN کلودفلر) در تب تنظیمات و اتصال آن به عنوان هاست اصلی در تمام لینک‌های تولیدی، سابسکریپشن‌ها، سینگ‌باکس و کلش به جای IP خام سرور.
+* **پشتیبانی از دامنه اختصاصی به ازای هر اینباند:** قابلیت تعیین دامنه یا هاست مجزا برای هر اینباند به صورت مستقل.
+
+### ⚡ ۲. شخصی‌سازی پیشرفته پکت فرگمنت در پنل (`Advanced Fragment Tuning`)
+* **تنظیم دقیق بازه پکت‌ها و اینتروال:** امکان تنظیم دستی `Fragment Length` (مثلاً `100-200`) و `Fragment Interval` (مثلاً `10-20`) در فرم ساخت و ویرایش اینباندها.
+* **پریست‌های بهینه‌سازی‌شده اپراتورها:** دارای دکمه‌های سریع برای انتخاب خودکار بهترین مقادیر تست‌شده برای **همراه اول**، **ایرانسل** و **ترافیک داخلی**.
+
+### 🚀 ۳. پشتیبانی از ترنسپورت نسل جدید `XHTTP (SplitHTTP)` و `gRPC` و پروتکل `Trojan`
+* **پروتکل XHTTP:** جدیدترین نوآوری هسته Xray برای عبور از فیلترینگ شدید و دور زدن مسدودی وب‌سوکت‌ها.
+* **تنوع کامل پروتکل‌ها:** پشتیبانی کامل از `VLESS`, `VMess`, `Trojan` روی ترنسپورت‌های `TCP Reality`, `WebSocket`, `XHTTP`, `gRPC`.
+
+### 🔍 ۴. جستجو و فیلتر زنده در لیست کاربران و اینباندها (`Instant Live Search`)
+* **سرچ سریع کاربران:** فیلتر لحظه‌ای کاربران بر اساس نام کاربری، شناسه UUID یا وضعیت (Active/Expired).
+* **سرچ سریع اینباندها:** جستجوی فوری بر اساس عنوان اینباند، پورت، پروتکل، SNI یا دامنه اختصاصی.
+
+---
+
+## 📦 قابلیت‌های کلیدی نسخه v2.3.0
 
 <p align="center">
   <img src="media_v23_release.jpg" alt="Nyx Panel v2.3.0 Release Banner" width="100%" />

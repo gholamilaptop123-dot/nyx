@@ -14,6 +14,9 @@ export interface InboundConfig {
   publicKey?: string;
   shortId?: string;
   enableFragment?: boolean;
+  fragmentLength?: string;
+  fragmentInterval?: string;
+  customDomain?: string;
 }
 
 export interface UserConfig {
@@ -97,34 +100,69 @@ export function generateXrayJsonConfig(
 
   for (const inbound of inbounds) {
     const isReality = inbound.security === 'reality';
+    const proto = (inbound.protocol || 'vless').toLowerCase();
+    const net = (inbound.network || 'tcp').toLowerCase();
     const clientList: any[] = [];
     const addedUuids = new Set<string>();
 
     // 1. Always add Inbound's own UUID as a client
     const inboundUuid = inbound.uuid || inbound.id;
     if (inboundUuid) {
-      clientList.push({
-        id: inboundUuid,
-        ...(isReality && (!inbound.network || inbound.network === 'tcp') ? { flow: 'xtls-rprx-vision' } : {}),
-        email: inbound.remark
-      });
+      if (proto === 'trojan') {
+        clientList.push({ password: inboundUuid, email: inbound.remark });
+      } else if (proto === 'vmess') {
+        clientList.push({ id: inboundUuid, alterId: 0, email: inbound.remark });
+      } else {
+        // VLESS
+        clientList.push({
+          id: inboundUuid,
+          ...(isReality && net === 'tcp' ? { flow: 'xtls-rprx-vision' } : {}),
+          email: inbound.remark
+        });
+      }
       addedUuids.add(inboundUuid);
     }
 
     // 2. Add all active user UUIDs
     for (const u of users) {
       if (u.uuid && !addedUuids.has(u.uuid)) {
-        clientList.push({
-          id: u.uuid,
-          ...(isReality && (!inbound.network || inbound.network === 'tcp') ? { flow: 'xtls-rprx-vision' } : {}),
-          email: u.username
-        });
+        if (proto === 'trojan') {
+          clientList.push({ password: u.uuid, email: u.username });
+        } else if (proto === 'vmess') {
+          clientList.push({ id: u.uuid, alterId: 0, email: u.username });
+        } else {
+          // VLESS
+          clientList.push({
+            id: u.uuid,
+            ...(isReality && net === 'tcp' ? { flow: 'xtls-rprx-vision' } : {}),
+            email: u.username
+          });
+        }
         addedUuids.add(u.uuid);
       }
     }
 
+    // Settings per protocol
+    let protocolSettings: any = {};
+    if (proto === 'trojan') {
+      protocolSettings = {
+        clients: clientList
+      };
+    } else if (proto === 'vmess') {
+      protocolSettings = {
+        clients: clientList
+      };
+    } else {
+      // VLESS
+      protocolSettings = {
+        clients: clientList,
+        decryption: 'none'
+      };
+    }
+
+    // Stream Settings
     const streamSettings: any = {
-      network: inbound.network || 'tcp',
+      network: net === 'xhttp' ? 'splithttp' : net,
       security: inbound.security || 'reality'
     };
 
@@ -147,7 +185,7 @@ export function generateXrayJsonConfig(
     } else if (inbound.security === 'tls') {
       streamSettings.tlsSettings = {
         serverName: inbound.sni || '',
-        alpn: ['http/1.1']
+        alpn: ['http/1.1', 'h2']
       };
     }
 
@@ -155,14 +193,21 @@ export function generateXrayJsonConfig(
       tcpKeepAliveIdle: 100
     };
 
-    if (inbound.network === 'ws') {
+    if (net === 'ws') {
       streamSettings.wsSettings = {
         path: '/nyx',
         headers: { Host: inbound.sni || '' }
       };
-    } else if (inbound.network === 'grpc') {
+    } else if (net === 'xhttp' || net === 'splithttp') {
+      streamSettings.splithttpSettings = {
+        path: '/nyx-xhttp',
+        mode: 'auto',
+        headers: { Host: inbound.sni || '' }
+      };
+    } else if (net === 'grpc') {
       streamSettings.grpcSettings = {
-        serviceName: 'nyx'
+        serviceName: 'nyx-grpc',
+        multiMode: true
       };
     }
 
@@ -170,11 +215,8 @@ export function generateXrayJsonConfig(
       listen: "0.0.0.0",
       tag: `inbound-${inbound.id}`,
       port: inbound.port,
-      protocol: inbound.protocol || 'vless',
-      settings: {
-        clients: clientList,
-        decryption: 'none'
-      },
+      protocol: proto,
+      settings: protocolSettings,
       streamSettings,
       sniffing: {
         enabled: true,

@@ -15,6 +15,18 @@
       </button>
     </div>
 
+    <!-- Search & Filter Bar -->
+    <div class="flex items-center gap-3 bg-white/[0.03] border border-white/[0.08] rounded-2xl px-4 py-2.5">
+      <Search class="w-4 h-4 text-gray-400 shrink-0" />
+      <input 
+        v-model="userSearch" 
+        type="text" 
+        :placeholder="t('searchUsersPlaceholder')" 
+        class="w-full bg-transparent text-xs text-white placeholder-gray-500 outline-none" 
+      />
+      <span v-if="userSearch" @click="userSearch = ''" class="cursor-pointer text-gray-400 hover:text-white text-xs">✕</span>
+    </div>
+
     <!-- User List Table / Cards -->
     <div class="glass-panel rounded-3xl overflow-hidden border border-white/[0.08]">
       <div class="overflow-x-auto">
@@ -30,7 +42,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-white/[0.04] text-sm">
-            <tr v-for="user in users" :key="user.id" class="hover:bg-white/[0.02] transition-colors">
+            <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-white/[0.02] transition-colors">
               <td class="p-4 font-semibold text-white">
                 <div class="flex items-center gap-2.5">
                   <div class="w-9 h-9 rounded-2xl bg-amber-400/10 border border-amber-400/20 text-amber-300 flex items-center justify-center font-bold text-xs font-mono shrink-0">
@@ -336,18 +348,29 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
-import { UserPlus, Trash2, QrCode, Copy, Download, Edit3, ExternalLink } from 'lucide-vue-next';
+import { UserPlus, Trash2, QrCode, Copy, Download, Edit3, ExternalLink, Search } from 'lucide-vue-next';
 import QrcodeVue from 'qrcode.vue';
 import { copyToClipboard } from '../utils/clipboard';
 import { t, currentLang } from '../i18n';
 
 const users = ref<any[]>([]);
+const userSearch = ref('');
 const showCreateModal = ref(false);
 const selectedUserForSub = ref<any>(null);
 const selectedIsp = ref('MCI');
 
 const editingUser = ref<any>(null);
 const editForm = ref({ dataLimitGb: 0, expireDays: 0, maxDevices: 2, status: 'ACTIVE' });
+
+const filteredUsers = computed(() => {
+  const q = userSearch.value.trim().toLowerCase();
+  if (!q) return users.value;
+  return users.value.filter((u: any) => 
+    (u.username && u.username.toLowerCase().includes(q)) ||
+    (u.uuid && u.uuid.toLowerCase().includes(q)) ||
+    (u.status && u.status.toLowerCase().includes(q))
+  );
+});
 
 // VPN Config Modal state
 const selectedUserForConfig = ref<any>(null);

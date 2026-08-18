@@ -107,55 +107,24 @@
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Technical Warnings & Engineering Best Practices for SNI -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 border-t border-white/[0.06] text-xs">
-        <div class="p-3 rounded-2xl bg-amber-400/5 border border-amber-400/15 space-y-1">
-          <div class="flex items-center gap-1.5 text-amber-300 font-bold">
-            <AlertTriangle class="w-4 h-4 shrink-0 text-amber-400" />
-            <span>{{ t('sniWarning1Title') }}</span>
-          </div>
-          <p class="text-[11px] text-gray-300 leading-relaxed">
-            {{ t('sniWarning1Sub') }}
-          </p>
-        </div>
-
-        <div class="p-3 rounded-2xl bg-rose-500/5 border border-rose-500/15 space-y-1">
-          <div class="flex items-center gap-1.5 text-rose-300 font-bold">
-            <ShieldAlert class="w-4 h-4 shrink-0 text-rose-400" />
-            <span>{{ t('sniWarning2Title') }}</span>
-          </div>
-          <p class="text-[11px] text-gray-300 leading-relaxed">
-            {{ t('sniWarning2Sub') }}
-          </p>
-        </div>
-
-        <div class="p-3 rounded-2xl bg-emerald-500/5 border border-emerald-500/15 space-y-1">
-          <div class="flex items-center gap-1.5 text-emerald-300 font-bold">
-            <Zap class="w-4 h-4 shrink-0 text-emerald-400" />
-            <span>{{ t('sniTip3Title') }}</span>
-          </div>
-          <p class="text-[11px] text-gray-300 leading-relaxed">
-            {{ t('sniTip3Sub') }}
-          </p>
-        </div>
-
-        <div class="p-3 rounded-2xl bg-indigo-500/5 border border-indigo-500/15 space-y-1">
-          <div class="flex items-center gap-1.5 text-indigo-300 font-bold">
-            <Info class="w-4 h-4 shrink-0 text-indigo-400" />
-            <span>{{ t('sniTip4Title') }}</span>
-          </div>
-          <p class="text-[11px] text-gray-300 leading-relaxed">
-            {{ t('sniTip4Sub') }}
-          </p>
-        </div>
-      </div>
+    <!-- Search & Filter Bar -->
+    <div class="flex items-center gap-3 bg-white/[0.03] border border-white/[0.08] rounded-2xl px-4 py-2.5">
+      <Search class="w-4 h-4 text-gray-400 shrink-0" />
+      <input 
+        v-model="inboundSearch" 
+        type="text" 
+        :placeholder="t('searchInboundsPlaceholder')" 
+        class="w-full bg-transparent text-xs text-white placeholder-gray-500 outline-none" 
+      />
+      <span v-if="inboundSearch" @click="inboundSearch = ''" class="cursor-pointer text-gray-400 hover:text-white text-xs">✕</span>
     </div>
 
     <!-- Inbound Cards Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
       <div 
-        v-for="inbound in inbounds" 
+        v-for="inbound in filteredInbounds" 
         :key="inbound.id"
         class="glass-panel rounded-3xl p-5 border border-white/[0.08] hover:border-amber-400/30 transition-all flex flex-col justify-between space-y-4"
       >
@@ -163,37 +132,50 @@
         <div class="space-y-3">
           <div class="flex items-start justify-between gap-2">
             <div class="flex items-center gap-2.5">
-              <div class="w-10 h-10 rounded-2xl bg-cyberYellow/10 border border-cyberYellow/30 text-cyberYellow flex items-center justify-center font-bold">
+              <div class="w-10 h-10 rounded-2xl bg-amber-400/10 border border-amber-400/20 text-amber-400 flex items-center justify-center font-bold shrink-0">
                 <Network class="w-5 h-5" />
               </div>
               <div>
-                <h3 class="font-extrabold text-white text-base">{{ inbound.remark }}</h3>
-                <span class="text-xs font-mono text-cyberYellow" dir="ltr">Port: {{ inbound.port }} | {{ inbound.protocol.toUpperCase() }}-{{ inbound.security.toUpperCase() }}</span>
+                <h3 class="font-extrabold text-white text-base truncate max-w-[180px]">{{ inbound.remark }}</h3>
+                <span class="text-xs font-mono text-amber-300" dir="ltr">
+                  Port: {{ inbound.port }} | {{ (inbound.protocol || 'vless').toUpperCase() }}-{{ (inbound.network || 'tcp').toUpperCase() }}
+                </span>
               </div>
             </div>
 
             <!-- Active / Inactive Switch -->
             <button 
               @click="toggleInbound(inbound)"
-              :class="['px-3 py-1 rounded-full text-xs font-bold transition-all', inbound.enabled ? 'bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30' : 'bg-gray-500/20 text-gray-400 border border-gray-500/30']"
+              :class="['px-3 py-1 rounded-full text-xs font-bold transition-all shrink-0', inbound.enabled ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-gray-500/20 text-gray-400 border border-gray-500/30']"
             >
               {{ inbound.enabled ? t('activeStatus') : t('disabledStatus') }}
             </button>
           </div>
 
           <!-- Technical Specs Badges -->
-          <div class="flex flex-wrap gap-2 text-[11px] font-mono">
-            <span class="px-2.5 py-1 rounded-xl bg-white/5 border border-white/10 text-gray-300">SNI: {{ inbound.sni || 'yahoo.com' }}</span>
-            <span class="px-2.5 py-1 rounded-xl bg-white/5 border border-white/10 text-gray-300">Network: {{ inbound.network.toUpperCase() }}</span>
-            <span v-if="inbound.enableFragment" class="px-2.5 py-1 rounded-xl bg-cyberYellow/10 border border-cyberYellow/30 text-cyberYellow font-semibold">⚡ Packet Fragment</span>
-            <span class="px-2.5 py-1 rounded-xl bg-white/5 border border-white/10 text-gray-300">{{ inbound.maxDevices || 2 }} Devices</span>
+          <div class="flex flex-wrap gap-1.5 text-[11px] font-mono">
+            <span class="px-2.5 py-1 rounded-xl bg-white/5 border border-white/10 text-gray-300">
+              SNI: {{ inbound.sni || 'yahoo.com' }}
+            </span>
+            <span class="px-2.5 py-1 rounded-xl bg-amber-400/10 border border-amber-400/20 text-amber-300 font-semibold">
+              {{ (inbound.network || 'tcp').toUpperCase() }}
+            </span>
+            <span v-if="inbound.customDomain" class="px-2.5 py-1 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-semibold">
+              🌐 {{ inbound.customDomain }}
+            </span>
+            <span v-if="inbound.enableFragment" class="px-2.5 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 font-semibold">
+              ⚡ Frag: {{ inbound.fragmentLength || '100-200' }}
+            </span>
+            <span class="px-2.5 py-1 rounded-xl bg-white/5 border border-white/10 text-gray-300">
+              {{ inbound.maxDevices || 2 }} Devices
+            </span>
           </div>
 
           <!-- Volume & Expiration Usage Progress -->
           <div class="p-3 bg-black/40 rounded-2xl border border-white/5 space-y-2 text-xs">
             <div class="flex items-center justify-between text-gray-300 font-mono">
               <span>{{ t('trafficHeader') }}:</span>
-              <span class="text-cyberYellow font-bold" dir="ltr">
+              <span class="text-amber-300 font-bold" dir="ltr">
                 {{ (Number(inbound.usedDataBytes || 0) / (1024*1024*1024)).toFixed(2) }} GB / {{ inbound.dataLimitGb > 0 ? inbound.dataLimitGb + ' GB' : t('unlimited') }}
               </span>
             </div>
@@ -229,8 +211,8 @@
         </div>
       </div>
 
-      <div v-if="inbounds.length === 0" class="col-span-full glass-panel rounded-3xl p-12 text-center text-gray-400">
-        No inbounds created yet. Click "Create Inbound / Config" to create the first inbound.
+      <div v-if="filteredInbounds.length === 0" class="col-span-full glass-panel rounded-3xl p-12 text-center text-gray-400">
+        {{ inboundSearch ? 'No inbounds matching your search.' : 'No inbounds created yet. Click "Create Inbound / Config" to create the first inbound.' }}
       </div>
     </div>
 
@@ -245,32 +227,32 @@
         <div class="space-y-3 text-xs">
           <div>
             <label class="block text-gray-400 mb-1">Inbound Title / Remark</label>
-            <input v-model="form.remark" type="text" placeholder="e.g. VLESS-Reality-443" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:border-cyberYellow outline-none" />
+            <input v-model="form.remark" type="text" placeholder="e.g. VLESS-Reality-443" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:border-amber-400 outline-none" />
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-gray-400 mb-1">Protocol</label>
+              <label class="block text-gray-400 mb-1">{{ t('protocolType') }}</label>
               <select v-model="form.protocol" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none">
                 <option value="vless">VLESS (Recommended)</option>
                 <option value="vmess">VMess</option>
                 <option value="trojan">Trojan</option>
-                <option value="hysteria2">Hysteria 2</option>
               </select>
             </div>
             <div>
               <label class="block text-gray-400 mb-1">Inbound Port</label>
-              <input v-model.number="form.port" type="number" placeholder="443" dir="ltr" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberYellow outline-none" />
+              <input v-model.number="form.port" type="number" placeholder="443" dir="ltr" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-amber-400 outline-none" />
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-gray-400 mb-1">Transport Network</label>
+              <label class="block text-gray-400 mb-1">{{ t('transportType') }}</label>
               <select v-model="form.network" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none">
-                <option value="tcp">TCP (Default)</option>
-                <option value="grpc">gRPC</option>
-                <option value="ws">WebSocket (WS)</option>
+                <option value="tcp">TCP (Reality Default)</option>
+                <option value="xhttp">XHTTP (SplitHTTP - Next-Gen)</option>
+                <option value="ws">WebSocket (WS / CDN)</option>
+                <option value="grpc">gRPC (Multiplex)</option>
               </select>
             </div>
             <div>
@@ -283,26 +265,15 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-gray-400 mb-1">{{ t('selectTraffic') }} (GB)</label>
-              <input v-model.number="form.dataLimitGb" type="number" placeholder="0 for unlimited" dir="ltr" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberYellow outline-none" />
-            </div>
-            <div>
-              <label class="block text-gray-400 mb-1">{{ t('selectExpiry') }} ({{ t('daysCount') }})</label>
-              <input v-model.number="form.expireDays" type="number" placeholder="30" dir="ltr" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberYellow outline-none" />
-            </div>
-          </div>
-
           <div>
-            <label class="block text-gray-400 mb-1">{{ t('maxDevices') }} (IP Limit)</label>
-            <select v-model="form.maxDevices" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none">
-              <option :value="1">1 Device</option>
-              <option :value="2">2 Devices (Default)</option>
-              <option :value="3">3 Devices</option>
-              <option :value="5">5 Devices</option>
-              <option :value="10">10 Devices</option>
-            </select>
+            <label class="block text-gray-400 mb-1">{{ t('inboundCustomDomainLabel') }}</label>
+            <input 
+              v-model="form.customDomain" 
+              type="text" 
+              :placeholder="t('inboundCustomDomainPlaceholder')"
+              dir="ltr"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-amber-400 outline-none"
+            />
           </div>
 
           <div>
@@ -313,15 +284,11 @@
                 <option value="n2a.arvancloud.ir">n2a.arvancloud.ir</option>
                 <option value="iran.liara.run">iran.liara.run</option>
                 <option value="derak.cloud">derak.cloud</option>
-                <option value="asiatech.ir">asiatech.ir</option>
               </optgroup>
 
               <optgroup label="💳 Financial & Gateways">
                 <option value="shaparak.ir">shaparak.ir</option>
                 <option value="pep.shaparak.ir">pep.shaparak.ir</option>
-                <option value="bpm.shaparak.ir">bpm.shaparak.ir</option>
-                <option value="sadad.shaparak.ir">sadad.shaparak.ir</option>
-                <option value="zarinpal.com">zarinpal.com</option>
                 <option value="ebanking.banksepah.ir">ebanking.banksepah.ir</option>
                 <option value="bmi.ir">bmi.ir</option>
               </optgroup>
@@ -330,7 +297,6 @@
                 <option value="snapp.ir">snapp.ir</option>
                 <option value="tapsi.ir">tapsi.ir</option>
                 <option value="digikala.com">digikala.com</option>
-                <option value="torob.com">torob.com</option>
                 <option value="divar.ir">divar.ir</option>
               </optgroup>
 
@@ -338,16 +304,7 @@
                 <option value="yahoo.com">yahoo.com</option>
                 <option value="www.google.com">www.google.com</option>
                 <option value="dl.google.com">dl.google.com</option>
-                <option value="www.microsoft.com">www.microsoft.com</option>
                 <option value="speed.cloudflare.com">speed.cloudflare.com</option>
-                <option value="www.amazon.com">www.amazon.com</option>
-                <option value="www.apple.com">www.apple.com</option>
-              </optgroup>
-
-              <optgroup label="📦 OS Repositories">
-                <option value="archive.ubuntu.com">archive.ubuntu.com</option>
-                <option value="pypi.org">pypi.org</option>
-                <option value="registry.npmjs.org">registry.npmjs.org</option>
               </optgroup>
 
               <option value="custom">✏️ Custom SNI</option>
@@ -359,22 +316,81 @@
               type="text"
               placeholder="e.g. mydomain.com"
               dir="ltr"
-              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberYellow outline-none"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-amber-400 outline-none"
             />
           </div>
 
-          <div class="p-3 bg-cyberYellow/10 border border-cyberYellow/30 rounded-2xl flex items-center justify-between">
-            <div>
-              <span class="font-bold text-white block">Packet Fragment Technology</span>
-              <span class="text-[10px] text-gray-300">Packet fragmentation trick to bypass DPI inspection</span>
+          <!-- Advanced Packet Fragment Customization -->
+          <div class="p-3.5 bg-amber-400/10 border border-amber-400/20 rounded-2xl space-y-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="font-bold text-white block">{{ t('fragmentSettings') }}</span>
+                <span class="text-[10px] text-gray-300">Bypass DPI inspection via packet fragmentation</span>
+              </div>
+              <input type="checkbox" v-model="form.enableFragment" class="w-5 h-5 accent-amber-400" />
             </div>
-            <input type="checkbox" v-model="form.enableFragment" class="w-5 h-5 accent-cyberYellow" />
+
+            <div v-if="form.enableFragment" class="space-y-2 pt-2 border-t border-white/10">
+              <label class="block text-[11px] text-gray-300">Preset Template / پریست سریع:</label>
+              <div class="grid grid-cols-2 gap-2">
+                <button 
+                  type="button" 
+                  @click="applyFragmentPreset('100-200', '10-20')" 
+                  class="p-2 rounded-xl bg-black/40 border border-white/10 hover:border-amber-400/40 text-[11px] text-left text-gray-300"
+                >
+                  {{ t('fragmentPresetMci') }}
+                </button>
+                <button 
+                  type="button" 
+                  @click="applyFragmentPreset('50-150', '5-15')" 
+                  class="p-2 rounded-xl bg-black/40 border border-white/10 hover:border-amber-400/40 text-[11px] text-left text-gray-300"
+                >
+                  {{ t('fragmentPresetIrancell') }}
+                </button>
+                <button 
+                  type="button" 
+                  @click="applyFragmentPreset('10-60', '2-10')" 
+                  class="p-2 rounded-xl bg-black/40 border border-white/10 hover:border-amber-400/40 text-[11px] text-left text-gray-300"
+                >
+                  {{ t('fragmentPresetIntranet') }}
+                </button>
+                <button 
+                  type="button" 
+                  @click="applyFragmentPreset('100-200', '10-20')" 
+                  class="p-2 rounded-xl bg-black/40 border border-white/10 hover:border-amber-400/40 text-[11px] text-left text-gray-300"
+                >
+                  {{ t('fragmentPresetCustom') }}
+                </button>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2 pt-1">
+                <div>
+                  <label class="block text-[10px] text-gray-400">{{ t('fragmentLengthLabel') }}</label>
+                  <input v-model="form.fragmentLength" type="text" placeholder="100-200" dir="ltr" class="w-full bg-black/50 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-mono text-left focus:border-amber-400 outline-none" />
+                </div>
+                <div>
+                  <label class="block text-[10px] text-gray-400">{{ t('fragmentIntervalLabel') }}</label>
+                  <input v-model="form.fragmentInterval" type="text" placeholder="10-20" dir="ltr" class="w-full bg-black/50 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-mono text-left focus:border-amber-400 outline-none" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-gray-400 mb-1">{{ t('selectTraffic') }} (GB)</label>
+              <input v-model.number="form.dataLimitGb" type="number" placeholder="0 for unlimited" dir="ltr" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-amber-400 outline-none" />
+            </div>
+            <div>
+              <label class="block text-gray-400 mb-1">{{ t('selectExpiry') }} ({{ t('daysCount') }})</label>
+              <input v-model.number="form.expireDays" type="number" placeholder="30" dir="ltr" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-amber-400 outline-none" />
+            </div>
           </div>
         </div>
 
         <div class="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
           <button @click="showCreateModal = false" class="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white">{{ t('cancel') }}</button>
-          <button @click="createInbound" class="px-5 py-2 rounded-xl bg-cyberYellow text-black text-xs font-bold shadow-lg shadow-cyberYellow/30 hover:opacity-90">
+          <button @click="createInbound" class="px-5 py-2 rounded-xl bg-amber-400 text-gray-950 text-xs font-bold shadow-lg shadow-amber-500/20 hover:opacity-90">
             {{ t('save') }}
           </button>
         </div>
@@ -383,48 +399,81 @@
 
     <!-- Edit Inbound Modal -->
     <div v-if="editingInbound" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
-      <div class="glass-panel max-w-md w-full rounded-3xl p-6 border border-cyberYellow/40 space-y-4">
+      <div class="glass-panel max-w-md w-full rounded-3xl p-6 border border-amber-400/40 space-y-4 max-h-[90vh] overflow-y-auto">
         <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
-          <Edit3 class="w-5 h-5 text-cyberYellow" />
+          <Edit3 class="w-5 h-5 text-amber-400" />
           <span>{{ t('edit') }}: {{ editingInbound.remark }}</span>
         </h3>
 
         <div class="space-y-3 text-xs">
           <div>
             <label class="block text-gray-400 mb-1">Inbound Title</label>
-            <input v-model="editForm.remark" type="text" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:border-cyberYellow outline-none" />
+            <input v-model="editForm.remark" type="text" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:border-amber-400 outline-none" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-gray-400 mb-1">{{ t('protocolType') }}</label>
+              <select v-model="editForm.protocol" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none">
+                <option value="vless">VLESS</option>
+                <option value="vmess">VMess</option>
+                <option value="trojan">Trojan</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-gray-400 mb-1">{{ t('transportType') }}</label>
+              <select v-model="editForm.network" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none">
+                <option value="tcp">TCP</option>
+                <option value="xhttp">XHTTP (SplitHTTP)</option>
+                <option value="ws">WebSocket (WS)</option>
+                <option value="grpc">gRPC</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-gray-400 mb-1">{{ t('inboundCustomDomainLabel') }}</label>
+            <input v-model="editForm.customDomain" type="text" :placeholder="t('inboundCustomDomainPlaceholder')" dir="ltr" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-amber-400 outline-none" />
           </div>
 
           <div>
             <label class="block text-gray-400 mb-1">SNI Domain</label>
-            <input v-model="editForm.sni" type="text" dir="ltr" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberYellow outline-none" />
+            <input v-model="editForm.sni" type="text" dir="ltr" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-amber-400 outline-none" />
+          </div>
+
+          <!-- Fragment Settings Edit -->
+          <div class="p-3 bg-amber-400/10 border border-amber-400/20 rounded-2xl space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-white text-xs">{{ t('fragmentSettings') }}</span>
+              <input type="checkbox" v-model="editForm.enableFragment" class="w-4 h-4 accent-amber-400" />
+            </div>
+            <div v-if="editForm.enableFragment" class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[10px] text-gray-400">{{ t('fragmentLengthLabel') }}</label>
+                <input v-model="editForm.fragmentLength" type="text" dir="ltr" class="w-full bg-black/50 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-mono text-left focus:border-amber-400 outline-none" />
+              </div>
+              <div>
+                <label class="block text-[10px] text-gray-400">{{ t('fragmentIntervalLabel') }}</label>
+                <input v-model="editForm.fragmentInterval" type="text" dir="ltr" class="w-full bg-black/50 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-mono text-left focus:border-amber-400 outline-none" />
+              </div>
+            </div>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-gray-400 mb-1">{{ t('selectTraffic') }} (GB)</label>
-              <input v-model.number="editForm.dataLimitGb" type="number" dir="ltr" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberYellow outline-none" />
+              <input v-model.number="editForm.dataLimitGb" type="number" dir="ltr" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-amber-400 outline-none" />
             </div>
             <div>
               <label class="block text-gray-400 mb-1">Renew Expiry (Days)</label>
-              <input v-model.number="editForm.expireDays" type="number" placeholder="Days to extend" dir="ltr" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-cyberYellow outline-none" />
+              <input v-model.number="editForm.expireDays" type="number" placeholder="Days to extend" dir="ltr" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-amber-400 outline-none" />
             </div>
-          </div>
-
-          <div>
-            <label class="block text-gray-400 mb-1">{{ t('maxDevices') }}</label>
-            <select v-model="editForm.maxDevices" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none">
-              <option :value="1">1 Device</option>
-              <option :value="2">2 Devices</option>
-              <option :value="3">3 Devices</option>
-              <option :value="5">5 Devices</option>
-            </select>
           </div>
         </div>
 
         <div class="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
           <button @click="editingInbound = null" class="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white">{{ t('cancel') }}</button>
-          <button @click="saveInboundEdit" class="px-5 py-2 rounded-xl bg-cyberYellow text-black text-xs font-bold shadow-lg shadow-cyberYellow/30 hover:opacity-90">
+          <button @click="saveInboundEdit" class="px-5 py-2 rounded-xl bg-amber-400 text-gray-950 text-xs font-bold shadow-lg shadow-amber-500/20 hover:opacity-90">
             {{ t('save') }}
           </button>
         </div>
@@ -433,7 +482,7 @@
 
     <!-- Config & Links Modal -->
     <div v-if="selectedInboundForConfig" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
-      <div class="glass-panel max-w-2xl w-full rounded-3xl p-6 border border-cyberYellow/40 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="glass-panel max-w-2xl w-full rounded-3xl p-6 border border-amber-400/40 space-y-4 max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between">
           <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
             <span>🔑 Output Configs: {{ selectedInboundForConfig.remark }}</span>
@@ -442,16 +491,18 @@
         </div>
 
         <div v-if="configLoading" class="flex items-center justify-center py-8">
-          <div class="w-6 h-6 border-2 border-cyberYellow border-t-transparent rounded-full animate-spin"></div>
+          <div class="w-6 h-6 border-2 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
           <span class="mr-3 text-gray-400 text-sm">Generating config links…</span>
         </div>
 
         <div v-if="inboundConfigs && !configLoading" class="space-y-4">
-          <!-- Direct VLESS Link -->
-          <div class="bg-black/50 rounded-2xl p-3.5 border border-cyberYellow/20 space-y-2">
+          <!-- Direct Config Link -->
+          <div class="bg-black/50 rounded-2xl p-3.5 border border-amber-400/20 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-xs text-cyberYellow font-extrabold">VLESS REALITY Direct Link</span>
-              <button @click="copy(inboundConfigs.vlessLink)" class="px-3 py-1 rounded-lg bg-cyberYellow/20 text-cyberYellow border border-cyberYellow/30 text-xs font-bold">{{ t('copy') }} VLESS</button>
+              <span class="text-xs text-amber-300 font-extrabold">Direct Connection Link</span>
+              <button @click="copy(inboundConfigs.vlessLink)" class="px-3 py-1 rounded-lg bg-amber-400/20 text-amber-300 border border-amber-400/30 text-xs font-bold">
+                {{ t('copy') }} Link
+              </button>
             </div>
             <pre dir="ltr" class="text-[11px] font-mono text-gray-200 break-all whitespace-pre-wrap text-left p-3 bg-black/70 rounded-xl border border-white/10 leading-relaxed">{{ inboundConfigs.vlessLink }}</pre>
           </div>
@@ -459,16 +510,20 @@
           <!-- Base64 Subscription -->
           <div class="p-3.5 bg-white/5 rounded-2xl border border-white/5 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-xs text-cyberGreen font-extrabold">Base64 Subscription Link</span>
-              <button @click="copy(inboundConfigs.base64Sub)" class="px-3 py-1 rounded-lg bg-cyberGreen/20 text-cyberGreen border border-cyberGreen/30 text-xs font-bold">{{ t('copy') }} Sub</button>
+              <span class="text-xs text-emerald-300 font-extrabold">Base64 Subscription Link</span>
+              <button @click="copy(inboundConfigs.subUrl)" class="px-3 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold">
+                {{ t('copy') }} Sub
+              </button>
             </div>
-            <input readonly :value="inboundConfigs.subUrl" dir="ltr" class="w-full bg-black/60 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-left text-cyberYellow outline-none" />
+            <input readonly :value="inboundConfigs.subUrl" dir="ltr" class="w-full bg-black/60 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-left text-amber-300 outline-none" />
           </div>
 
           <!-- Dedicated Web Info Page Link -->
-          <div class="p-3.5 bg-cyberYellow/10 rounded-2xl border border-cyberYellow/30 flex items-center justify-between gap-3 text-xs">
+          <div class="p-3.5 bg-amber-400/10 rounded-2xl border border-amber-400/20 flex items-center justify-between gap-3 text-xs">
             <span class="text-gray-200">Standalone User Info Web Page:</span>
-            <button @click="copy(inboundConfigs.userInfoUrl)" class="px-3 py-1 rounded-xl bg-cyberYellow text-black font-bold">{{ t('openUserPage') }}</button>
+            <button @click="copy(inboundConfigs.userInfoUrl)" class="px-3 py-1 rounded-xl bg-amber-400 text-gray-950 font-bold">
+              {{ t('openUserPage') }}
+            </button>
           </div>
 
           <!-- QR Code -->
@@ -487,12 +542,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
-import { Plus, Trash2, Download, Network, Edit3, ExternalLink, Activity, Play, RefreshCw, AlertTriangle, ShieldAlert, Zap, Info } from 'lucide-vue-next';
+import { Plus, Trash2, Download, Network, Edit3, ExternalLink, Activity, Play, RefreshCw, AlertTriangle, ShieldAlert, Zap, Info, Search } from 'lucide-vue-next';
 import QrcodeVue from 'qrcode.vue';
 import { copyToClipboard } from '../utils/clipboard';
 import { t, currentLang } from '../i18n';
 
 const inbounds = ref<any[]>([]);
+const inboundSearch = ref('');
 const showCreateModal = ref(false);
 const editingInbound = ref<any>(null);
 const selectedInboundForConfig = ref<any>(null);
@@ -506,6 +562,19 @@ const testDomainInput = ref('arvancloud.ir');
 const testingSni = ref(false);
 const sniTestResult = ref<any>(null);
 const failoverTriggering = ref(false);
+
+const filteredInbounds = computed(() => {
+  const q = inboundSearch.value.trim().toLowerCase();
+  if (!q) return inbounds.value;
+  return inbounds.value.filter(i => 
+    (i.remark && i.remark.toLowerCase().includes(q)) ||
+    (i.port && String(i.port).includes(q)) ||
+    (i.protocol && i.protocol.toLowerCase().includes(q)) ||
+    (i.network && i.network.toLowerCase().includes(q)) ||
+    (i.sni && i.sni.toLowerCase().includes(q)) ||
+    (i.customDomain && i.customDomain.toLowerCase().includes(q))
+  );
+});
 
 async function triggerAutoFailover() {
   failoverTriggering.value = true;
@@ -540,7 +609,7 @@ const sniLists: Record<string, string[]> = {
   GENERAL: ['yahoo.com', 'www.google.com', 'dl.google.com', 'www.microsoft.com', 'speed.cloudflare.com', 'www.amazon.com', 'www.apple.com']
 };
 
-const filteredSniList = computed(() => sniLists[activeSniCat.value] || sniLists.BANK);
+const filteredSniList = computed(() => sniLists[activeSniCat.value] || sniLists.CLOUD);
 
 async function runSniTest(domain: string) {
   if (!domain) return;
@@ -570,7 +639,10 @@ const form = ref({
   network: 'tcp',
   security: 'reality',
   sni: 'yahoo.com',
+  customDomain: '',
   enableFragment: true,
+  fragmentLength: '100-200',
+  fragmentInterval: '10-20',
   dataLimitGb: 0,
   expireDays: 30,
   maxDevices: 2
@@ -578,7 +650,13 @@ const form = ref({
 
 const editForm = ref({
   remark: '',
+  protocol: 'vless',
+  network: 'tcp',
   sni: 'yahoo.com',
+  customDomain: '',
+  enableFragment: true,
+  fragmentLength: '100-200',
+  fragmentInterval: '10-20',
   dataLimitGb: 0,
   expireDays: 0,
   maxDevices: 2
@@ -588,6 +666,11 @@ function handleSniPresetChange() {
   if (selectedSniPreset.value !== 'custom') {
     form.value.sni = selectedSniPreset.value;
   }
+}
+
+function applyFragmentPreset(len: string, int: string) {
+  form.value.fragmentLength = len;
+  form.value.fragmentInterval = int;
 }
 
 async function fetchInbounds() {
@@ -616,7 +699,13 @@ function openEditModal(inbound: any) {
   editingInbound.value = inbound;
   editForm.value = {
     remark: inbound.remark,
+    protocol: inbound.protocol || 'vless',
+    network: inbound.network || 'tcp',
     sni: inbound.sni || 'yahoo.com',
+    customDomain: inbound.customDomain || '',
+    enableFragment: inbound.enableFragment !== undefined ? inbound.enableFragment : true,
+    fragmentLength: inbound.fragmentLength || '100-200',
+    fragmentInterval: inbound.fragmentInterval || '10-20',
     dataLimitGb: inbound.dataLimitGb || 0,
     expireDays: 0,
     maxDevices: inbound.maxDevices || 2

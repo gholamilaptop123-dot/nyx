@@ -110,7 +110,6 @@ export const tMap = {
     security: 'Security Type',
     sniDomain: 'SNI Target Domain',
     packetFragment: 'Packet Fragment',
-    fragmentSettings: 'Fragment Settings',
     applyFragment: 'Apply Fragment Pattern',
     getConfigsBtn: 'Get Config Links',
 
@@ -277,11 +276,26 @@ export const tMap = {
     kharejScriptBoxTitle: '🇪🇺 Auto-Deploy Script for Kharej Server',
     copyScriptBtn: 'Copy Full Script',
     tunnelScriptsSuccess: 'Tunnel auto-deploy scripts generated successfully',
-    tunnelScriptError: 'Failed to generate tunnel script',
-    scriptCopiedToast: 'Script copied to clipboard.',
-    tunnelExplainTitle: 'How Nyx Tunnels Work:',
-    tunnelExplainDesc: 'Traffic is sent from the user client to the Iran Server IP, securely tunneled to the Kharej Server, and finally routed to the free internet without triggering DPI filters.',
-    tunnelClientUsageNotice: '🎯 Client Configuration: In client apps (V2rayNG/Streisand), users will connect to Iran Server IP on Inbound Port.'
+    // v2.4 Custom Domain, Fragment & Next-Gen Transports
+    customDomainCardTitle: 'Custom Server Domain / Cloudflare CDN',
+    customDomainCardSub: 'Map a custom domain or CDN subdomain to all generated configs and subscriptions instead of server IP',
+    customDomainPlaceholder: 'e.g. vpn.mydomain.com or cdn.site.com',
+    saveDomainBtn: 'Save Custom Domain',
+    transportType: 'Transport Network',
+    protocolType: 'Inbound Protocol',
+    fragmentSettings: 'Advanced Packet Fragment Tuning',
+    fragmentLengthLabel: 'Fragment Length (Bytes)',
+    fragmentIntervalLabel: 'Fragment Interval (ms)',
+    fragmentPresetMci: '📱 MCI Recommended (100-200, 10-20)',
+    fragmentPresetIrancell: '📡 Irancell Recommended (50-150, 5-15)',
+    fragmentPresetIntranet: '⚡ Intranet / Low Latency (10-60, 2-10)',
+    fragmentPresetCustom: '✏️ Custom Parameters',
+    searchInboundsPlaceholder: 'Search inbound title, port, protocol or SNI...',
+    searchUsersPlaceholder: 'Search username, UUID or status...',
+    copyUnifiedSub: 'Copy Universal Sub',
+    unifiedSubCopied: 'Universal subscription copied!',
+    inboundCustomDomainLabel: 'Per-Inbound Custom Domain / CDN (Optional)',
+    inboundCustomDomainPlaceholder: 'Leave blank to use global domain or server IP',
   },
   fa: {
     // General
@@ -377,7 +391,6 @@ export const tMap = {
     security: 'نوع امنیت',
     sniDomain: 'دامنه وانمودی (SNI)',
     packetFragment: 'تکه‌تکه‌سازی پکت (Fragment)',
-    fragmentSettings: 'تنظیمات Fragment',
     applyFragment: 'اعمال الگوی Fragment',
     getConfigsBtn: 'دریافت لینک کانفیگ',
 
@@ -549,7 +562,28 @@ export const tMap = {
     scriptCopiedToast: 'اسکریپت در حافظه کپی شد.',
     tunnelExplainTitle: '💡 سازوکار تونل سرور ایران به خارج چطور کار می‌کند؟',
     tunnelExplainDesc: 'ترافیک کاربر مستقیماً به سرور ایران ارسال می‌شود و از طریق تونل رمزشده به سرور خارج منتقل می‌گردد؛ در نتیجه فیلترچی دسترسی بین‌الملل را نمی‌بیند.',
-    tunnelClientUsageNotice: '🎯 اتصال کاربران: پس از راه‌اندازی تونل، کاربران در اپلیکیشن‌های V2ray به جای IP خارج، به IP سرور ایران و پورت اینباند متصل می‌شوند.'
+    tunnelClientUsageNotice: '🎯 اتصال کاربران: پس از راه‌اندازی تونل، کاربران در اپلیکیشن‌های V2ray به جای IP خارج، به IP سرور ایران و پورت اینباند متصل می‌شوند.',
+
+    // v2.4 Custom Domain, Fragment & Next-Gen Transports
+    customDomainCardTitle: 'دامنه اختصاصی سرور / CDN کلودفلر',
+    customDomainCardSub: 'تنظیم دامنه اختصاصی یا ساب‌دامین CDN جهت درج در تمام کانفیگ‌ها و لینک‌های سابسکریپشن به جای IP خام سرور',
+    customDomainPlaceholder: 'مثال: vpn.mydomain.com یا cdn.site.com',
+    saveDomainBtn: 'ذخیره دامنه اختصاصی',
+    transportType: 'پروتکل لایه انتقال (Transport)',
+    protocolType: 'پروتکل اینباند',
+    fragmentSettings: 'شخصی‌سازی پیشرفته پکت فرگمنت (Packet Fragment)',
+    fragmentLengthLabel: 'طول پکت فرگمنت (بایت)',
+    fragmentIntervalLabel: 'فاصله زمانی ارسال فرگمنت (میلی‌ثانیه)',
+    fragmentPresetMci: '📱 همراه اول (پیشنهادی: ۱۰۰-۲۰۰، ۱۰-۲۰)',
+    fragmentPresetIrancell: '📡 ایرانسل (پیشنهادی: ۵۰-۱۵۰، ۵-۱۵)',
+    fragmentPresetIntranet: '⚡ ترافیک داخلی / سبک (۱۰-۶۰، ۲-۱۰)',
+    fragmentPresetCustom: '✏️ تنظیم دستی و دلخواه',
+    searchInboundsPlaceholder: 'جستجوی نام اینباند، پورت، پروتکل یا SNI...',
+    searchUsersPlaceholder: 'جستجوی نام کاربر، شناسه UUID یا وضعیت...',
+    copyUnifiedSub: 'کپی سابسکریپشن تجمیعی',
+    unifiedSubCopied: 'سابسکریپشن تجمیعی در حافظه کپی شد!',
+    inboundCustomDomainLabel: 'دامنه اختصاصی این اینباند / CDN (اختیاری)',
+    inboundCustomDomainPlaceholder: 'در صورت خالی بودن، از دامنه عمومی یا IP سرور استفاده می‌شود',
   }
 };
 

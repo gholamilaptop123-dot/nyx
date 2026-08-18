@@ -52,6 +52,7 @@ model Inbound {
   enableFragment   Boolean  @default(true)
   fragmentLength   String   @default("100-200")
   fragmentInterval String   @default("10-20")
+  customDomain     String?
   dataLimitGb      Float    @default(0)
   usedDataBytes    BigInt   @default(0)
   expireDate       DateTime?

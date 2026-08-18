@@ -8,7 +8,7 @@
 ### Advanced Anti-Censorship Xray-core Management Panel Tailored for High-Restricted Networks
 #### 🔐 Developed by Cynet Security Team
 
-[![Version](https://img.shields.io/badge/version-2.3.0-blueviolet?style=for-the-badge&logo=shield)](https://github.com/icynetx/Nyx)
+[![Version](https://img.shields.io/badge/version-2.4.0-blueviolet?style=for-the-badge&logo=shield)](https://github.com/icynetx/Nyx)
 [![Deploy on Railway](https://railway.com/button.svg)](#-3-free-cloud-paas-deployment-railway--render--docker)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker)](https://github.com/icynetx/Nyx)
 [![Telegram](https://img.shields.io/badge/Telegram-cynetx-2CA5E0?style=for-the-badge&logo=telegram)](https://t.me/cynetx)
@@ -81,7 +81,30 @@ A **quantum multi-route engine** that simultaneously monitors **4 independent co
 
 ---
 
-## 🚀 What's New in Version 2.3.0 (Release Highlights)
+## 🚀 What's New in Version 2.4.0 (The Power & Customization Update)
+
+> [!TIP]
+> ### 🌐 1. Custom Domain & Cloudflare CDN Host Mapping
+> * **Custom Domain Mapping:** Map custom domains or CDN subdomains (e.g. `vpn.mydomain.com`) directly in Settings to replace the raw VPS server IP across all generated links, Base64 subscriptions, Sing-Box JSON, and Clash YAML configurations.
+> * **Per-Inbound Domain Overrides:** Support independent custom domains per inbound config.
+
+> [!IMPORTANT]
+> ### ⚡ 2. Advanced Packet Fragment UI Customization & Presets
+> * **Precise Packet Tuning:** Adjust `Fragment Length` (e.g. `100-200`) and `Fragment Interval` (e.g. `10-20`) directly in Inbound Creation & Edit modals.
+> * **Operator-Optimized Presets:** Quick 1-click preset buttons for **MCI**, **Irancell**, and **Low-latency Intranet** traffic.
+
+> [!TIP]
+> ### 🚀 3. Next-Gen XHTTP (SplitHTTP), gRPC, and Trojan Protocol Support
+> * **XHTTP Transport:** Xray's latest transport innovation specifically engineered for harsh DPI censorship and CDN multiplexing.
+> * **Full Protocol Suite:** Support for `VLESS`, `VMess`, and `Trojan` across `TCP Reality`, `WebSocket`, `XHTTP`, and `gRPC`.
+
+> [!NOTE]
+> ### 🔍 4. Instant Live Search & Real-Time Filtering
+> * **User & Inbound Filtering:** Live search bars in both Users and Inbounds tabs for immediate filtering by title, port, UUID, status, or SNI.
+
+---
+
+## 📦 Key Highlights from Version 2.3.0
 
 <p align="center">
   <img src="media_v23_release.jpg" alt="Nyx Panel v2.3.0 Release Banner" width="100%" />

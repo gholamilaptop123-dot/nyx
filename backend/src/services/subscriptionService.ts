@@ -31,7 +31,7 @@ export class SubscriptionService {
   ];
 
   /**
-   * Generates Base64 VLESS / VMess / REALITY link (Supports 3 or 4 arguments)
+   * Generates Base64 VLESS / VMess / Trojan link (Supports 3 or 4 arguments)
    */
   static generateVlessLink(arg1: any, arg2: any, arg3?: string, arg4?: string): string {
     let inbound = arg1;
@@ -46,26 +46,34 @@ export class SubscriptionService {
     }
 
     const uuid = inbound?.uuid || inbound?.id || '11111111-2222-3333-4444-555555555555';
-    const isPaaS = serverIp.includes('.railway.app') || serverIp.includes('.onrender.com') || serverIp.includes('.fly.dev') || serverIp.includes('.koyeb.app');
+    // Priority: Inbound custom domain > Global serverIp/domain
+    const effectiveHost = inbound?.customDomain?.trim() || serverIp;
+    const isPaaS = effectiveHost.includes('.railway.app') || effectiveHost.includes('.onrender.com') || effectiveHost.includes('.fly.dev') || effectiveHost.includes('.koyeb.app');
     const port = isPaaS ? 443 : (inbound?.port || 443);
+    const proto = (inbound?.protocol || 'vless').toLowerCase();
+    const net = (inbound?.network || 'tcp').toLowerCase();
     const remark = encodeURIComponent(`Nyx-${inbound?.remark || 'Config'}-${isp}`);
-    
-    let sni = inbound?.sni || (isPaaS ? serverIp : 'yahoo.com');
+
+    let sni = inbound?.sni || (isPaaS ? effectiveHost : 'yahoo.com');
     if (isp === 'WHITE_SNI') {
       sni = this.WHITE_IRAN_SNIS[0];
     }
 
-    // 1. WebSocket Inbound (PaaS / Cloudflare CDN / WSS)
-    if (inbound?.network === 'ws') {
+    const sec = (isPaaS || inbound?.security === 'tls') ? 'tls' : (inbound?.security || 'none');
+    const fragQuery = inbound?.enableFragment
+      ? `&fragment=${encodeURIComponent(`${inbound?.fragmentLength || '100-200'},${inbound?.fragmentInterval || '10-20'},tlshello`)}`
+      : '';
+
+    // 1. WebSocket Transport (WS)
+    if (net === 'ws') {
       const wsPath = encodeURIComponent('/nyx');
       const wsHost = encodeURIComponent(sni);
-      const sec = (isPaaS || inbound?.security === 'tls') ? 'tls' : (inbound?.security || 'none');
 
-      if (inbound?.protocol === 'vmess') {
+      if (proto === 'vmess') {
         const vmessObj = {
           v: "2",
           ps: `Nyx-${inbound?.remark || 'VMess'}-${isp}`,
-          add: serverIp,
+          add: effectiveHost,
           port: String(port),
           id: uuid,
           aid: "0",
@@ -80,23 +88,49 @@ export class SubscriptionService {
         return `vmess://${Buffer.from(JSON.stringify(vmessObj)).toString('base64')}`;
       }
 
-      if (inbound?.protocol === 'trojan') {
-        return `trojan://${uuid}@${serverIp}:${port}?security=${sec}&sni=${sni}&type=ws&path=${wsPath}&host=${wsHost}#${remark}`;
+      if (proto === 'trojan') {
+        return `trojan://${uuid}@${effectiveHost}:${port}?security=${sec}&sni=${sni}&type=ws&path=${wsPath}&host=${wsHost}${fragQuery}#${remark}`;
       }
 
-      return `vless://${uuid}@${serverIp}:${port}?encryption=none&type=ws&security=${sec}&sni=${sni}&path=${wsPath}&host=${wsHost}#${remark}`;
+      return `vless://${uuid}@${effectiveHost}:${port}?encryption=none&type=ws&security=${sec}&sni=${sni}&path=${wsPath}&host=${wsHost}${fragQuery}#${remark}`;
     }
 
-    // 2. VLESS + REALITY
+    // 2. XHTTP / SplitHTTP Transport (Next-Gen Anti-Censorship)
+    if (net === 'xhttp' || net === 'splithttp') {
+      const xhttpPath = encodeURIComponent('/nyx-xhttp');
+      const xhttpHost = encodeURIComponent(sni);
+
+      if (proto === 'trojan') {
+        return `trojan://${uuid}@${effectiveHost}:${port}?security=${sec}&sni=${sni}&type=xhttp&path=${xhttpPath}&host=${xhttpHost}&mode=auto${fragQuery}#${remark}`;
+      }
+
+      return `vless://${uuid}@${effectiveHost}:${port}?encryption=none&type=xhttp&security=${sec}&sni=${sni}&path=${xhttpPath}&host=${xhttpHost}&mode=auto${fragQuery}#${remark}`;
+    }
+
+    // 3. gRPC Transport
+    if (net === 'grpc') {
+      const serviceName = encodeURIComponent('nyx-grpc');
+      if (proto === 'trojan') {
+        return `trojan://${uuid}@${effectiveHost}:${port}?security=${sec}&sni=${sni}&type=grpc&serviceName=${serviceName}${fragQuery}#${remark}`;
+      }
+      return `vless://${uuid}@${effectiveHost}:${port}?encryption=none&type=grpc&security=${sec}&sni=${sni}&serviceName=${serviceName}${fragQuery}#${remark}`;
+    }
+
+    // 4. VLESS + REALITY
     if (inbound?.security === 'reality') {
       const pbk = inbound?.publicKey || '';
       const sid = inbound?.shortId || '6ba7b810';
-      const flow = 'xtls-rprx-vision';
+      const flow = net === 'tcp' ? 'xtls-rprx-vision' : '';
 
-      return `vless://${uuid}@${serverIp}:${port}?encryption=none&type=${inbound?.network || 'tcp'}&security=reality&pbk=${pbk}&fp=chrome&sni=${sni}&sid=${sid}&flow=${flow}&headerType=none#${remark}`;
+      return `vless://${uuid}@${effectiveHost}:${port}?encryption=none&type=${net}&security=reality&pbk=${pbk}&fp=chrome&sni=${sni}&sid=${sid}${flow ? `&flow=${flow}` : ''}&headerType=none${fragQuery}#${remark}`;
     }
 
-    return `vless://${uuid}@${serverIp}:${port}?encryption=none&type=${inbound?.network || 'tcp'}&security=${inbound?.security || 'none'}&sni=${sni}&headerType=none#${remark}`;
+    // 5. Standard TCP / TLS
+    if (proto === 'trojan') {
+      return `trojan://${uuid}@${effectiveHost}:${port}?security=${sec}&sni=${sni}&headerType=none${fragQuery}#${remark}`;
+    }
+
+    return `vless://${uuid}@${effectiveHost}:${port}?encryption=none&type=${net}&security=${sec}&sni=${sni}&headerType=none${fragQuery}#${remark}`;
   }
 
   /**
@@ -123,18 +157,40 @@ export class SubscriptionService {
     const sni = isp === 'WHITE_SNI' ? this.WHITE_IRAN_SNIS[0] : (isPaaS ? serverIp : 'yahoo.com');
 
     const outbounds: any[] = inbounds.map(inbound => {
-      const isWs = inbound?.network === 'ws';
+      const effectiveHost = inbound?.customDomain?.trim() || serverIp;
+      const net = (inbound?.network || 'tcp').toLowerCase();
+      const proto = (inbound?.protocol || 'vless').toLowerCase();
       const port = isPaaS ? 443 : (inbound?.port || 443);
       const isReality = inbound?.security === 'reality';
       const isTls = isPaaS || inbound?.security === 'tls' || isReality;
 
+      let transportConfig: any = undefined;
+      if (net === 'ws') {
+        transportConfig = {
+          type: "ws",
+          path: "/nyx",
+          headers: { Host: inbound?.sni || sni }
+        };
+      } else if (net === 'grpc') {
+        transportConfig = {
+          type: "grpc",
+          service_name: "nyx-grpc"
+        };
+      } else if (net === 'xhttp' || net === 'splithttp') {
+        transportConfig = {
+          type: "http",
+          path: "/nyx-xhttp",
+          host: [inbound?.sni || sni]
+        };
+      }
+
       return {
-        type: inbound?.protocol === 'trojan' ? 'trojan' : (inbound?.protocol === 'vmess' ? 'vmess' : 'vless'),
+        type: proto === 'trojan' ? 'trojan' : (proto === 'vmess' ? 'vmess' : 'vless'),
         tag: `Nyx-${inbound?.remark || 'Config'}`,
-        server: serverIp,
+        server: effectiveHost,
         server_port: port,
         uuid: inbound?.uuid || inbound?.id,
-        flow: isReality ? "xtls-rprx-vision" : "",
+        flow: isReality && net === 'tcp' ? "xtls-rprx-vision" : "",
         tls: {
           enabled: isTls,
           server_name: inbound?.sni || sni,
@@ -142,14 +198,10 @@ export class SubscriptionService {
           reality: {
             enabled: isReality,
             public_key: inbound?.publicKey || "",
-            short_id: inbound?.shortId || ""
+            short_id: inbound?.shortId || "6ba7b810"
           }
         },
-        transport: isWs ? {
-          type: "ws",
-          path: "/nyx",
-          headers: { Host: inbound?.sni || sni }
-        } : undefined
+        transport: transportConfig
       };
     });
 
@@ -189,15 +241,17 @@ export class SubscriptionService {
     const sni = isp === 'WHITE_SNI' ? this.WHITE_IRAN_SNIS[0] : (isPaaS ? serverIp : 'yahoo.com');
 
     const proxies = inbounds.map(inbound => {
+      const effectiveHost = inbound?.customDomain?.trim() || serverIp;
       const proxyName = `Nyx-${inbound?.remark || 'Config'}`;
       const uuid = inbound?.uuid || inbound?.id;
       const port = isPaaS ? 443 : (inbound?.port || 443);
-      const isWs = inbound?.network === 'ws';
+      const net = (inbound?.network || 'tcp').toLowerCase();
+      const proto = (inbound?.protocol || 'vless').toLowerCase();
 
-      if (isWs) {
+      if (net === 'ws') {
         return `  - name: "${proxyName}"
-    type: vless
-    server: ${serverIp}
+    type: ${proto}
+    server: ${effectiveHost}
     port: ${port}
     uuid: ${uuid}
     network: ws
@@ -211,16 +265,31 @@ export class SubscriptionService {
     client-fingerprint: chrome`;
       }
 
-      if (inbound?.security === 'reality') {
+      if (net === 'grpc') {
         return `  - name: "${proxyName}"
-    type: vless
-    server: ${serverIp}
+    type: ${proto}
+    server: ${effectiveHost}
     port: ${port}
     uuid: ${uuid}
-    network: ${inbound?.network || 'tcp'}
+    network: grpc
     tls: true
     udp: true
-    flow: xtls-rprx-vision
+    servername: ${inbound?.sni || sni}
+    grpc-opts:
+      grpc-service-name: "nyx-grpc"
+    client-fingerprint: chrome`;
+      }
+
+      if (inbound?.security === 'reality') {
+        return `  - name: "${proxyName}"
+    type: ${proto}
+    server: ${effectiveHost}
+    port: ${port}
+    uuid: ${uuid}
+    network: ${net}
+    tls: true
+    udp: true
+    flow: ${net === 'tcp' ? 'xtls-rprx-vision' : ''}
     servername: ${inbound?.sni || sni}
     reality-opts:
       public-key: ${inbound?.publicKey || ''}
@@ -229,11 +298,11 @@ export class SubscriptionService {
       }
 
       return `  - name: "${proxyName}"
-    type: vless
-    server: ${serverIp}
+    type: ${proto}
+    server: ${effectiveHost}
     port: ${port}
     uuid: ${uuid}
-    network: ${inbound?.network || 'tcp'}
+    network: ${net}
     tls: ${inbound?.security === 'tls'}
     udp: true
     servername: ${inbound?.sni || sni}`;
@@ -244,8 +313,8 @@ export class SubscriptionService {
     const proxiesYaml = hasProxies ? proxies.join('\n\n') : '  - name: "DIRECT"\n    type: direct';
     const namesYaml = hasProxies ? proxyNamesList : '      - DIRECT';
 
-    return `# Nyx Panel - Clash Meta Config
-# ISP: ${isp} | Server: ${serverIp}
+    return `# Nyx Panel v2.4 - Clash Meta Config
+# ISP: ${isp} | Host: ${serverIp}
 
 mixed-port: 7890
 allow-lan: true

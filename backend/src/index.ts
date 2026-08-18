@@ -69,7 +69,23 @@ async function autoDetectPublicIp() {
 autoDetectPublicIp();
 setInterval(autoDetectPublicIp, 300000);
 
+let cachedCustomDomain: string = '';
+
+async function loadCustomDomainSetting() {
+  try {
+    const s = await prisma.systemSetting.findUnique({ where: { key: 'CUSTOM_DOMAIN' } });
+    if (s && s.value.trim()) {
+      cachedCustomDomain = s.value.trim().replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+    }
+  } catch (e) {}
+}
+
 function getPublicHost(req: express.Request): string {
+  // Priority 0: Custom Domain configured in panel settings
+  if (cachedCustomDomain) {
+    return cachedCustomDomain;
+  }
+
   // Priority 1: Cloud/Railway/PaaS environment variables
   const paasDomain = process.env.RAILWAY_PUBLIC_DOMAIN || process.env.RAILWAY_STATIC_URL || process.env.RENDER_EXTERNAL_HOSTNAME || process.env.PUBLIC_DOMAIN || '';
   if (paasDomain) {
@@ -260,7 +276,7 @@ app.get('/api/users', async (req, res) => {
 app.post('/api/users', async (req, res) => {
   try {
     const { username, dataLimitGb, expireDays, maxDevices } = req.body;
-    
+
     if (!username || username.trim() === '') {
       return res.status(400).json({ error: 'Username is required.' });
     }
@@ -378,7 +394,7 @@ app.get('/api/inbounds', async (req, res) => {
 
 app.post('/api/inbounds', async (req, res) => {
   try {
-    const { remark, protocol, port, network, security, sni, privateKey, publicKey, shortId, enableFragment, dataLimitGb, expireDays, maxDevices } = req.body;
+    const { remark, protocol, port, network, security, sni, privateKey, publicKey, shortId, enableFragment, fragmentLength, fragmentInterval, customDomain, dataLimitGb, expireDays, maxDevices } = req.body;
     const parsedPort = parseInt(port);
 
     if (isNaN(parsedPort) || parsedPort < 1 || parsedPort > 65535) {
@@ -404,6 +420,9 @@ app.post('/api/inbounds', async (req, res) => {
         publicKey: publicKey || generatedKeys.publicKey,
         shortId: shortId || '6ba7b810',
         enableFragment: enableFragment !== undefined ? Boolean(enableFragment) : true,
+        fragmentLength: fragmentLength || '100-200',
+        fragmentInterval: fragmentInterval || '10-20',
+        customDomain: customDomain?.trim() || null,
         dataLimitGb: dataLimitGb ? parseFloat(dataLimitGb) : 0,
         expireDate,
         maxDevices: maxDevices ? parseInt(maxDevices, 10) : 2
@@ -419,12 +438,26 @@ app.post('/api/inbounds', async (req, res) => {
 
 app.patch('/api/inbounds/:id', async (req, res) => {
   try {
-    const { remark, enabled, sni, enableFragment } = req.body;
+    const { remark, enabled, sni, enableFragment, fragmentLength, fragmentInterval, customDomain, network, protocol, security, port, dataLimitGb, expireDays, maxDevices } = req.body;
     const allowedData: any = {};
     if (remark !== undefined) allowedData.remark = remark;
     if (enabled !== undefined) allowedData.enabled = Boolean(enabled);
     if (sni !== undefined) allowedData.sni = sni;
     if (enableFragment !== undefined) allowedData.enableFragment = Boolean(enableFragment);
+    if (fragmentLength !== undefined) allowedData.fragmentLength = fragmentLength;
+    if (fragmentInterval !== undefined) allowedData.fragmentInterval = fragmentInterval;
+    if (customDomain !== undefined) allowedData.customDomain = customDomain?.trim() || null;
+    if (network !== undefined) allowedData.network = network;
+    if (protocol !== undefined) allowedData.protocol = protocol;
+    if (security !== undefined) allowedData.security = security;
+    if (port !== undefined) allowedData.port = parseInt(port);
+    if (dataLimitGb !== undefined) allowedData.dataLimitGb = parseFloat(dataLimitGb);
+    if (maxDevices !== undefined) allowedData.maxDevices = parseInt(maxDevices, 10);
+    if (expireDays && Number(expireDays) > 0) {
+      const d = new Date();
+      d.setDate(d.getDate() + Number(expireDays));
+      allowedData.expireDate = d;
+    }
 
     const updated = await prisma.inbound.update({ where: { id: req.params.id }, data: allowedData });
     await reloadXrayService();
@@ -839,15 +872,18 @@ app.get('/api/settings', async (req, res) => {
   try {
     const botTokenSetting = await prisma.systemSetting.findUnique({ where: { key: 'BOT_TOKEN' } });
     const adminChatIdSetting = await prisma.systemSetting.findUnique({ where: { key: 'ADMIN_CHAT_ID' } });
+    const customDomainSetting = await prisma.systemSetting.findUnique({ where: { key: 'CUSTOM_DOMAIN' } });
     const botToken = botTokenSetting?.value || process.env.BOT_TOKEN || '';
     const adminChatId = adminChatIdSetting?.value || process.env.ADMIN_CHAT_ID || '';
+    const customDomain = customDomainSetting?.value || '';
     const botEnabled = Boolean(botToken && botToken.trim() !== '');
 
     res.json({
       botToken,
       adminChatId,
       botEnabled,
-      serverIp: SERVER_IP
+      customDomain,
+      serverIp: customDomain || SERVER_IP
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch system settings' });
@@ -856,7 +892,7 @@ app.get('/api/settings', async (req, res) => {
 
 app.post('/api/settings', async (req, res) => {
   try {
-    const { botToken, adminChatId } = req.body;
+    const { botToken, adminChatId, customDomain } = req.body;
     const cleanToken = (botToken || '').trim();
     const cleanChatId = (adminChatId || '').trim();
 
@@ -872,6 +908,16 @@ app.post('/api/settings', async (req, res) => {
       create: { key: 'ADMIN_CHAT_ID', value: cleanChatId }
     });
 
+    if (customDomain !== undefined) {
+      const cleanDomain = (customDomain || '').trim().replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+      await prisma.systemSetting.upsert({
+        where: { key: 'CUSTOM_DOMAIN' },
+        update: { value: cleanDomain },
+        create: { key: 'CUSTOM_DOMAIN', value: cleanDomain }
+      });
+      cachedCustomDomain = cleanDomain;
+    }
+
     process.env.BOT_TOKEN = cleanToken;
     process.env.ADMIN_CHAT_ID = cleanChatId;
 
@@ -883,8 +929,9 @@ app.post('/api/settings', async (req, res) => {
 
     res.json({
       success: true,
-      message: cleanToken ? 'Telegram Bot successfully activated and started.' : 'Telegram Bot disabled.',
-      botEnabled: Boolean(cleanToken)
+      message: 'Settings updated successfully.',
+      botEnabled: Boolean(cleanToken),
+      customDomain: cachedCustomDomain
     });
   } catch (error: any) {
     res.status(500).json({ error: error.message || 'Failed to save settings' });
@@ -909,7 +956,10 @@ async function reloadXrayService() {
       privateKey: i.privateKey || undefined,
       publicKey: i.publicKey || undefined,
       shortId: i.shortId || undefined,
-      enableFragment: i.enableFragment
+      enableFragment: i.enableFragment,
+      fragmentLength: i.fragmentLength || undefined,
+      fragmentInterval: i.fragmentInterval || undefined,
+      customDomain: i.customDomain || undefined
     }));
 
     const formattedUsers = users.map(u => ({
@@ -942,7 +992,7 @@ async function reloadXrayService() {
           execSync(`iptables -I INPUT -p udp --dport ${inb.port} -j ACCEPT 2>/dev/null || true`);
           execSync(`ufw allow ${inb.port}/tcp 2>/dev/null || true`);
           execSync(`ufw allow ${inb.port}/udp 2>/dev/null || true`);
-        } catch (e) {}
+        } catch (e) { }
       }
     }
 
@@ -954,10 +1004,10 @@ async function reloadXrayService() {
           execSync('pkill -9 -f "xray" 2>/dev/null || true');
           execSync('fuser -k -9 10085/tcp 2>/dev/null || true');
           execSync('systemctl stop nginx 2>/dev/null || true');
-        } catch (e) {}
+        } catch (e) { }
       }
       if (xrayProcess) {
-        try { xrayProcess.kill('SIGKILL'); } catch (e) {}
+        try { xrayProcess.kill('SIGKILL'); } catch (e) { }
         xrayProcess = null;
       }
       await new Promise(r => setTimeout(r, 400));
@@ -1015,7 +1065,8 @@ app.get('*', (req, res) => {
 async function start() {
   try {
     xrayBinaryPath = await ensureXrayBinary();
-    
+    await loadCustomDomainSetting();
+
     // Seed default inbound if none exists
     const inboundCount = await prisma.inbound.count();
     if (inboundCount === 0) {
@@ -1080,7 +1131,7 @@ async function start() {
     };
     // Set dynamic SNI getter so multipath always uses the current active SNI
     multiPathEngine.setSniDomainGetter(() => 'ebanking.banksepah.ir');
-    getSniDomain().then(sni => multiPathEngine.setSniDomainGetter(() => sni)).catch(() => {});
+    getSniDomain().then(sni => multiPathEngine.setSniDomainGetter(() => sni)).catch(() => { });
     multiPathEngine.startMonitoring(15000);
 
     // ── Panic Mode Emergency Detector — monitors for full internet blackouts ──
@@ -1115,7 +1166,10 @@ async function start() {
         url.startsWith('/ws') ||
         url.startsWith('/vless') ||
         url.startsWith('/vmess') ||
-        url.startsWith('/trojan')
+        url.startsWith('/trojan') ||
+        url.startsWith('/xhttp') ||
+        url.startsWith('/nyx-xhttp') ||
+        url.startsWith('/grpc')
       ) {
         const xraySocket = net.connect({ port: 10001, host: '127.0.0.1' }, () => {
           xraySocket.write(
@@ -1133,10 +1187,10 @@ async function start() {
         });
 
         xraySocket.on('error', () => {
-          try { socket.destroy(); } catch (e) {}
+          try { socket.destroy(); } catch (e) { }
         });
         socket.on('error', () => {
-          try { xraySocket.destroy(); } catch (e) {}
+          try { xraySocket.destroy(); } catch (e) { }
         });
       } else {
         socket.destroy();

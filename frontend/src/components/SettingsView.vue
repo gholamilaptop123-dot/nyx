@@ -79,6 +79,62 @@
       </div>
     </div>
 
+    <!-- Custom Server Domain / Cloudflare CDN Domain Card -->
+    <div class="glass-panel p-5 sm:p-6 rounded-3xl border border-amber-500/20 bg-gradient-to-r from-black/80 via-amber-950/15 to-black/80 space-y-5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.06] pb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-amber-400/10 text-amber-400 border border-amber-400/20 flex items-center justify-center font-bold shrink-0">
+            <Globe class="w-5 h-5" />
+          </div>
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+              <span>{{ t('customDomainCardTitle') }}</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-mono" :class="customDomain ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30' : 'bg-white/5 text-gray-400 border border-white/10'">
+                {{ customDomain ? 'ACTIVE 🌐' : 'DEFAULT IP' }}
+              </span>
+            </h3>
+            <p class="text-xs text-gray-300 mt-0.5 leading-relaxed">
+              {{ t('customDomainCardSub') }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">{{ t('customDomainCardTitle') }}</label>
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <input 
+              v-model="customDomain" 
+              type="text" 
+              :placeholder="t('customDomainPlaceholder')"
+              dir="ltr"
+              class="flex-1 bg-white/[0.03] border border-white/[0.08] rounded-2xl px-4 py-3 text-xs text-white font-mono text-left focus:border-amber-400/50 outline-none"
+            />
+            <button 
+              @click="saveCustomDomain" 
+              :disabled="savingDomain"
+              class="px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 text-gray-950 font-bold text-xs shadow-md shadow-amber-500/20 hover:opacity-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shrink-0"
+            >
+              <RefreshCw v-if="savingDomain" class="w-4 h-4 animate-spin text-gray-950" />
+              <Save v-else class="w-4 h-4 text-gray-950" />
+              <span>{{ t('saveDomainBtn') }}</span>
+            </button>
+          </div>
+        </div>
+
+        <div v-if="customDomain" class="p-3 rounded-2xl bg-black/40 border border-amber-400/20 flex items-center justify-between text-xs font-mono">
+          <div class="flex items-center gap-2 text-amber-300">
+            <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+            <span>Target Host: {{ customDomain }}</span>
+          </div>
+          <button @click="customDomain = ''; saveCustomDomain()" class="text-gray-400 hover:text-rose-400 text-xs">
+            Reset to Default IP
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Cloudflare WARP Outbound Management Card -->
     <div class="glass-panel p-6 rounded-3xl border border-cyan-500/30 bg-gradient-to-r from-black/80 via-cyan-950/20 to-black/80 space-y-6">
       <div class="flex items-center justify-between border-b border-white/10 pb-4">
@@ -250,6 +306,8 @@ const props = defineProps<{ toast?: (msg: string, type?: 'success' | 'error' | '
 const botToken = ref('');
 const adminChatId = ref('');
 const botEnabled = ref(false);
+const customDomain = ref('');
+const savingDomain = ref(false);
 const showToken = ref(false);
 const saving = ref(false);
 
@@ -270,6 +328,7 @@ async function fetchSettings() {
     botToken.value = res.data.botToken || '';
     adminChatId.value = res.data.adminChatId || '';
     botEnabled.value = res.data.botEnabled || false;
+    customDomain.value = res.data.customDomain || '';
 
     const warpRes = await axios.get('/api/warp/status');
     warpConfig.value = warpRes.data;
@@ -277,6 +336,21 @@ async function fetchSettings() {
     warpMode.value = warpRes.data?.mode || 'ALL';
   } catch (err) {
     console.error('Failed to fetch settings:', err);
+  }
+}
+
+async function saveCustomDomain() {
+  savingDomain.value = true;
+  try {
+    const res = await axios.post('/api/settings', {
+      customDomain: customDomain.value
+    });
+    customDomain.value = res.data.customDomain || '';
+    props.toast?.(currentLang.value === 'fa' ? 'دامنه اختصاصی با موفقیت ذخیره و اعمال شد.' : 'Custom domain saved and applied.', 'success');
+  } catch (err: any) {
+    props.toast?.(err?.response?.data?.error || 'Failed to save custom domain', 'error');
+  } finally {
+    savingDomain.value = false;
   }
 }
 
