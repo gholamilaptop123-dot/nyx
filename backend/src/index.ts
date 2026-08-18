@@ -808,6 +808,14 @@ app.get('/api/subinfo/:uuid', async (req, res) => {
         ? `https://${hostIp}/api/sub/${user.uuid}?isp=${isp}`
         : `http://${hostIp}:${PORT}/api/sub/${user.uuid}?isp=${isp}`;
 
+      const subBrandName = (await prisma.systemSetting.findUnique({ where: { key: 'SUB_BRAND_NAME' } }))?.value || 'Nyx Panel';
+      const subLogoUrl = (await prisma.systemSetting.findUnique({ where: { key: 'SUB_LOGO_URL' } }))?.value || '/logo_trans.png';
+      const subSupportLink = (await prisma.systemSetting.findUnique({ where: { key: 'SUB_SUPPORT_LINK' } }))?.value || '';
+      const subChannelLink = (await prisma.systemSetting.findUnique({ where: { key: 'SUB_CHANNEL_LINK' } }))?.value || '';
+      const subAnnouncement = (await prisma.systemSetting.findUnique({ where: { key: 'SUB_ANNOUNCEMENT' } }))?.value || '';
+      const subThemeColor = (await prisma.systemSetting.findUnique({ where: { key: 'SUB_THEME_COLOR' } }))?.value || 'amber';
+      const subShowApps = (await prisma.systemSetting.findUnique({ where: { key: 'SUB_SHOW_APPS' } }))?.value !== 'false';
+
       return res.json({
         user: {
           username: user.username,
@@ -818,6 +826,15 @@ app.get('/api/subinfo/:uuid', async (req, res) => {
           expireDate: user.expireDate,
           createdAt: user.createdAt,
           maxDevices: user.maxDevices || 2
+        },
+        brandSettings: {
+          brandName: subBrandName,
+          logoUrl: subLogoUrl,
+          supportLink: subSupportLink,
+          channelLink: subChannelLink,
+          announcement: subAnnouncement,
+          themeColor: subThemeColor,
+          showApps: subShowApps
         },
         subUrl,
         base64Sub,
@@ -844,6 +861,14 @@ app.get('/api/subinfo/:uuid', async (req, res) => {
       ? `https://${hostIp}/api/sub/${inbound.uuid || inbound.id}?isp=${isp}`
       : `http://${hostIp}:${PORT}/api/sub/${inbound.uuid || inbound.id}?isp=${isp}`;
 
+    const subBrandName = (await prisma.systemSetting.findUnique({ where: { key: 'SUB_BRAND_NAME' } }))?.value || 'Nyx Panel';
+    const subLogoUrl = (await prisma.systemSetting.findUnique({ where: { key: 'SUB_LOGO_URL' } }))?.value || '/logo_trans.png';
+    const subSupportLink = (await prisma.systemSetting.findUnique({ where: { key: 'SUB_SUPPORT_LINK' } }))?.value || '';
+    const subChannelLink = (await prisma.systemSetting.findUnique({ where: { key: 'SUB_CHANNEL_LINK' } }))?.value || '';
+    const subAnnouncement = (await prisma.systemSetting.findUnique({ where: { key: 'SUB_ANNOUNCEMENT' } }))?.value || '';
+    const subThemeColor = (await prisma.systemSetting.findUnique({ where: { key: 'SUB_THEME_COLOR' } }))?.value || 'amber';
+    const subShowApps = (await prisma.systemSetting.findUnique({ where: { key: 'SUB_SHOW_APPS' } }))?.value !== 'false';
+
     return res.json({
       user: {
         username: inbound.remark,
@@ -854,6 +879,15 @@ app.get('/api/subinfo/:uuid', async (req, res) => {
         expireDate: inbound.expireDate,
         createdAt: inbound.createdAt,
         maxDevices: inbound.maxDevices || 2
+      },
+      brandSettings: {
+        brandName: subBrandName,
+        logoUrl: subLogoUrl,
+        supportLink: subSupportLink,
+        channelLink: subChannelLink,
+        announcement: subAnnouncement,
+        themeColor: subThemeColor,
+        showApps: subShowApps
       },
       subUrl,
       base64Sub,
@@ -873,6 +907,16 @@ app.get('/api/settings', async (req, res) => {
     const botTokenSetting = await prisma.systemSetting.findUnique({ where: { key: 'BOT_TOKEN' } });
     const adminChatIdSetting = await prisma.systemSetting.findUnique({ where: { key: 'ADMIN_CHAT_ID' } });
     const customDomainSetting = await prisma.systemSetting.findUnique({ where: { key: 'CUSTOM_DOMAIN' } });
+    
+    // Sub portal branding
+    const subBrandNameSetting = await prisma.systemSetting.findUnique({ where: { key: 'SUB_BRAND_NAME' } });
+    const subLogoUrlSetting = await prisma.systemSetting.findUnique({ where: { key: 'SUB_LOGO_URL' } });
+    const subSupportLinkSetting = await prisma.systemSetting.findUnique({ where: { key: 'SUB_SUPPORT_LINK' } });
+    const subChannelLinkSetting = await prisma.systemSetting.findUnique({ where: { key: 'SUB_CHANNEL_LINK' } });
+    const subAnnouncementSetting = await prisma.systemSetting.findUnique({ where: { key: 'SUB_ANNOUNCEMENT' } });
+    const subThemeColorSetting = await prisma.systemSetting.findUnique({ where: { key: 'SUB_THEME_COLOR' } });
+    const subShowAppsSetting = await prisma.systemSetting.findUnique({ where: { key: 'SUB_SHOW_APPS' } });
+
     const botToken = botTokenSetting?.value || process.env.BOT_TOKEN || '';
     const adminChatId = adminChatIdSetting?.value || process.env.ADMIN_CHAT_ID || '';
     const customDomain = customDomainSetting?.value || '';
@@ -883,6 +927,13 @@ app.get('/api/settings', async (req, res) => {
       adminChatId,
       botEnabled,
       customDomain,
+      subBrandName: subBrandNameSetting?.value || 'Nyx Panel',
+      subLogoUrl: subLogoUrlSetting?.value || '/logo_trans.png',
+      subSupportLink: subSupportLinkSetting?.value || '',
+      subChannelLink: subChannelLinkSetting?.value || '',
+      subAnnouncement: subAnnouncementSetting?.value || '',
+      subThemeColor: subThemeColorSetting?.value || 'amber',
+      subShowApps: subShowAppsSetting?.value !== 'false',
       serverIp: customDomain || SERVER_IP
     });
   } catch (error) {
@@ -892,21 +943,38 @@ app.get('/api/settings', async (req, res) => {
 
 app.post('/api/settings', async (req, res) => {
   try {
-    const { botToken, adminChatId, customDomain } = req.body;
-    const cleanToken = (botToken || '').trim();
-    const cleanChatId = (adminChatId || '').trim();
+    const {
+      botToken,
+      adminChatId,
+      customDomain,
+      subBrandName,
+      subLogoUrl,
+      subSupportLink,
+      subChannelLink,
+      subAnnouncement,
+      subThemeColor,
+      subShowApps
+    } = req.body;
 
-    await prisma.systemSetting.upsert({
-      where: { key: 'BOT_TOKEN' },
-      update: { value: cleanToken },
-      create: { key: 'BOT_TOKEN', value: cleanToken }
-    });
+    if (botToken !== undefined) {
+      const cleanToken = (botToken || '').trim();
+      await prisma.systemSetting.upsert({
+        where: { key: 'BOT_TOKEN' },
+        update: { value: cleanToken },
+        create: { key: 'BOT_TOKEN', value: cleanToken }
+      });
+      process.env.BOT_TOKEN = cleanToken;
+    }
 
-    await prisma.systemSetting.upsert({
-      where: { key: 'ADMIN_CHAT_ID' },
-      update: { value: cleanChatId },
-      create: { key: 'ADMIN_CHAT_ID', value: cleanChatId }
-    });
+    if (adminChatId !== undefined) {
+      const cleanChatId = (adminChatId || '').trim();
+      await prisma.systemSetting.upsert({
+        where: { key: 'ADMIN_CHAT_ID' },
+        update: { value: cleanChatId },
+        create: { key: 'ADMIN_CHAT_ID', value: cleanChatId }
+      });
+      process.env.ADMIN_CHAT_ID = cleanChatId;
+    }
 
     if (customDomain !== undefined) {
       const cleanDomain = (customDomain || '').trim().replace(/^https?:\/\//, '').replace(/\/.*$/, '');
@@ -918,19 +986,72 @@ app.post('/api/settings', async (req, res) => {
       cachedCustomDomain = cleanDomain;
     }
 
-    process.env.BOT_TOKEN = cleanToken;
-    process.env.ADMIN_CHAT_ID = cleanChatId;
+    if (subBrandName !== undefined) {
+      await prisma.systemSetting.upsert({
+        where: { key: 'SUB_BRAND_NAME' },
+        update: { value: (subBrandName || '').trim() },
+        create: { key: 'SUB_BRAND_NAME', value: (subBrandName || '').trim() }
+      });
+    }
 
-    if (cleanToken) {
-      initTelegramBot(cleanToken, SERVER_IP, reloadXrayService, cleanChatId);
-    } else {
+    if (subLogoUrl !== undefined) {
+      await prisma.systemSetting.upsert({
+        where: { key: 'SUB_LOGO_URL' },
+        update: { value: (subLogoUrl || '').trim() },
+        create: { key: 'SUB_LOGO_URL', value: (subLogoUrl || '').trim() }
+      });
+    }
+
+    if (subSupportLink !== undefined) {
+      await prisma.systemSetting.upsert({
+        where: { key: 'SUB_SUPPORT_LINK' },
+        update: { value: (subSupportLink || '').trim() },
+        create: { key: 'SUB_SUPPORT_LINK', value: (subSupportLink || '').trim() }
+      });
+    }
+
+    if (subChannelLink !== undefined) {
+      await prisma.systemSetting.upsert({
+        where: { key: 'SUB_CHANNEL_LINK' },
+        update: { value: (subChannelLink || '').trim() },
+        create: { key: 'SUB_CHANNEL_LINK', value: (subChannelLink || '').trim() }
+      });
+    }
+
+    if (subAnnouncement !== undefined) {
+      await prisma.systemSetting.upsert({
+        where: { key: 'SUB_ANNOUNCEMENT' },
+        update: { value: (subAnnouncement || '').trim() },
+        create: { key: 'SUB_ANNOUNCEMENT', value: (subAnnouncement || '').trim() }
+      });
+    }
+
+    if (subThemeColor !== undefined) {
+      await prisma.systemSetting.upsert({
+        where: { key: 'SUB_THEME_COLOR' },
+        update: { value: subThemeColor },
+        create: { key: 'SUB_THEME_COLOR', value: subThemeColor }
+      });
+    }
+
+    if (subShowApps !== undefined) {
+      await prisma.systemSetting.upsert({
+        where: { key: 'SUB_SHOW_APPS' },
+        update: { value: String(subShowApps) },
+        create: { key: 'SUB_SHOW_APPS', value: String(subShowApps) }
+      });
+    }
+
+    if (botToken !== undefined && botToken.trim()) {
+      initTelegramBot(botToken.trim(), SERVER_IP, reloadXrayService, (adminChatId || '').trim());
+    } else if (botToken !== undefined && !botToken.trim()) {
       stopTelegramBot();
     }
 
     res.json({
       success: true,
       message: 'Settings updated successfully.',
-      botEnabled: Boolean(cleanToken),
+      botEnabled: Boolean(process.env.BOT_TOKEN),
       customDomain: cachedCustomDomain
     });
   } catch (error: any) {

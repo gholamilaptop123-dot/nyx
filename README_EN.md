@@ -102,6 +102,13 @@ A **quantum multi-route engine** that simultaneously monitors **4 independent co
 > ### 🔍 4. Instant Live Search & Real-Time Filtering
 > * **User & Inbound Filtering:** Live search bars in both Users and Inbounds tabs for immediate filtering by title, port, UUID, status, or SNI.
 
+> [!TIP]
+> ### 🎨 5. Subscriber Web Portal Custom Branding (`/subinfo/:uuid`)
+> * **Custom Brand Name & Logo:** Set your business name and custom logo URL directly in Settings to brand the client subscription portal.
+> * **Support & Renewal Buttons:** Integrated Telegram Support ID and Channel links for easy renewals and user troubleshooting.
+> * **Customer Announcement Box:** Prominent notice box for service updates, operator instructions, or payment notices.
+> * **1-Click Client App Downloads:** Quick download links for Android (v2rayNG), iOS (Streisand), and Windows (v2rayN).
+
 ---
 
 ## 📦 Key Highlights from Version 2.3.0

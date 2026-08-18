@@ -135,6 +135,113 @@
       </div>
     </div>
 
+    <!-- Subscription Portal Branding & Customization Card -->
+    <div class="glass-panel p-5 sm:p-6 rounded-3xl border border-indigo-500/20 bg-gradient-to-r from-black/80 via-indigo-950/15 to-black/80 space-y-5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.06] pb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-indigo-400/10 text-indigo-400 border border-indigo-400/20 flex items-center justify-center font-bold shrink-0">
+            <Palette class="w-5 h-5" />
+          </div>
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+              <span>{{ t('subPortalCustomTitle') }}</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-mono">
+                {{ subBrandName || 'Customized' }}
+              </span>
+            </h3>
+            <p class="text-xs text-gray-300 mt-0.5 leading-relaxed">
+              {{ t('subPortalCustomSub') }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Brand Name / Portal Title -->
+          <div>
+            <label class="block font-semibold text-gray-300 mb-1.5">{{ t('brandNameLabel') }}</label>
+            <input 
+              v-model="subBrandName" 
+              type="text" 
+              placeholder="e.g. MyVPN Pro"
+              class="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl px-4 py-3 text-xs text-white focus:border-indigo-400/50 outline-none"
+            />
+          </div>
+
+          <!-- Logo URL -->
+          <div>
+            <label class="block font-semibold text-gray-300 mb-1.5">{{ t('brandLogoUrlLabel') }}</label>
+            <input 
+              v-model="subLogoUrl" 
+              type="text" 
+              placeholder="e.g. https://site.com/logo.png or /logo_trans.png"
+              dir="ltr"
+              class="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl px-4 py-3 text-xs text-white font-mono text-left focus:border-indigo-400/50 outline-none"
+            />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Telegram Support Link -->
+          <div>
+            <label class="block font-semibold text-gray-300 mb-1.5">{{ t('supportLinkLabel') }}</label>
+            <input 
+              v-model="subSupportLink" 
+              type="text" 
+              placeholder="e.g. https://t.me/MySupport or @MySupportBot"
+              dir="ltr"
+              class="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl px-4 py-3 text-xs text-white font-mono text-left focus:border-indigo-400/50 outline-none"
+            />
+          </div>
+
+          <!-- Telegram Channel Link -->
+          <div>
+            <label class="block font-semibold text-gray-300 mb-1.5">{{ t('channelLinkLabel') }}</label>
+            <input 
+              v-model="subChannelLink" 
+              type="text" 
+              placeholder="e.g. https://t.me/MyChannel"
+              dir="ltr"
+              class="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl px-4 py-3 text-xs text-white font-mono text-left focus:border-indigo-400/50 outline-none"
+            />
+          </div>
+        </div>
+
+        <!-- Announcement Notice Box -->
+        <div>
+          <label class="block font-semibold text-gray-300 mb-1.5">{{ t('announcementLabel') }}</label>
+          <textarea 
+            v-model="subAnnouncement" 
+            rows="3" 
+            :placeholder="t('announcementPlaceholder')"
+            class="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl p-3 text-xs text-white leading-relaxed focus:border-indigo-400/50 outline-none resize-none"
+          ></textarea>
+        </div>
+
+        <!-- Display Client Apps Toggle -->
+        <div class="p-3.5 bg-black/40 border border-white/[0.06] rounded-2xl flex items-center justify-between">
+          <div>
+            <span class="font-bold text-white block">{{ t('showAppsLabel') }}</span>
+            <span class="text-[10px] text-gray-400">Shows download buttons for v2rayNG, Streisand, and Sing-box</span>
+          </div>
+          <input type="checkbox" v-model="subShowApps" class="w-5 h-5 accent-indigo-400" />
+        </div>
+
+        <div class="flex items-center justify-end pt-2">
+          <button 
+            @click="saveSubBranding" 
+            :disabled="savingBranding"
+            class="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold text-xs shadow-md shadow-indigo-500/20 hover:opacity-95 transition-all disabled:opacity-50 flex items-center gap-2"
+          >
+            <RefreshCw v-if="savingBranding" class="w-4 h-4 animate-spin text-white" />
+            <Save v-else class="w-4 h-4 text-white" />
+            <span>{{ t('saveSubBrandingBtn') }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Cloudflare WARP Outbound Management Card -->
     <div class="glass-panel p-6 rounded-3xl border border-cyan-500/30 bg-gradient-to-r from-black/80 via-cyan-950/20 to-black/80 space-y-6">
       <div class="flex items-center justify-between border-b border-white/10 pb-4">
@@ -298,7 +405,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import { Bot, Send, Info, Shield, Save, RefreshCw, Globe, Zap, Database, Download, Power } from 'lucide-vue-next';
+import { Bot, Send, Info, Shield, Save, RefreshCw, Globe, Zap, Database, Download, Power, Palette } from 'lucide-vue-next';
 import { t, currentLang } from '../i18n';
 
 const props = defineProps<{ toast?: (msg: string, type?: 'success' | 'error' | 'info') => void }>();
@@ -310,6 +417,15 @@ const customDomain = ref('');
 const savingDomain = ref(false);
 const showToken = ref(false);
 const saving = ref(false);
+
+// Sub Portal Customization State
+const subBrandName = ref('Nyx Panel');
+const subLogoUrl = ref('/logo_trans.png');
+const subSupportLink = ref('');
+const subChannelLink = ref('');
+const subAnnouncement = ref('');
+const subShowApps = ref(true);
+const savingBranding = ref(false);
 
 // WARP State
 const warpConfig = ref<any>(null);
@@ -330,12 +446,38 @@ async function fetchSettings() {
     botEnabled.value = res.data.botEnabled || false;
     customDomain.value = res.data.customDomain || '';
 
+    subBrandName.value = res.data.subBrandName || 'Nyx Panel';
+    subLogoUrl.value = res.data.subLogoUrl || '/logo_trans.png';
+    subSupportLink.value = res.data.subSupportLink || '';
+    subChannelLink.value = res.data.subChannelLink || '';
+    subAnnouncement.value = res.data.subAnnouncement || '';
+    subShowApps.value = res.data.subShowApps !== undefined ? res.data.subShowApps : true;
+
     const warpRes = await axios.get('/api/warp/status');
     warpConfig.value = warpRes.data;
     warpEnabled.value = warpRes.data?.enabled || false;
     warpMode.value = warpRes.data?.mode || 'ALL';
   } catch (err) {
     console.error('Failed to fetch settings:', err);
+  }
+}
+
+async function saveSubBranding() {
+  savingBranding.value = true;
+  try {
+    const res = await axios.post('/api/settings', {
+      subBrandName: subBrandName.value,
+      subLogoUrl: subLogoUrl.value,
+      subSupportLink: subSupportLink.value,
+      subChannelLink: subChannelLink.value,
+      subAnnouncement: subAnnouncement.value,
+      subShowApps: subShowApps.value
+    });
+    props.toast?.(currentLang.value === 'fa' ? 'شخصی‌سازی صفحه ساب مشتری با موفقیت ذخیره شد.' : 'Subscription portal branding saved successfully.', 'success');
+  } catch (err: any) {
+    props.toast?.(err?.response?.data?.error || 'Failed to save sub branding', 'error');
+  } finally {
+    savingBranding.value = false;
   }
 }
 

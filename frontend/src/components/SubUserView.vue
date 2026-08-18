@@ -6,15 +6,15 @@
     <div class="absolute top-4 right-4 z-20">
       <button 
         @click="toggleLanguage" 
-        class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-bold border border-white/15 text-cyberYellow transition-all"
+        class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-bold border border-white/15 text-amber-300 transition-all"
       >
-        <Globe class="w-4 h-4 text-cyberYellow" />
+        <Globe class="w-4 h-4 text-amber-300" />
         <span>{{ currentLang === 'en' ? '🇮🇷 فارسی' : '🇺🇸 English' }}</span>
       </button>
     </div>
 
     <div v-if="loading" class="flex flex-col items-center gap-3 py-12">
-      <div class="w-10 h-10 border-4 border-cyberViolet border-t-transparent rounded-full animate-spin"></div>
+      <div class="w-10 h-10 border-4 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
       <p class="text-xs text-gray-400">{{ t('loading') }}</p>
     </div>
 
@@ -26,25 +26,60 @@
       <p class="text-xs text-gray-400 leading-relaxed">{{ error }}</p>
     </div>
 
-    <div v-else-if="userData" class="max-w-2xl w-full space-y-6">
-      <!-- Header Info Banner -->
+    <div v-else-if="userData" class="max-w-2xl w-full space-y-5">
+      <!-- Header Info Banner with Custom Brand Title & Logo -->
       <div class="glass-panel p-5 sm:p-6 rounded-3xl border border-white/[0.08] relative overflow-hidden flex flex-col sm:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-3 md:gap-4">
-          <img src="/logo_trans.png" alt="Nyx Panel Logo" class="w-14 h-14 md:w-16 md:h-16 object-contain drop-shadow-[0_0_16px_rgba(245,158,11,0.35)] shrink-0 hover:scale-105 transition-all" />
+          <img 
+            :src="brandSettings.logoUrl || '/logo_trans.png'" 
+            :alt="brandSettings.brandName || 'Logo'" 
+            class="w-14 h-14 md:w-16 md:h-16 object-contain drop-shadow-[0_0_16px_rgba(245,158,11,0.35)] shrink-0 hover:scale-105 transition-all rounded-2xl bg-white/5 p-1" 
+          />
           <div>
             <h1 class="text-lg sm:text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 via-amber-400 to-rose-400">
-              {{ t('userSubTitle') }}: {{ userData.username }}
+              {{ brandSettings.brandName || t('userSubTitle') }}: {{ userData.username }}
             </h1>
             <p class="text-xs text-gray-400 font-mono" dir="ltr">UUID: {{ userData.uuid }}</p>
           </div>
         </div>
 
-        <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold"
+        <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0"
           :class="userData.status === 'ACTIVE' ? 'bg-emerald-500/10 border border-emerald-500/25 text-emerald-300' : 'bg-rose-500/10 border border-rose-500/25 text-rose-300'"
         >
           <span class="w-2 h-2 rounded-full" :class="userData.status === 'ACTIVE' ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'"></span>
           {{ userData.status === 'ACTIVE' ? t('activeStatus') : t('expiredStatus') }}
         </div>
+      </div>
+
+      <!-- Customer Announcement Notice Banner -->
+      <div v-if="brandSettings.announcement" class="glass-panel p-4 sm:p-5 rounded-3xl border border-amber-400/30 bg-gradient-to-r from-amber-950/30 via-black/60 to-amber-950/30 space-y-2">
+        <div class="flex items-center gap-2 text-amber-300 font-bold text-xs">
+          <Info class="w-4 h-4 text-amber-400 shrink-0" />
+          <span>{{ t('announcementLabel') }}</span>
+        </div>
+        <p class="text-xs text-gray-200 leading-relaxed whitespace-pre-line">{{ brandSettings.announcement }}</p>
+      </div>
+
+      <!-- Support & Channel Contact Buttons -->
+      <div v-if="brandSettings.supportLink || brandSettings.channelLink" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <a 
+          v-if="brandSettings.supportLink" 
+          :href="cleanTelegramLink(brandSettings.supportLink)" 
+          target="_blank" 
+          class="flex-1 py-3 px-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 hover:opacity-95 transition-all text-center"
+        >
+          <MessageSquare class="w-4 h-4 shrink-0" />
+          <span>{{ t('contactSupportBtn') }}</span>
+        </a>
+        <a 
+          v-if="brandSettings.channelLink" 
+          :href="cleanTelegramLink(brandSettings.channelLink)" 
+          target="_blank" 
+          class="flex-1 py-3 px-4 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 hover:opacity-95 transition-all text-center"
+        >
+          <Send class="w-4 h-4 shrink-0" />
+          <span>{{ t('joinChannelBtn') }}</span>
+        </a>
       </div>
 
       <!-- Data Usage & Expiration Meter -->
@@ -174,15 +209,56 @@
         </div>
       </div>
 
+      <!-- Recommended Client Applications Download Section -->
+      <div v-if="brandSettings.showApps" class="glass-panel p-5 sm:p-6 rounded-3xl border border-white/[0.08] space-y-4">
+        <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+          <Download class="w-4 h-4 text-amber-400" />
+          <span>{{ t('clientAppsHeading') }}</span>
+        </h3>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <!-- Android -->
+          <div class="p-3.5 bg-black/40 rounded-2xl border border-white/[0.06] space-y-2 flex flex-col justify-between">
+            <div>
+              <span class="font-bold text-emerald-400 block">🤖 Android</span>
+              <p class="text-[11px] text-gray-400 mt-1">v2rayNG / NekoBox</p>
+            </div>
+            <a href="https://github.com/2dust/v2rayNG/releases" target="_blank" class="py-2 px-3 rounded-xl bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 font-bold text-center hover:bg-emerald-500/20 transition-all">
+              Download APK
+            </a>
+          </div>
+
+          <!-- iOS -->
+          <div class="p-3.5 bg-black/40 rounded-2xl border border-white/[0.06] space-y-2 flex flex-col justify-between">
+            <div>
+              <span class="font-bold text-cyan-400 block">🍏 iOS (iPhone / iPad)</span>
+              <p class="text-[11px] text-gray-400 mt-1">Streisand / Sing-box / V2Box</p>
+            </div>
+            <a href="https://apps.apple.com/us/app/streisand/id6450534064" target="_blank" class="py-2 px-3 rounded-xl bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 font-bold text-center hover:bg-cyan-500/20 transition-all">
+              App Store
+            </a>
+          </div>
+
+          <!-- Windows -->
+          <div class="p-3.5 bg-black/40 rounded-2xl border border-white/[0.06] space-y-2 flex flex-col justify-between">
+            <div>
+              <span class="font-bold text-indigo-400 block">💻 Windows</span>
+              <p class="text-[11px] text-gray-400 mt-1">v2rayN / NekoRay</p>
+            </div>
+            <a href="https://github.com/2dust/v2rayN/releases" target="_blank" class="py-2 px-3 rounded-xl bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 font-bold text-center hover:bg-indigo-500/20 transition-all">
+              Download ZIP
+            </a>
+          </div>
+        </div>
+      </div>
+
       <!-- Footer Branding -->
       <footer class="text-center space-y-2 pt-4 text-xs text-gray-400 border-t border-white/10">
-        <p>{{ t('byCynet') }}</p>
+        <p>{{ brandSettings.brandName || t('byCynet') }}</p>
         <div class="flex items-center justify-center gap-4 text-xs">
-          <a href="https://t.me/cynetx" target="_blank" class="hover:text-cyberCyan transition-colors">📢 Telegram (cynetx)</a>
+          <a href="https://t.me/cynetx" target="_blank" class="hover:text-amber-400 transition-colors">📢 Telegram</a>
           <span>•</span>
-          <a href="https://www.youtube.com/@cynetxir" target="_blank" class="hover:text-cyberPink transition-colors">🎥 YouTube (@cynetxir)</a>
-          <span>•</span>
-          <a href="https://cynetx.ir" target="_blank" class="hover:text-cyberGreen transition-colors font-mono">🌐 cynetx.ir</a>
+          <a href="https://cynetx.ir" target="_blank" class="hover:text-amber-400 transition-colors font-mono">🌐 Website</a>
         </div>
       </footer>
     </div>
@@ -192,7 +268,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
-import { Shield, Clock, AlertTriangle, Copy, Calendar, Users, Globe } from 'lucide-vue-next';
+import { Shield, Clock, AlertTriangle, Copy, Calendar, Users, Globe, Info, MessageSquare, Send, Download } from 'lucide-vue-next';
 import QrcodeVue from 'qrcode.vue';
 import ToastNotification from './ToastNotification.vue';
 import { copyToClipboard } from '../utils/clipboard';
@@ -207,9 +283,27 @@ const selectedIsp = ref('MCI');
 const activeTab = ref('sub');
 const toastRef = ref<any>(null);
 
+const brandSettings = ref<any>({
+  brandName: 'Nyx Panel',
+  logoUrl: '/logo_trans.png',
+  supportLink: '',
+  channelLink: '',
+  announcement: '',
+  themeColor: 'amber',
+  showApps: true
+});
+
 function toggleLanguage() {
   const nextLang = currentLang.value === 'en' ? 'fa' : 'en';
   setLanguage(nextLang);
+}
+
+function cleanTelegramLink(link: string): string {
+  if (!link) return '#';
+  const clean = link.trim();
+  if (clean.startsWith('http://') || clean.startsWith('https://')) return clean;
+  if (clean.startsWith('@')) return `https://t.me/${clean.substring(1)}`;
+  return `https://t.me/${clean}`;
 }
 
 const vlessLinks = ref<string[]>([]);
@@ -225,10 +319,10 @@ const configTabs = computed(() => [
 ]);
 
 const ispOptions = computed(() => [
-  { id: 'DEFAULT', label: currentLang.value === 'fa' ? 'عمومی' : 'General', activeClass: 'bg-cyberViolet text-white' },
-  { id: 'MCI', label: t('operatorMci'), activeClass: 'bg-cyberPink text-white' },
-  { id: 'IRANCELL', label: t('operatorIrancell'), activeClass: 'bg-cyberCyan text-black font-bold' },
-  { id: 'WHITE_SNI', label: t('operatorWhite'), activeClass: 'bg-cyberGreen text-black font-bold' },
+  { id: 'DEFAULT', label: currentLang.value === 'fa' ? 'عمومی' : 'General', activeClass: 'bg-amber-400 text-gray-950' },
+  { id: 'MCI', label: t('operatorMci'), activeClass: 'bg-amber-400 text-gray-950' },
+  { id: 'IRANCELL', label: t('operatorIrancell'), activeClass: 'bg-amber-400 text-gray-950' },
+  { id: 'WHITE_SNI', label: t('operatorWhite'), activeClass: 'bg-emerald-400 text-gray-950' },
 ]);
 
 const usedGb = computed(() => {
@@ -248,32 +342,27 @@ const remainGbText = computed(() => {
 });
 
 const usagePercent = computed(() => {
-  if (!userData.value || !userData.value.dataLimitGb) return 0;
-  return Math.min(100, (Number(usedGb.value) / userData.value.dataLimitGb) * 100);
+  if (!userData.value || !userData.value.dataLimitGb) return 10;
+  const used = Number(userData.value.usedDataBytes) / (1024 * 1024 * 1024);
+  return (used / userData.value.dataLimitGb) * 100;
 });
 
 const expireText = computed(() => {
   if (!userData.value || !userData.value.expireDate) return t('unlimited');
-  return currentLang.value === 'fa'
-    ? new Date(userData.value.expireDate).toLocaleDateString('fa-IR')
-    : new Date(userData.value.expireDate).toLocaleDateString();
+  return new Date(userData.value.expireDate).toLocaleDateString();
 });
 
 const daysLeftText = computed(() => {
-  if (!userData.value || !userData.value.expireDate) return currentLang.value === 'fa' ? 'مدت زمان: نامحدود' : 'Time limit: Unlimited';
-  const diff = new Date(userData.value.expireDate).getTime() - new Date().getTime();
-  const days = Math.ceil(diff / (1000 * 3600 * 24));
-  if (currentLang.value === 'fa') {
-    return days > 0 ? `${days} روز باقی‌مانده` : 'منقضی شده';
-  }
-  return days > 0 ? `${days} Days remaining` : 'Expired';
+  if (!userData.value || !userData.value.expireDate) return t('unlimited');
+  const diff = new Date(userData.value.expireDate).getTime() - Date.now();
+  const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+  if (days <= 0) return currentLang.value === 'fa' ? 'منقضی شده' : 'Expired';
+  return currentLang.value === 'fa' ? `${days} روز باقی‌مانده` : `${days} days left`;
 });
 
 const createdAtText = computed(() => {
-  if (!userData.value || !userData.value.createdAt) return currentLang.value === 'fa' ? 'ثبت شده در سیستم' : 'Registered';
-  return currentLang.value === 'fa'
-    ? new Date(userData.value.createdAt).toLocaleDateString('fa-IR')
-    : new Date(userData.value.createdAt).toLocaleDateString();
+  if (!userData.value || !userData.value.createdAt) return 'N/A';
+  return new Date(userData.value.createdAt).toLocaleDateString();
 });
 
 const maxDevicesText = computed(() => {
@@ -297,6 +386,7 @@ async function loadUserData() {
   try {
     const res = await axios.get(`/api/subinfo/${targetUuid}`);
     userData.value = res.data.user;
+    brandSettings.value = res.data.brandSettings || brandSettings.value;
     vlessLinks.value = res.data.vlessLinks;
     clashYaml.value = res.data.clashYaml;
     singboxJson.value = res.data.singboxJson;
