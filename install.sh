@@ -144,18 +144,25 @@ export DATABASE_URL="file:./dev.db"
 export PORT=${PANEL_PORT}
 export ADMIN_USER=${ADMIN_USER}
 export ADMIN_PASS=${ADMIN_PASS}
-export NODE_ENV=production
 
-npm install
-npx prisma generate
-npx prisma db push
-npm run build
+# Clear any NODE_ENV override during build so dev tools always install
+unset NODE_ENV
+
+npm install --include=dev
+node ./node_modules/prisma/build/index.js generate || npx prisma generate
+node ./node_modules/prisma/build/index.js db push || npx prisma db push
+node ./node_modules/typescript/bin/tsc || npx tsc
+
+if [ ! -f "${INSTALL_DIR}/backend/dist/index.js" ]; then
+  echo -e "${RED}❌ Error: Backend compilation failed! Retrying build with npx tsc...${NC}"
+  npx tsc || true
+fi
 
 # 6. Build Frontend Assets
 echo -e "${YELLOW}🎨 Building Frontend Vue 3 Production App...${NC}"
 cd ${INSTALL_DIR}/frontend
-npm install
-npm run build
+npm install --include=dev
+node ./node_modules/vite/bin/vite.js build || npx vite build
 
 # Copy build to dist fallback inside backend
 mkdir -p ${INSTALL_DIR}/backend/dist/public
@@ -185,6 +192,7 @@ Environment=NODE_ENV=production
 Environment=PORT=${PANEL_PORT}
 Environment=ADMIN_USER=${ADMIN_USER}
 Environment=ADMIN_PASS=${ADMIN_PASS}
+Environment=DATABASE_URL=file:./dev.db
 
 [Install]
 WantedBy=multi-user.target
@@ -241,6 +249,12 @@ fi
 systemctl daemon-reload
 systemctl enable nyx
 systemctl restart nyx
+sleep 2
+
+if ! systemctl is-active --quiet nyx; then
+  echo -e "${RED}⚠️ Service nyx failed to start. Service logs:${NC}"
+  journalctl -u nyx -n 15 --no-pager 2>/dev/null || true
+fi
 
 # 8. Get Public IP
 SERVER_IP=$(curl -s https://api.ipify.org || hostname -I | awk '{print $1}')
