@@ -276,6 +276,11 @@ export const tMap = {
     kharejScriptBoxTitle: '🇪🇺 Auto-Deploy Script for Kharej Server',
     copyScriptBtn: 'Copy Full Script',
     tunnelScriptsSuccess: 'Tunnel auto-deploy scripts generated successfully',
+    tunnelScriptError: 'Failed to generate tunnel auto-deploy scripts',
+    scriptCopiedToast: 'Script copied to clipboard.',
+    tunnelExplainTitle: 'Secure Encrypted Tunnel Bridge: Iran Relay ➔ Kharej Master',
+    tunnelExplainDesc: 'Traffic is routed from client to Iran Relay and sent through encrypted tunnel to Kharej Master.',
+    tunnelClientUsageNotice: '🎯 Client Connection: After setting up the tunnel, connect your VPN client to Iran Server IP and Inbound Port.',
     // v2.4 Custom Domain, Fragment & Next-Gen Transports
     customDomainCardTitle: 'Custom Server Domain / Cloudflare CDN',
     customDomainCardSub: 'Map a custom domain or CDN subdomain to all generated configs and subscriptions instead of server IP',

@@ -21,7 +21,7 @@ echo " ╚██████╗   ██║   ██║ ╚████║██
 echo "  ╚═════╝   ╚═╝   ╚═╝  ╚═══╝╚══════╝   ╚═╝   "
 echo -e "${NC}"
 echo -e "${YELLOW}       🔥 CYNET SECURITY TEAM PRESENTS 🔥${NC}"
-echo -e "${CYAN}       🚀 NYX PANEL v2.3 - NEXT-GEN VPN 🚀${NC}"
+echo -e "${CYAN}       🚀 NYX PANEL v2.4 - THE POWER & CUSTOMIZATION UPDATE 🚀${NC}"
 echo -e "${CYAN}====================================================${NC}"
 
 # 1. Check Root Privileges
@@ -131,16 +131,25 @@ rm -rf ${INSTALL_DIR}/frontend/dist ${INSTALL_DIR}/backend/dist
 # 5. Install Backend Dependencies & Database Setup
 echo -e "${YELLOW}⚙️ Building Backend Service & Database...${NC}"
 cd ${INSTALL_DIR}/backend
-npm install
-npx prisma db push
-npm run build
 
 cat <<EOF > ${INSTALL_DIR}/backend/.env
 PORT=${PANEL_PORT}
 ADMIN_USER=${ADMIN_USER}
 ADMIN_PASS=${ADMIN_PASS}
 NODE_ENV=production
+DATABASE_URL="file:./dev.db"
 EOF
+
+export DATABASE_URL="file:./dev.db"
+export PORT=${PANEL_PORT}
+export ADMIN_USER=${ADMIN_USER}
+export ADMIN_PASS=${ADMIN_PASS}
+export NODE_ENV=production
+
+npm install
+npx prisma generate
+npx prisma db push
+npm run build
 
 # 6. Build Frontend Assets
 echo -e "${YELLOW}🎨 Building Frontend Vue 3 Production App...${NC}"

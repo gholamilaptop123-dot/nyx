@@ -1,6 +1,6 @@
 {
   "name": "nyx-backend",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "description": "Next-Gen Xray Anti-Censorship Management Panel Backend",
   "main": "dist/index.js",
   "scripts": {
