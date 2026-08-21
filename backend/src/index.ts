@@ -1272,12 +1272,7 @@ async function start() {
       initTelegramBot(activeToken, SERVER_IP, reloadXrayService, activeAdminChatId);
     }
 
-    app.get('*', (req, res) => {
-      if (!req.path.startsWith('/api/')) {
-        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-        return res.sendFile(path.join(frontendBuildPath, 'index.html'));
-      }
-    });
+    // SPA fallback is handled by the global app.get('*') route registered above.
 
     // ── WebSocket Multiplexer for PaaS (Railway / Render / CDN / Single Port) ──
     server.on('upgrade', (req, socket, head) => {

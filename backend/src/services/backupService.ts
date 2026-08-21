@@ -1,12 +1,24 @@
-/**
- * Nyx Panel Database Backup & Restore Engine
- * Developed by Cynet Security Team (cynetx)
- */
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { PrismaClient } from '@prisma/client';
 import { sendAdminDocument, sendAdminNotification } from './telegramBot';
+
+/**
+ * Resolves the actual SQLite database file path from DATABASE_URL env.
+ * Handles both relative paths (local/VPS) and absolute paths (Railway/Render with DATA_DIR).
+ */
+function getDbFilePath(): string {
+  const dbUrl = process.env.DATABASE_URL || '';
+  if (dbUrl.startsWith('file:')) {
+    const filePart = dbUrl.replace(/^file:/, '');
+    if (path.isAbsolute(filePart)) return filePart;
+    // Relative: resolve relative to CWD (backend dir on VPS)
+    return path.resolve(process.cwd(), filePart);
+  }
+  // Fallback: conventional Prisma default location
+  return path.join(process.cwd(), 'prisma', 'dev.db');
+}
 
 export interface BackupResult {
   filePath: string;
@@ -25,7 +37,7 @@ export class BackupService {
    * Generates a safe point-in-time backup copy of the SQLite database
    */
   static async createBackup(prisma: PrismaClient): Promise<BackupResult> {
-    const dbPath = path.join(process.cwd(), 'prisma/dev.db');
+    const dbPath = getDbFilePath();
     const backupDir = path.join(process.cwd(), 'backups');
 
     if (!fs.existsSync(backupDir)) {
@@ -70,7 +82,7 @@ export class BackupService {
     sourceFilePath: string,
     reloadXrayCore: () => Promise<void>
   ): Promise<{ userCount: number; inboundCount: number }> {
-    const dbPath = path.join(process.cwd(), 'prisma/dev.db');
+    const dbPath = getDbFilePath();
 
     if (!fs.existsSync(sourceFilePath)) {
       throw new Error(`Source backup file does not exist: ${sourceFilePath}`);

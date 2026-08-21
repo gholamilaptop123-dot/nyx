@@ -45,7 +45,12 @@ export class SubscriptionService {
       isp = arg4;
     }
 
-    const uuid = inbound?.uuid || inbound?.id || '11111111-2222-3333-4444-555555555555';
+    // When called as (user, inbound, serverIp, isp), use the user's own UUID for correct
+    // per-user traffic attribution in Xray stats and proper per-user access control.
+    // When called as (inbound, serverIp, isp), fall back to the inbound's UUID.
+    const uuid = (arg4 !== undefined && arg1?.uuid)
+      ? arg1.uuid
+      : (inbound?.uuid || inbound?.id || '11111111-2222-3333-4444-555555555555');
     // Priority: Inbound custom domain > Global serverIp/domain
     const effectiveHost = inbound?.customDomain?.trim() || serverIp;
     const isPaaS = effectiveHost.includes('.railway.app') || effectiveHost.includes('.onrender.com') || effectiveHost.includes('.fly.dev') || effectiveHost.includes('.koyeb.app');
@@ -141,7 +146,13 @@ export class SubscriptionService {
     let serverIp = typeof arg2 === 'string' ? arg2 : (arg3 || '127.0.0.1');
     let isp = arg4 || (typeof arg3 === 'string' ? arg3 : 'DEFAULT');
 
-    const links = inbounds.map(inbound => this.generateVlessLink(inbound, serverIp, isp));
+    // Preserve user object so each link uses the correct per-user UUID
+    const user = (arg4 !== undefined) ? arg1 : null;
+    const links = inbounds.map(inbound =>
+      user
+        ? this.generateVlessLink(user, inbound, serverIp, isp)
+        : this.generateVlessLink(inbound, serverIp, isp)
+    );
     return Buffer.from(links.join('\n')).toString('base64');
   }
 
@@ -152,6 +163,8 @@ export class SubscriptionService {
     let inbounds = Array.isArray(arg1) ? arg1 : (Array.isArray(arg2) ? arg2 : [arg1 || arg2]);
     let serverIp = typeof arg2 === 'string' ? arg2 : (arg3 || '127.0.0.1');
     let isp = arg4 || (typeof arg3 === 'string' ? arg3 : 'DEFAULT');
+    // Capture user for per-user UUID attribution in outbound configs
+    const singboxUser = (arg4 !== undefined) ? arg1 : null;
 
     const isPaaS = serverIp.includes('.railway.app') || serverIp.includes('.onrender.com') || serverIp.includes('.fly.dev') || serverIp.includes('.koyeb.app');
     const sni = isp === 'WHITE_SNI' ? this.WHITE_IRAN_SNIS[0] : (isPaaS ? serverIp : 'yahoo.com');
@@ -189,7 +202,7 @@ export class SubscriptionService {
         tag: `Nyx-${inbound?.remark || 'Config'}`,
         server: effectiveHost,
         server_port: port,
-        uuid: inbound?.uuid || inbound?.id,
+        uuid: singboxUser?.uuid || inbound?.uuid || inbound?.id,
         flow: isReality && net === 'tcp' ? "xtls-rprx-vision" : "",
         tls: {
           enabled: isTls,
@@ -236,6 +249,8 @@ export class SubscriptionService {
     let inbounds = Array.isArray(arg1) ? arg1 : (Array.isArray(arg2) ? arg2 : [arg1 || arg2]);
     let serverIp = typeof arg2 === 'string' ? arg2 : (arg3 || '127.0.0.1');
     let isp = arg4 || (typeof arg3 === 'string' ? arg3 : 'DEFAULT');
+    // Capture user for per-user UUID attribution in Clash proxy configs
+    const clashUser = (arg4 !== undefined) ? arg1 : null;
 
     const isPaaS = serverIp.includes('.railway.app') || serverIp.includes('.onrender.com') || serverIp.includes('.fly.dev') || serverIp.includes('.koyeb.app');
     const sni = isp === 'WHITE_SNI' ? this.WHITE_IRAN_SNIS[0] : (isPaaS ? serverIp : 'yahoo.com');
@@ -243,7 +258,7 @@ export class SubscriptionService {
     const proxies = inbounds.map(inbound => {
       const effectiveHost = inbound?.customDomain?.trim() || serverIp;
       const proxyName = `Nyx-${inbound?.remark || 'Config'}`;
-      const uuid = inbound?.uuid || inbound?.id;
+      const uuid = clashUser?.uuid || inbound?.uuid || inbound?.id;
       const port = isPaaS ? 443 : (inbound?.port || 443);
       const net = (inbound?.network || 'tcp').toLowerCase();
       const proto = (inbound?.protocol || 'vless').toLowerCase();
