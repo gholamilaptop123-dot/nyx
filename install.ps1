@@ -40,7 +40,7 @@ if (-not (Test-Path $installDir)) {
 if (-not (Test-Path "$installDir\backend")) {
     Write-Host "Downloading latest Nyx Panel release from GitHub..." -ForegroundColor Yellow
     $zipPath = "$env:TEMP\nyx_main.zip"
-    Invoke-WebRequest -Uri "https://github.com/icynetx/Nyx/archive/refs/heads/main.zip" -OutFile $zipPath
+    Invoke-WebRequest -Uri "https://github.com/thecynetx/nyx/archive/refs/heads/main.zip" -OutFile $zipPath
     Expand-Archive -Path $zipPath -DestinationPath "$env:TEMP\nyx_extract" -Force
     Copy-Item -Path "$env:TEMP\nyx_extract\Nyx-main\*" -Destination $installDir -Recurse -Force
     Remove-Item -Path $zipPath -Force -ErrorAction SilentlyContinue

@@ -8,13 +8,13 @@
 ### سامانه نسل جدید مدیریت اتصالات Xray-core متمرکز بر شبکه و فیلترینگ ایران
 #### 🔐 توسعه داده‌شده توسط تیم امنیتی ساینت (Cynet Security Team)
 
-[![Version](https://img.shields.io/badge/version-2.4.0-blueviolet?style=for-the-badge&logo=shield)](https://github.com/icynetx/Nyx)
+[![Version](https://img.shields.io/badge/version-2.4.0-blueviolet?style=for-the-badge&logo=shield)](https://github.com/thecynetx/nyx)
 [![Deploy on Railway](https://railway.com/button.svg)](#-۳-راه‌اندازی-رایگان-روی-سرورهای-ابری-railway--render--docker)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker)](https://github.com/icynetx/Nyx)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker)](https://github.com/thecynetx/nyx)
 [![Telegram](https://img.shields.io/badge/Telegram-cynetx-2CA5E0?style=for-the-badge&logo=telegram)](https://t.me/cynetx)
 [![YouTube Video](https://img.shields.io/badge/Watch_Video-6Ekgxg--eSx8-FF0000?style=for-the-badge&logo=youtube)](https://youtu.be/6Ekgxg-eSx8)
 [![Website](https://img.shields.io/badge/Website-cynetx.ir-cyberCyan?style=for-the-badge)](https://cynetx.ir)
-[![License](https://img.shields.io/badge/license-MIT-cyberGreen?style=for-the-badge)](https://github.com/icynetx/Nyx/blob/main/LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-cyberGreen?style=for-the-badge)](https://github.com/thecynetx/nyx/blob/main/LICENSE)
 
 <p align="center">
   <b>Language Options / تغییر زبان:</b>
@@ -145,7 +145,7 @@
 <div dir="ltr">
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/icynetx/Nyx/main/install.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/thecynetx/nyx/main/install.sh)
 ```
 
 </div>
@@ -162,7 +162,7 @@ bash <(curl -Ls https://raw.githubusercontent.com/icynetx/Nyx/main/install.sh)
 <div dir="ltr">
 
 ```powershell
-iwr -useb https://raw.githubusercontent.com/icynetx/Nyx/main/install.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/thecynetx/nyx/main/install.ps1 | iex
 ```
 
 </div>
@@ -178,7 +178,7 @@ iwr -useb https://raw.githubusercontent.com/icynetx/Nyx/main/install.ps1 | iex
 #### 🚀 مراحل راه‌اندازی روی Railway:
 1. وارد سایت [railway.com](https://railway.com) شده و با اکانت گیت‌هاب لاگین کنید.
 2. روی دکمه **`+ New Project`** کلیک کرده و گزینه **`Deploy from GitHub repo`** را بزنید.
-3. نام مخزن `icynetx/Nyx` را انتخاب کرده و روی **`Deploy Now`** کلیک کنید.
+3. نام مخزن `thecynetx/nyx` را انتخاب کرده و روی **`Deploy Now`** کلیک کنید.
 4. پس از چند ثانیه، وارد تب **Settings** شده و در بخش **Networking** روی **Generate Domain** بزنید تا آدرس امن دامنه رایگان (HTTPS) به شما داده شود.
 5. آدرس دامنه را در مرورگر باز کرده و با نام کاربری `admin` و رمز `nyx2026!` وارد پنل شوید!
 
@@ -199,7 +199,7 @@ docker run -d \
   -p 443:443 \
   -v nyx_data:/data \
   --restart unless-stopped \
-  ghcr.io/icynetx/nyx:latest
+  ghcr.io/thecynetx/nyx:latest
 ```
 
 </div>
@@ -331,7 +331,7 @@ flowchart LR
 
 ### 🐧 ۱. حذف کامل روی سرور لینوکس (`Linux`):
 ```bash
-curl -sSL "https://raw.githubusercontent.com/icynetx/Nyx/main/uninstall.sh" | sudo bash
+curl -sSL "https://raw.githubusercontent.com/thecynetx/nyx/main/uninstall.sh" | sudo bash
 ```
 
 ### 🪟 ۲. حذف کامل روی ویندوز سرور (`Windows Server`):

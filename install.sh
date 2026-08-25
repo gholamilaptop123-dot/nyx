@@ -92,8 +92,8 @@ fi
 if [ "$UPDATE_SUCCESS" -eq 0 ]; then
   rm -rf ${INSTALL_DIR}
   echo -e "${YELLOW}🔄 Performing fresh clone from GitHub...${NC}"
-  git clone --depth 1 https://github.com/icynetx/Nyx.git ${INSTALL_DIR} || \
-  (curl -sSL https://github.com/icynetx/Nyx/archive/refs/heads/main.zip -o /tmp/nyx.zip && unzip -qo /tmp/nyx.zip -d /tmp && rm -rf ${INSTALL_DIR} && mv /tmp/Nyx-main ${INSTALL_DIR})
+  git clone --depth 1 https://github.com/thecynetx/nyx.git ${INSTALL_DIR} || \
+  (curl -sSL https://github.com/thecynetx/nyx/archive/refs/heads/main.zip -o /tmp/nyx.zip && unzip -qo /tmp/nyx.zip -d /tmp && rm -rf ${INSTALL_DIR} && mv /tmp/Nyx-main ${INSTALL_DIR})
 fi
 
 # 4.5 Pre-download and install Xray-core Binary

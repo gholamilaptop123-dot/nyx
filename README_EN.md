@@ -8,13 +8,13 @@
 ### Next-Gen Xray-core Management Panel Tailored for High-Restricted Networks
 #### 🔐 Developed by Cynet Security Team
 
-[![Version](https://img.shields.io/badge/version-2.4.0-blueviolet?style=for-the-badge&logo=shield)](https://github.com/icynetx/Nyx)
-[![Deploy on Railway](https://railway.com/button.svg)](#-3-free-cloud-paas-deployment-railway--render--docker)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker)](https://github.com/icynetx/Nyx)
-[![Telegram](https://img.shields.io/badge/Telegram-cynetx-2CA5E0?style=for-the-badge&logo=telegram)](https://t.me/cynetx)
-[![YouTube Video](https://img.shields.io/badge/Watch_Video-6Ekgxg--eSx8-FF0000?style=for-the-badge&logo=youtube)](https://youtu.be/6Ekgxg-eSx8)
-[![Website](https://img.shields.io/badge/Website-cynetx.ir-cyberCyan?style=for-the-badge)](https://cynetx.ir)
-[![License](https://img.shields.io/badge/license-MIT-cyberGreen?style=for-the-badge)](https://github.com/icynetx/Nyx/blob/main/LICENSE)
+[![Version](https://img.shields.io/badge/version-2.4.0-blueviolet?style=for-the-badge&logo=shield)](https://github.com/thecynetx/nyx)
+[![Xray-core](https://img.shields.io/badge/Xray--core-v24.11.30-blue?style=for-the-badge&logo=xray)](https://github.com/XTLS/Xray-core)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker)](https://github.com/thecynetx/nyx)
+[![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Windows%20%7C%20Docker%20%7C%20Railway-darkgreen?style=for-the-badge)](https://github.com/thecynetx/nyx)
+[![Telegram](https://img.shields.io/badge/Telegram-Cynet_Security-0088cc?style=for-the-badge&logo=telegram)](https://t.me/cynetx)
+[![YouTube](https://img.shields.io/badge/YouTube-CynetX-FF0000?style=for-the-badge&logo=youtube)](https://www.youtube.com/@cynetxir)
+[![License](https://img.shields.io/badge/license-MIT-cyberGreen?style=for-the-badge)](https://github.com/thecynetx/nyx/blob/main/LICENSE)
 
 <p align="center">
   <b>Language Options:</b>
@@ -130,7 +130,7 @@ This major release introduces powerful customization, custom domain & CDN mappin
 Run the following one-line command as **root**:
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/icynetx/Nyx/main/install.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/thecynetx/nyx/main/install.sh)
 ```
 
 ---
@@ -139,7 +139,7 @@ bash <(curl -Ls https://raw.githubusercontent.com/icynetx/Nyx/main/install.sh)
 Open **PowerShell** as **Administrator** and run:
 
 ```powershell
-iwr -useb https://raw.githubusercontent.com/icynetx/Nyx/main/install.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/thecynetx/nyx/main/install.ps1 | iex
 ```
 
 ---
@@ -151,7 +151,7 @@ If you don't own a VPS, you can host Nyx Panel on free cloud platforms such as *
 #### 🚀 Deploy to Railway in 1 Minute:
 1. Log in to [railway.com](https://railway.com) using your GitHub account.
 2. Click **`+ New Project`** ➔ **`Deploy from GitHub repo`**.
-3. Select `icynetx/Nyx` and click **`Deploy Now`**.
+3. Select `thecynetx/nyx` and click **`Deploy Now`**.
 4. Once active, go to **Settings** ➔ **Networking** ➔ click **Generate Domain** to get a free HTTPS domain.
 5. Open your domain, log in with `admin` / `nyx2026!`, and access your subscriptions!
 
@@ -168,7 +168,7 @@ docker run -d \
   -p 443:443 \
   -v nyx_data:/data \
   --restart unless-stopped \
-  ghcr.io/icynetx/nyx:latest
+  ghcr.io/thecynetx/nyx:latest
 ```
 
 ---
@@ -292,7 +292,7 @@ flowchart LR
 
 ### 🐧 1. Linux Uninstallation:
 ```bash
-curl -sSL "https://raw.githubusercontent.com/icynetx/Nyx/main/uninstall.sh" | sudo bash
+curl -sSL "https://raw.githubusercontent.com/thecynetx/nyx/main/uninstall.sh" | sudo bash
 ```
 
 ### 🪟 2. Windows Server Uninstallation:
