@@ -225,42 +225,49 @@ export function generateXrayJsonConfig(
     });
   }
 
-  // Always inject an internal WebSocket listener on 127.0.0.1:10001 for PaaS multiplexing (Railway/Render/Cloud reverse proxy)
-  const hasWs10001 = inbounds.some(i => i.port === 10001);
-  if (!hasWs10001) {
-    const allClients: any[] = [];
-    const addedAll = new Set<string>();
-    for (const u of users) {
-      if (u.uuid && !addedAll.has(u.uuid)) {
-        allClients.push({ id: u.uuid, email: u.username });
-        addedAll.add(u.uuid);
-      }
+  // Always inject an internal WebSocket listener on 127.0.0.1:10001 for PaaS multiplexing (Railway/Render/Codespaces/Cloud reverse proxy)
+  const allClients: any[] = [];
+  const addedAll = new Set<string>();
+  for (const u of users) {
+    if (u.uuid && !addedAll.has(u.uuid)) {
+      allClients.push({ id: u.uuid, email: u.username });
+      addedAll.add(u.uuid);
     }
-    if (allClients.length === 0) {
-      allClients.push({ id: '11111111-2222-3333-4444-555555555555', email: 'default' });
-    }
-    xrayInbounds.push({
-      listen: "127.0.0.1",
-      tag: "inbound-internal-ws-bridge",
-      port: 10001,
-      protocol: "vless",
-      settings: {
-        clients: allClients,
-        decryption: "none"
-      },
-      streamSettings: {
-        network: "ws",
-        security: "none",
-        wsSettings: {
-          path: "/nyx"
-        }
-      },
-      sniffing: {
-        enabled: true,
-        destOverride: ["http", "tls", "quic"]
-      }
-    });
   }
+  for (const i of inbounds) {
+    if (i.uuid && !addedAll.has(i.uuid)) {
+      allClients.push({ id: i.uuid, email: i.remark || 'inbound' });
+      addedAll.add(i.uuid);
+    }
+  }
+  if (allClients.length === 0) {
+    allClients.push({ id: '11111111-2222-3333-4444-555555555555', email: 'default' });
+  }
+
+  // Remove any conflicting port 10001 from xrayInbounds if present
+  const filteredInbounds = xrayInbounds.filter(i => i.port !== 10001);
+
+  filteredInbounds.push({
+    listen: "127.0.0.1",
+    tag: "inbound-internal-ws-bridge",
+    port: 10001,
+    protocol: "vless",
+    settings: {
+      clients: allClients,
+      decryption: "none"
+    },
+    streamSettings: {
+      network: "ws",
+      security: "none",
+      wsSettings: {
+        path: "/nyx"
+      }
+    },
+    sniffing: {
+      enabled: true,
+      destOverride: ["http", "tls", "quic"]
+    }
+  });
 
   const outbounds: any[] = [
     {
@@ -353,7 +360,7 @@ export function generateXrayJsonConfig(
         statsOutboundDownlink: true
       }
     },
-    inbounds: xrayInbounds,
+    inbounds: filteredInbounds,
     outbounds,
     routing: {
       domainStrategy: "IPIfNonMatch",
