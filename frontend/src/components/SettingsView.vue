@@ -135,6 +135,40 @@
       </div>
     </div>
 
+    <!-- Smart Auto-Failover SNI Control Card -->
+    <div class="glass-panel p-5 sm:p-6 rounded-3xl border border-emerald-500/20 bg-gradient-to-r from-black/80 via-emerald-950/15 to-black/80 space-y-5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.06] pb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-emerald-400/10 text-emerald-400 border border-emerald-400/20 flex items-center justify-center font-bold shrink-0">
+            <Shield class="w-5 h-5" />
+          </div>
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+              <span>{{ currentLang === 'fa' ? 'پایش و سوئیچ خودکار SNI (Auto-Failover)' : 'Smart Auto-Failover SNI Engine' }}</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-mono" :class="autoFailoverEnabled ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-white/5 text-gray-400 border border-white/10'">
+                {{ autoFailoverEnabled ? 'ACTIVE ⚡' : 'DISABLED 🛑' }}
+              </span>
+            </h3>
+            <p class="text-xs text-gray-300 mt-0.5 leading-relaxed">
+              {{ currentLang === 'fa' 
+                ? 'در صورت فعال بودن، در صورت فیلتر شدن مداوم یک SNI، سرور خودکار آن را به دامنه سالم بعدی تغییر می‌دهد. در صورت خاموش بودن، دامنه‌های انتخابی شما کاملاً ثابت و بدون تغییر می‌مانند.' 
+                : 'When enabled, blocked SNIs are automatically recovered after 5 continuous failures. When disabled, your manual SNIs remain strictly static.' }}
+            </p>
+          </div>
+        </div>
+
+        <button 
+          @click="toggleAutoFailover" 
+          :disabled="savingFailover"
+          :class="['px-5 py-2.5 rounded-2xl font-bold text-xs shadow-lg transition-all flex items-center gap-2 border disabled:opacity-50', autoFailoverEnabled ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300' : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white']"
+        >
+          <RefreshCw v-if="savingFailover" class="w-3.5 h-3.5 animate-spin" />
+          <Zap v-else class="w-3.5 h-3.5" :class="{ 'text-emerald-400': autoFailoverEnabled }" />
+          <span>{{ autoFailoverEnabled ? (currentLang === 'fa' ? 'غیرفعال‌سازی سوئیچ خودکار' : 'Disable Auto-Failover') : (currentLang === 'fa' ? 'فعال‌سازی سوئیچ خودکار' : 'Enable Auto-Failover') }}</span>
+        </button>
+      </div>
+    </div>
+
     <!-- Subscription Portal Branding & Customization Card -->
     <div class="glass-panel p-5 sm:p-6 rounded-3xl border border-indigo-500/20 bg-gradient-to-r from-black/80 via-indigo-950/15 to-black/80 space-y-5">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.06] pb-4">
@@ -418,6 +452,10 @@ const savingDomain = ref(false);
 const showToken = ref(false);
 const saving = ref(false);
 
+// Auto-Failover State
+const autoFailoverEnabled = ref(false);
+const savingFailover = ref(false);
+
 // Sub Portal Customization State
 const subBrandName = ref('Nyx Panel');
 const subLogoUrl = ref('/logo_trans.png');
@@ -445,6 +483,7 @@ async function fetchSettings() {
     adminChatId.value = res.data.adminChatId || '';
     botEnabled.value = res.data.botEnabled || false;
     customDomain.value = res.data.customDomain || '';
+    autoFailoverEnabled.value = Boolean(res.data.autoFailoverEnabled);
 
     subBrandName.value = res.data.subBrandName || 'Nyx Panel';
     subLogoUrl.value = res.data.subLogoUrl || '/logo_trans.png';
@@ -459,6 +498,27 @@ async function fetchSettings() {
     warpMode.value = warpRes.data?.mode || 'ALL';
   } catch (err) {
     console.error('Failed to fetch settings:', err);
+  }
+}
+
+async function toggleAutoFailover() {
+  savingFailover.value = true;
+  const targetState = !autoFailoverEnabled.value;
+  try {
+    const res = await axios.post('/api/settings', {
+      autoFailoverEnabled: targetState
+    });
+    autoFailoverEnabled.value = targetState;
+    props.toast?.(
+      currentLang.value === 'fa' 
+        ? `سوئیچ خودکار SNI ${targetState ? 'فعال' : 'غیرفعال'} شد.` 
+        : `Auto-Failover SNI ${targetState ? 'enabled' : 'disabled'}.`, 
+      'success'
+    );
+  } catch (err: any) {
+    props.toast?.(err?.response?.data?.error || 'Failed to update Auto-Failover setting', 'error');
+  } finally {
+    savingFailover.value = false;
   }
 }
 

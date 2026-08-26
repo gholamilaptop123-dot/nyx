@@ -955,17 +955,20 @@ app.get('/api/settings', async (req, res) => {
     const subAnnouncementSetting = await prisma.systemSetting.findUnique({ where: { key: 'SUB_ANNOUNCEMENT' } });
     const subThemeColorSetting = await prisma.systemSetting.findUnique({ where: { key: 'SUB_THEME_COLOR' } });
     const subShowAppsSetting = await prisma.systemSetting.findUnique({ where: { key: 'SUB_SHOW_APPS' } });
+    const autoFailoverSetting = await prisma.systemSetting.findUnique({ where: { key: 'AUTO_FAILOVER_ENABLED' } });
 
     const botToken = botTokenSetting?.value || process.env.BOT_TOKEN || '';
     const adminChatId = adminChatIdSetting?.value || process.env.ADMIN_CHAT_ID || '';
     const customDomain = customDomainSetting?.value || '';
     const botEnabled = Boolean(botToken && botToken.trim() !== '');
+    const autoFailoverEnabled = autoFailoverSetting?.value === 'true';
 
     res.json({
       botToken,
       adminChatId,
       botEnabled,
       customDomain,
+      autoFailoverEnabled,
       subBrandName: subBrandNameSetting?.value || 'Nyx Panel',
       subLogoUrl: subLogoUrlSetting?.value || '/logo_trans.png',
       subSupportLink: subSupportLinkSetting?.value || '',
@@ -986,6 +989,7 @@ app.post('/api/settings', async (req, res) => {
       botToken,
       adminChatId,
       customDomain,
+      autoFailoverEnabled,
       subBrandName,
       subLogoUrl,
       subSupportLink,
@@ -994,6 +998,14 @@ app.post('/api/settings', async (req, res) => {
       subThemeColor,
       subShowApps
     } = req.body;
+
+    if (autoFailoverEnabled !== undefined) {
+      await prisma.systemSetting.upsert({
+        where: { key: 'AUTO_FAILOVER_ENABLED' },
+        update: { value: autoFailoverEnabled ? 'true' : 'false' },
+        create: { key: 'AUTO_FAILOVER_ENABLED', value: autoFailoverEnabled ? 'true' : 'false' }
+      });
+    }
 
     if (botToken !== undefined) {
       const cleanToken = (botToken || '').trim();

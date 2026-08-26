@@ -99,6 +99,14 @@ class AutoFailoverManager {
     let switchedCount = 0;
 
     try {
+      // Check if Auto-Failover background switching is enabled in system settings
+      if (!force) {
+        const setting = await prisma.systemSetting.findUnique({ where: { key: 'AUTO_FAILOVER_ENABLED' } });
+        if (setting?.value !== 'true') {
+          return { checkedCount: 0, switchedCount: 0, events: [] };
+        }
+      }
+
       const inbounds = await prisma.inbound.findMany({ where: { enabled: true } });
 
       for (const inbound of inbounds) {
