@@ -83,11 +83,14 @@ class AutoFailoverManager {
   private intervalTimer: NodeJS.Timeout | null = null;
   private lastCheckTime: Date | null = null;
   private failoverHistory: FailoverEvent[] = [];
+  // Track consecutive failures per inbound to avoid flapping on single network glitch
+  private failureCounts: Map<string, number> = new Map();
+  private readonly CONSECUTIVE_FAIL_THRESHOLD = 5;
 
   /**
    * Performs live health check on all enabled Inbounds and auto-switches blocked SNIs
    */
-  async checkAndFailoverInbounds(prisma: PrismaClient, reloadXrayCore: () => Promise<void>): Promise<{
+  async checkAndFailoverInbounds(prisma: PrismaClient, reloadXrayCore: () => Promise<void>, force: boolean = false): Promise<{
     checkedCount: number;
     switchedCount: number;
     events: FailoverEvent[];
@@ -100,16 +103,34 @@ class AutoFailoverManager {
 
       for (const inbound of inbounds) {
         const currentSni = inbound.sni || 'yahoo.com';
-        console.log(`[Auto-Failover] Testing live SNI "${currentSni}" for inbound "${inbound.remark}"...`);
+
+        // Skip auto-failover check for cloud/PaaS domains or custom domains
+        if (
+          currentSni.includes('.app.github.dev') ||
+          currentSni.includes('.railway.app') ||
+          currentSni.includes('.onrender.com') ||
+          currentSni.includes('.koyeb.app')
+        ) {
+          continue;
+        }
 
         const currentHealth = await testSniDomain(currentSni, 3000);
 
         if (currentHealth.healthy) {
-          console.log(`[Auto-Failover] ✅ SNI "${currentSni}" is healthy (${currentHealth.latencyMs}ms) for inbound "${inbound.remark}".`);
+          this.failureCounts.set(inbound.id, 0);
           continue;
         }
 
-        console.warn(`[Auto-Failover] ⚠️ SNI "${currentSni}" FAILED on inbound "${inbound.remark}" (${currentHealth.error || 'Blocked'}). Searching for working fallback SNI...`);
+        const fails = (this.failureCounts.get(inbound.id) || 0) + 1;
+        this.failureCounts.set(inbound.id, fails);
+        console.warn(`[Auto-Failover] ⚠️ SNI "${currentSni}" failed check (${fails}/${this.CONSECUTIVE_FAIL_THRESHOLD}) on inbound "${inbound.remark}".`);
+
+        // Only trigger failover if threshold reached or forced by admin
+        if (!force && fails < this.CONSECUTIVE_FAIL_THRESHOLD) {
+          continue;
+        }
+
+        console.warn(`[Auto-Failover] 🚨 SNI "${currentSni}" reached failure threshold on inbound "${inbound.remark}". Searching for fallback SNI...`);
 
         // Search for the best working fallback SNI in the pool
         let candidateFound: SniHealthResult | null = null;
@@ -125,6 +146,7 @@ class AutoFailoverManager {
         if (candidateFound) {
           const oldSni = currentSni;
           const newSni = candidateFound.domain;
+          this.failureCounts.set(inbound.id, 0);
 
           // Update Inbound SNI in Database
           await prisma.inbound.update({
@@ -182,20 +204,15 @@ class AutoFailoverManager {
   }
 
   /**
-   * Starts background monitoring daemon
+   * Starts background monitoring daemon (checks every 2 minutes with 5x hysteresis)
    */
-  startDaemon(prisma: PrismaClient, reloadXrayCore: () => Promise<void>, intervalMs: number = 60000) {
+  startDaemon(prisma: PrismaClient, reloadXrayCore: () => Promise<void>, intervalMs: number = 120000) {
     if (this.isRunning) return;
     this.isRunning = true;
-    console.log(`[Auto-Failover] Daemon started (checking every ${intervalMs / 1000}s)...`);
-
-    // Initial check on server startup
-    setTimeout(() => {
-      this.checkAndFailoverInbounds(prisma, reloadXrayCore).catch(() => {});
-    }, 10000);
+    console.log(`[Auto-Failover] Daemon started (checking every ${intervalMs / 1000}s with 5-check hysteresis)...`);
 
     this.intervalTimer = setInterval(() => {
-      this.checkAndFailoverInbounds(prisma, reloadXrayCore).catch(() => {});
+      this.checkAndFailoverInbounds(prisma, reloadXrayCore, false).catch(() => {});
     }, intervalMs);
   }
 

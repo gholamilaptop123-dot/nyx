@@ -743,21 +743,52 @@ app.post('/api/nodes/tunnel-script', async (req, res) => {
   }
 });
 
-// 5. Universal Subscription Endpoint (Public)
-app.get('/api/sub/:uuid', async (req, res) => {
+// 5. Universal Subscription Endpoint (Public - Supports /api/sub/:uuid, /sub/:uuid, and /api/v1/client/subscribe)
+const handleSubscriptionRequest = async (req: express.Request, res: express.Response) => {
   try {
-    const format = (req.query.format as string) || 'base64';
+    const rawUuid = (req.params.uuid || req.query.token || req.query.uuid || '') as string;
+    let format = (req.query.format as string) || '';
     const isp = (req.query.isp as string) || 'DEFAULT';
     const hostIp = getPublicHost(req);
 
+    // Auto-detect format based on client User-Agent if format query is not explicitly specified
+    const userAgent = (req.headers['user-agent'] || '').toLowerCase();
+    if (!format) {
+      if (userAgent.includes('sing-box') || userAgent.includes('singbox') || userAgent.includes('sfa') || userAgent.includes('sfi') || userAgent.includes('nekobox')) {
+        format = 'singbox';
+      } else if (userAgent.includes('clash') || userAgent.includes('meta') || userAgent.includes('stash') || userAgent.includes('mihomo')) {
+        format = 'clash';
+      } else {
+        format = 'base64';
+      }
+    }
+
     // Try finding by user first, then by inbound
-    const user = await prisma.user.findUnique({ where: { uuid: req.params.uuid } });
+    const user = await prisma.user.findUnique({ where: { uuid: rawUuid } });
     if (user) {
-      if (user.status !== 'ACTIVE') return res.status(404).send('Subscription disabled or expired');
+      if (user.status !== 'ACTIVE') {
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        return res.status(403).send('Subscription disabled or expired');
+      }
+
+      // Standard Subscription Headers (v2rayNG, Sing-Box, Shadowrocket, Clash)
+      const uploadBytes = 0;
+      const downloadBytes = user.usedDataBytes || 0;
+      const totalBytes = user.dataLimitGb ? BigInt(user.dataLimitGb) * BigInt(1073741824) : 0n;
+      const expireEpoch = user.expireDate ? Math.floor(new Date(user.expireDate).getTime() / 1000) : 0;
+      
+      res.setHeader('Subscription-Userinfo', `upload=${uploadBytes}; download=${downloadBytes}; total=${totalBytes}; expire=${expireEpoch}`);
+      res.setHeader('Profile-Update-Interval', '24');
+      res.setHeader('Profile-Title', 'base64:' + Buffer.from(`Nyx - ${user.username}`).toString('base64'));
+
       // Sort inbounds by health score — best server first in every subscription
       const rawInbounds = await prisma.inbound.findMany({ where: { enabled: true } });
       const inbounds = loadBalancer.sortInbounds(rawInbounds);
-      if (format === 'singbox') return res.json(SubscriptionService.generateSingBoxJson(user as any, inbounds as any[], hostIp, isp));
+
+      if (format === 'singbox') {
+        res.setHeader('Content-Type', 'application/json; charset=utf-8');
+        return res.json(SubscriptionService.generateSingBoxJson(user as any, inbounds as any[], hostIp, isp));
+      }
       if (format === 'clash') {
         res.setHeader('Content-Type', 'text/yaml; charset=utf-8');
         return res.send(SubscriptionService.generateClashYaml(user as any, inbounds as any[], hostIp, isp));
@@ -768,14 +799,18 @@ app.get('/api/sub/:uuid', async (req, res) => {
 
     // Check if UUID belongs to an Inbound
     const inbound = await prisma.inbound.findFirst({
-      where: { OR: [{ uuid: req.params.uuid }, { id: req.params.uuid }] }
+      where: { OR: [{ uuid: rawUuid }, { id: rawUuid }] }
     });
     if (!inbound || !inbound.enabled) {
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
       return res.status(404).send('Inbound subscription not found or disabled');
     }
 
     const vlessLink = SubscriptionService.generateVlessLink(inbound as any, hostIp, isp);
-    if (format === 'singbox') return res.json(SubscriptionService.generateSingBoxJson(inbound as any, [inbound] as any[], hostIp, isp));
+    if (format === 'singbox') {
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      return res.json(SubscriptionService.generateSingBoxJson(inbound as any, [inbound] as any[], hostIp, isp));
+    }
     if (format === 'clash') {
       res.setHeader('Content-Type', 'text/yaml; charset=utf-8');
       return res.send(SubscriptionService.generateClashYaml(inbound as any, [inbound] as any[], hostIp, isp));
@@ -787,7 +822,11 @@ app.get('/api/sub/:uuid', async (req, res) => {
   } catch (error) {
     res.status(500).send('Error generating subscription');
   }
-});
+};
+
+app.get('/api/sub/:uuid', handleSubscriptionRequest);
+app.get('/sub/:uuid', handleSubscriptionRequest);
+app.get('/api/v1/client/subscribe', handleSubscriptionRequest);
 
 // 5.1 Public User Web Subscription Info API
 app.get('/api/subinfo/:uuid', async (req, res) => {
