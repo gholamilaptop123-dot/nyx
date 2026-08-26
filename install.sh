@@ -168,11 +168,73 @@ node ./node_modules/vite/bin/vite.js build || npx vite build
 mkdir -p ${INSTALL_DIR}/backend/dist/public
 cp -r ${INSTALL_DIR}/frontend/dist/* ${INSTALL_DIR}/backend/dist/public/ 2>/dev/null || true
 
-# 7. Setup Systemd Service
-echo -e "${YELLOW}🚀 Creating Systemd Service (nyx.service)...${NC}"
+# 7. Setup Systemd Service or Container Process Daemon
 NODE_BIN=$(command -v node || echo "/usr/bin/node")
 
-cat <<EOF > /etc/systemd/system/nyx.service
+# Create CLI Manager (/usr/local/bin/nyx)
+cat <<'EOFCLI' > /usr/local/bin/nyx
+#!/bin/bash
+INSTALL_DIR="/opt/nyx"
+NODE_BIN=$(command -v node || echo "/usr/bin/node")
+
+case "$1" in
+  start)
+    if command -v systemctl &>/dev/null && systemctl is-system-running &>/dev/null; then
+      systemctl start nyx
+    else
+      pkill -9 -f "node.*dist/index.js" 2>/dev/null || true
+      cd ${INSTALL_DIR}/backend && nohup ${NODE_BIN} dist/index.js > /var/log/nyx.log 2>&1 &
+      echo "✅ Nyx Panel started in background (PID: $!). Log: /var/log/nyx.log"
+    fi
+    ;;
+  stop)
+    if command -v systemctl &>/dev/null && systemctl is-system-running &>/dev/null; then
+      systemctl stop nyx
+    else
+      pkill -9 -f "node.*dist/index.js" 2>/dev/null || true
+      pkill -9 -f "xray" 2>/dev/null || true
+      echo "🛑 Nyx Panel stopped."
+    fi
+    ;;
+  restart)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    if command -v systemctl &>/dev/null && systemctl is-system-running &>/dev/null; then
+      systemctl status nyx
+    else
+      if pgrep -f "node.*dist/index.js" >/dev/null; then
+        echo "🟢 Nyx Panel is RUNNING (PID: $(pgrep -f 'node.*dist/index.js' | tr '\n' ' '))"
+      else
+        echo "🔴 Nyx Panel is STOPPED."
+      fi
+    fi
+    ;;
+  log|logs)
+    if command -v systemctl &>/dev/null && systemctl is-system-running &>/dev/null; then
+      journalctl -u nyx -f -n 50
+    else
+      tail -f -n 50 /var/log/nyx.log
+    fi
+    ;;
+  *)
+    echo "Usage: nyx {start|stop|restart|status|logs}"
+    exit 1
+    ;;
+esac
+EOFCLI
+chmod +x /usr/local/bin/nyx 2>/dev/null || true
+
+HAS_SYSTEMD=0
+if command -v systemctl &>/dev/null && [ -d /run/systemd/system ]; then
+  HAS_SYSTEMD=1
+fi
+
+if [ "$HAS_SYSTEMD" -eq 1 ]; then
+  echo -e "${YELLOW}🚀 Creating Systemd Service (nyx.service)...${NC}"
+  cat <<EOF > /etc/systemd/system/nyx.service
 [Unit]
 Description=Nyx Panel Next-Gen Server Manager
 After=network.target network-online.target
@@ -197,19 +259,22 @@ Environment=DATABASE_URL=file:./dev.db
 [Install]
 WantedBy=multi-user.target
 EOF
-
-loginctl enable-linger root 2>/dev/null || true
+  loginctl enable-linger root 2>/dev/null || true
+fi
 
 echo -e "${YELLOW}🧹 Terminating any stale processes on port ${PANEL_PORT} and freeing port 443 if occupied by Nginx/Apache/Caddy...${NC}"
 fuser -k -9 ${PANEL_PORT}/tcp 2>/dev/null || true
 pkill -9 -f "node.*backend" 2>/dev/null || true
 pkill -9 -f "node.*index.js" 2>/dev/null || true
-systemctl stop nginx 2>/dev/null || true
-systemctl disable nginx 2>/dev/null || true
-systemctl stop apache2 2>/dev/null || true
-systemctl disable apache2 2>/dev/null || true
-systemctl stop caddy 2>/dev/null || true
-systemctl disable caddy 2>/dev/null || true
+pkill -9 -f "xray" 2>/dev/null || true
+if [ "$HAS_SYSTEMD" -eq 1 ]; then
+  systemctl stop nginx 2>/dev/null || true
+  systemctl disable nginx 2>/dev/null || true
+  systemctl stop apache2 2>/dev/null || true
+  systemctl disable apache2 2>/dev/null || true
+  systemctl stop caddy 2>/dev/null || true
+  systemctl disable caddy 2>/dev/null || true
+fi
 fuser -k -9 443/tcp 2>/dev/null || true
 sysctl -w net.ipv4.ip_forward=1 2>/dev/null || true
 echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf 2>/dev/null || true
@@ -246,31 +311,51 @@ if command -v ufw &> /dev/null; then
   ufw disable 2>/dev/null || true
 fi
 
-systemctl daemon-reload
-systemctl enable nyx
-systemctl restart nyx
-sleep 2
-
-if ! systemctl is-active --quiet nyx; then
-  echo -e "${RED}⚠️ Service nyx failed to start. Service logs:${NC}"
-  journalctl -u nyx -n 15 --no-pager 2>/dev/null || true
+# Start the application
+if [ "$HAS_SYSTEMD" -eq 1 ]; then
+  systemctl daemon-reload
+  systemctl enable nyx
+  systemctl restart nyx
+  sleep 2
+  if ! systemctl is-active --quiet nyx; then
+    echo -e "${RED}⚠️ Service nyx failed to start. Service logs:${NC}"
+    journalctl -u nyx -n 15 --no-pager 2>/dev/null || true
+  fi
+else
+  echo -e "${YELLOW}⚡ Container / Non-systemd environment detected (Codespaces/Docker). Starting daemon in background...${NC}"
+  cd ${INSTALL_DIR}/backend
+  PORT=${PANEL_PORT} ADMIN_USER=${ADMIN_USER} ADMIN_PASS=${ADMIN_PASS} DATABASE_URL="file:./dev.db" NODE_ENV=production nohup ${NODE_BIN} dist/index.js > /var/log/nyx.log 2>&1 &
+  sleep 2
 fi
 
-# 8. Get Public IP
+# 8. Detect Host URL / IP
 SERVER_IP=$(curl -s https://api.ipify.org || hostname -I | awk '{print $1}')
+PANEL_URL="http://${SERVER_IP}:${PANEL_PORT}"
+
+# GitHub Codespaces Port Forwarding URL
+if [ -n "$CODESPACE_NAME" ] && [ -n "$GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN" ]; then
+  PANEL_URL="https://${CODESPACE_NAME}-${PANEL_PORT}.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}"
+fi
 
 echo -e "${GREEN}====================================================${NC}"
 echo -e "${GREEN}✅ Nyx Panel Successfully Installed & Started!${NC}"
 echo -e "${GREEN}====================================================${NC}"
-echo -e "${CYAN}🌐 Dashboard Web UI:${NC} http://${SERVER_IP}:${PANEL_PORT}"
+echo -e "${CYAN}🌐 Dashboard Web UI:${NC} ${YELLOW}${PANEL_URL}${NC}"
 echo -e "${CYAN}👤 Admin Username:${NC}  ${YELLOW}${ADMIN_USER}${NC}"
 echo -e "${CYAN}🔐 Admin Password:${NC}  ${YELLOW}${ADMIN_PASS}${NC}"
 echo -e "${CYAN}⚡ Default Inbound:${NC}  ${GREEN}VLESS REALITY Port 443 (Created Automatically)${NC}"
-echo -e "${CYAN}🔒 Status:${NC} Active & Systemd Enabled (nyx.service)"
+if [ "$HAS_SYSTEMD" -eq 1 ]; then
+  echo -e "${CYAN}🔒 Status:${NC} Active & Systemd Enabled (nyx.service)"
+else
+  echo -e "${CYAN}🔒 Status:${NC} Active in Background Daemon (CLI: ${YELLOW}nyx status${NC})"
+fi
 echo -e "${CYAN}----------------------------------------------------${NC}"
 echo -e "${YELLOW}💬 Cynet Security Team Support & Community:${NC}"
-echo -e "   For feedback, bug reports, and assistance:"
 echo -e "   📢 ${CYAN}Telegram Channel:${NC} https://t.me/cynetx"
 echo -e "   🌐 ${CYAN}Official Website:${NC} https://cynetx.ir"
 echo -e "   🎥 ${CYAN}YouTube:${NC}          https://www.youtube.com/@cynetxir"
 echo -e "${GREEN}====================================================${NC}"
+if [ -n "$CODESPACES" ]; then
+  echo -e "${YELLOW}💡 Codespaces Tip:${NC} Open the ${CYAN}PORTS${NC} tab in the bottom bar, right click port ${CYAN}${PANEL_PORT}${NC} -> ${GREEN}Port Visibility -> Public${NC} to access from anywhere!"
+fi
+
