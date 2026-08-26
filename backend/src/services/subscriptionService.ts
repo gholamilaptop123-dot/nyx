@@ -53,19 +53,31 @@ export class SubscriptionService {
       : (inbound?.uuid || inbound?.id || '11111111-2222-3333-4444-555555555555');
     // Priority: Inbound custom domain > Global serverIp/domain
     const effectiveHost = inbound?.customDomain?.trim() || serverIp;
-    const isPaaS = effectiveHost.includes('.railway.app') || effectiveHost.includes('.onrender.com') || effectiveHost.includes('.fly.dev') || effectiveHost.includes('.koyeb.app');
+    const isPaaS = effectiveHost.includes('.railway.app') ||
+                   effectiveHost.includes('.onrender.com') ||
+                   effectiveHost.includes('.fly.dev') ||
+                   effectiveHost.includes('.koyeb.app') ||
+                   effectiveHost.includes('.app.github.dev') ||
+                   effectiveHost.includes('.github.dev') ||
+                   effectiveHost.includes('.hf.space') ||
+                   effectiveHost.includes('.zeabur.app');
     const port = isPaaS ? 443 : (inbound?.port || 443);
     const proto = (inbound?.protocol || 'vless').toLowerCase();
     const net = (inbound?.network || 'tcp').toLowerCase();
     const remark = encodeURIComponent(`Nyx-${inbound?.remark || 'Config'}-${isp}`);
 
     let sni = inbound?.sni || (isPaaS ? effectiveHost : 'yahoo.com');
+    // If running on a cloud domain (Codespaces, Railway, Render) or WS with TLS,
+    // ensure SNI matches the cloud domain rather than default yahoo.com so TLS handshake succeeds
+    if (isPaaS && (sni === 'yahoo.com' || !inbound?.sni)) {
+      sni = effectiveHost;
+    }
     if (isp === 'WHITE_SNI') {
       sni = this.WHITE_IRAN_SNIS[0];
     }
 
     const sec = (isPaaS || inbound?.security === 'tls') ? 'tls' : (inbound?.security || 'none');
-    const fragQuery = inbound?.enableFragment
+    const fragQuery = (inbound?.enableFragment && !isPaaS)
       ? `&fragment=${encodeURIComponent(`${inbound?.fragmentLength || '100-200'},${inbound?.fragmentInterval || '10-20'},tlshello`)}`
       : '';
 
@@ -166,7 +178,14 @@ export class SubscriptionService {
     // Capture user for per-user UUID attribution in outbound configs
     const singboxUser = (arg4 !== undefined) ? arg1 : null;
 
-    const isPaaS = serverIp.includes('.railway.app') || serverIp.includes('.onrender.com') || serverIp.includes('.fly.dev') || serverIp.includes('.koyeb.app');
+    const isPaaS = serverIp.includes('.railway.app') ||
+                   serverIp.includes('.onrender.com') ||
+                   serverIp.includes('.fly.dev') ||
+                   serverIp.includes('.koyeb.app') ||
+                   serverIp.includes('.app.github.dev') ||
+                   serverIp.includes('.github.dev') ||
+                   serverIp.includes('.hf.space') ||
+                   serverIp.includes('.zeabur.app');
     const sni = isp === 'WHITE_SNI' ? this.WHITE_IRAN_SNIS[0] : (isPaaS ? serverIp : 'yahoo.com');
 
     const outbounds: any[] = inbounds.map(inbound => {
@@ -176,6 +195,10 @@ export class SubscriptionService {
       const port = isPaaS ? 443 : (inbound?.port || 443);
       const isReality = inbound?.security === 'reality';
       const isTls = isPaaS || inbound?.security === 'tls' || isReality;
+      let effectiveSni = inbound?.sni || (isPaaS ? effectiveHost : 'yahoo.com');
+      if (isPaaS && (effectiveSni === 'yahoo.com' || !inbound?.sni)) {
+        effectiveSni = effectiveHost;
+      }
 
       let transportConfig: any = undefined;
       if (net === 'ws') {
