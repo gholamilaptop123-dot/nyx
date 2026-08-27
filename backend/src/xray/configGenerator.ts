@@ -317,6 +317,10 @@ export function generateXrayJsonConfig(
     {
       protocol: "blackhole",
       tag: "blocked"
+    },
+    {
+      protocol: "freedom",
+      tag: "api"
     }
   ];
 

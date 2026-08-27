@@ -1411,13 +1411,19 @@ async function start() {
       ) {
         console.log(`[WS Bridge] 🔄 Proxying incoming WebSocket connection: ${url}`);
         const xraySocket = net.connect({ port: 10001, host: '127.0.0.1' }, () => {
-          xraySocket.write(
-            `${req.method} ${req.url} HTTP/${req.httpVersion}\r\n` +
-            Object.entries(req.headers)
-              .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}\r\n`)
-              .join('') +
-            '\r\n'
-          );
+          let rawHeaderStr = `${req.method} ${req.url} HTTP/${req.httpVersion}\r\n`;
+          if (req.rawHeaders && req.rawHeaders.length > 0) {
+            for (let i = 0; i < req.rawHeaders.length; i += 2) {
+              rawHeaderStr += `${req.rawHeaders[i]}: ${req.rawHeaders[i + 1]}\r\n`;
+            }
+          } else {
+            for (const [k, v] of Object.entries(req.headers)) {
+              rawHeaderStr += `${k}: ${Array.isArray(v) ? v.join(', ') : v}\r\n`;
+            }
+          }
+          rawHeaderStr += '\r\n';
+
+          xraySocket.write(rawHeaderStr);
           if (head && head.length > 0) {
             xraySocket.write(head);
           }
@@ -1429,7 +1435,7 @@ async function start() {
           console.error('[WS Bridge] ❌ Error connecting to internal Xray port 10001:', err.message);
           try { socket.destroy(); } catch (e) { }
         });
-        socket.on('error', (err) => {
+        socket.on('error', () => {
           try { xraySocket.destroy(); } catch (e) { }
         });
       } else {
