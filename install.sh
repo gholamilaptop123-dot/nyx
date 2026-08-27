@@ -107,7 +107,7 @@ if [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
   XRAY_ARCH="linux-arm64-v8a"
 fi
 
-XRAY_TAG="v24.11.30"
+XRAY_TAG="v25.1.30"
 XRAY_URL="https://github.com/XTLS/Xray-core/releases/download/${XRAY_TAG}/Xray-${XRAY_ARCH}.zip"
 MIRROR_URL="https://ghproxy.net/${XRAY_URL}"
 

@@ -228,7 +228,9 @@ app.get('/api/stats/dashboard', async (req, res) => {
     const totalMemGb = (os.totalmem() / (1024 * 1024 * 1024)).toFixed(1);
     const usedMemGb = ((os.totalmem() - os.freemem()) / (1024 * 1024 * 1024)).toFixed(1);
     const ramPercent = Math.round(((os.totalmem() - os.freemem()) / os.totalmem()) * 100);
-    const cpuLoad = Math.min(Math.round((os.loadavg()[0] || 0.1) * 20) + 5, 95);
+    // Correct CPU load: normalise load-average[1min] by CPU core count → 0-100%
+    const numCpus = os.cpus().length || 1;
+    const cpuLoad = Math.min(Math.round((os.loadavg()[0] / numCpus) * 100), 100);
     const uptimeSec = os.uptime();
     const uptimeDays = Math.floor(uptimeSec / (3600 * 24));
     const uptimeHours = Math.floor((uptimeSec % (3600 * 24)) / 3600);
@@ -248,9 +250,7 @@ app.get('/api/stats/dashboard', async (req, res) => {
         ramPercent,
         uptimeText,
         xrayStatus: isXrayRunning ? 'Active & Online (ONLINE 🟢)' : `Inactive / Error (OFFLINE 🔴 ${xrayLastError ? '- ' + xrayLastError : ''})`,
-        pingMs: Math.floor(Math.random() * 8) + 14,
-        networkSpeedMb: (Math.random() * 2.5 + 4.2).toFixed(1),
-        bypassEfficiency: isXrayRunning ? '99.8% Stable' : 'Inactive 🔴'
+        bypassEfficiency: isXrayRunning ? 'Active ✅' : 'Inactive 🔴'
       }
     });
   } catch (error) {
@@ -1162,7 +1162,9 @@ async function reloadXrayService() {
       id: u.id,
       username: u.username,
       uuid: u.uuid,
-      email: u.username
+      email: u.username,
+      // CRITICAL: must pass inboundIds so configGenerator can enforce per-user inbound access control
+      inboundIds: u.inboundIds || null
     }));
 
     const warpSetting = await WarpService.getWarpConfig(prisma);
@@ -1223,17 +1225,18 @@ async function reloadXrayService() {
 
     // Restart Xray-core child process safely
     if (xrayBinaryPath) {
-      if (process.platform !== 'win32') {
-        const { execSync } = require('child_process');
-        try {
-          execSync('pkill -9 -f "xray" 2>/dev/null || true');
-          execSync('fuser -k -9 10085/tcp 2>/dev/null || true');
-          execSync('systemctl stop nginx 2>/dev/null || true');
-        } catch (e) { }
-      }
+      // Kill only the xray child we spawned (by PID) to avoid collateral kills
       if (xrayProcess) {
         try { xrayProcess.kill('SIGKILL'); } catch (e) { }
         xrayProcess = null;
+      }
+      if (process.platform !== 'win32') {
+        const { execSync } = require('child_process');
+        try {
+          // Use 'xray run' pattern to avoid matching unrelated processes
+          execSync('pkill -9 -f "xray run" 2>/dev/null || true');
+          execSync('fuser -k -9 10085/tcp 2>/dev/null || true');
+        } catch (e) { }
       }
       await new Promise(r => setTimeout(r, 400));
 
@@ -1356,8 +1359,8 @@ async function start() {
 
     await reloadXrayService();
 
-    // Start live Xray traffic sync
-    XrayStatsService.startTrafficSyncLoop(xrayBinaryPath, 20000);
+    // Start live Xray traffic sync (pass shared prisma + reload callback so expired users are kicked immediately)
+    XrayStatsService.startTrafficSyncLoop(xrayBinaryPath, prisma, 20000, reloadXrayService);
 
     // Start Auto-Failover background monitoring daemon (checks every 60 seconds)
     autoFailoverService.startDaemon(prisma, reloadXrayService, 60000);

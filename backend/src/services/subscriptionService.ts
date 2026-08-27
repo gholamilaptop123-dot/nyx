@@ -293,7 +293,14 @@ export class SubscriptionService {
       if (filtered.length > 0) inbounds = filtered;
     }
 
-    const isPaaS = serverIp.includes('.railway.app') || serverIp.includes('.onrender.com') || serverIp.includes('.fly.dev') || serverIp.includes('.koyeb.app');
+    const isPaaS = serverIp.includes('.railway.app') ||
+                   serverIp.includes('.onrender.com') ||
+                   serverIp.includes('.fly.dev') ||
+                   serverIp.includes('.koyeb.app') ||
+                   serverIp.includes('.app.github.dev') ||
+                   serverIp.includes('.github.dev') ||
+                   serverIp.includes('.hf.space') ||
+                   serverIp.includes('.zeabur.app');
     const sni = isp === 'WHITE_SNI' ? this.WHITE_IRAN_SNIS[0] : (isPaaS ? serverIp : 'yahoo.com');
 
     const proxies = inbounds.map(inbound => {

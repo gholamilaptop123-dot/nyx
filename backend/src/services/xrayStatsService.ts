@@ -3,26 +3,37 @@ import { execFile } from 'child_process';
 import util from 'util';
 
 const execFileAsync = util.promisify(execFile);
-const prisma = new PrismaClient();
+// NOTE: No standalone PrismaClient here — we use the shared instance from index.ts
+//       to avoid SQLite BUSY / locking errors from multiple open connections.
+
 
 export class XrayStatsService {
   private static timer: NodeJS.Timeout | null = null;
 
   /**
-   * Starts the automatic traffic synchronization loop
+   * Starts the automatic traffic synchronization loop.
+   * @param xrayBinaryPath  Path to the Xray binary
+   * @param prismaClient    The SHARED PrismaClient from index.ts (avoids SQLite BUSY errors)
+   * @param intervalMs      Polling interval in ms (default 20 s)
+   * @param onUserExpired   Optional callback triggered when any user expires, so Xray is reloaded immediately
    */
-  static startTrafficSyncLoop(xrayBinaryPath: string, intervalMs: number = 20000) {
+  static startTrafficSyncLoop(
+    xrayBinaryPath: string,
+    prismaClient: PrismaClient,
+    intervalMs: number = 20000,
+    onUserExpired?: () => Promise<void>
+  ) {
     if (this.timer) {
       clearInterval(this.timer);
     }
 
     console.log('[Nyx Traffic Sync] 🔄 Starting automatic traffic synchronization loop (every 20s)...');
-    
+
     // Initial immediate check
-    this.syncTraffic(xrayBinaryPath);
+    this.syncTraffic(xrayBinaryPath, prismaClient, onUserExpired);
 
     this.timer = setInterval(() => {
-      this.syncTraffic(xrayBinaryPath);
+      this.syncTraffic(xrayBinaryPath, prismaClient, onUserExpired);
     }, intervalMs);
   }
 
@@ -39,7 +50,11 @@ export class XrayStatsService {
   /**
    * Queries Xray gRPC stats API and updates user data consumption in SQLite
    */
-  static async syncTraffic(xrayBinaryPath: string) {
+  static async syncTraffic(
+    xrayBinaryPath: string,
+    prismaClient: PrismaClient,
+    onUserExpired?: () => Promise<void>
+  ) {
     if (!xrayBinaryPath) return;
 
     try {
@@ -75,10 +90,12 @@ export class XrayStatsService {
         }
       }
 
+      let anyExpired = false;
+
       // Update database records
       for (const [username, bytesDelta] of Object.entries(userTrafficMap)) {
         if (bytesDelta > BigInt(0)) {
-          const user = await prisma.user.findFirst({ where: { username } });
+          const user = await prismaClient.user.findFirst({ where: { username } });
           if (user) {
             const newTotal = user.usedDataBytes + bytesDelta;
             let status = user.status;
@@ -86,13 +103,14 @@ export class XrayStatsService {
             // Auto expire user if data limit reached
             if (user.dataLimitGb > 0) {
               const limitBytes = BigInt(Math.floor(user.dataLimitGb * 1024 * 1024 * 1024));
-              if (newTotal >= limitBytes) {
+              if (newTotal >= limitBytes && status === 'ACTIVE') {
                 status = 'EXPIRED';
+                anyExpired = true;
                 console.log(`[Nyx Traffic Sync] ⚠️ User ${username} reached data limit! Status set to EXPIRED.`);
               }
             }
 
-            await prisma.user.update({
+            await prismaClient.user.update({
               where: { id: user.id },
               data: {
                 usedDataBytes: newTotal,
@@ -106,7 +124,7 @@ export class XrayStatsService {
 
       // Also check time expirations
       const now = new Date();
-      const expiredUsers = await prisma.user.findMany({
+      const expiredUsers = await prismaClient.user.findMany({
         where: {
           status: 'ACTIVE',
           expireDate: { lt: now }
@@ -114,11 +132,20 @@ export class XrayStatsService {
       });
 
       for (const expUser of expiredUsers) {
-        await prisma.user.update({
+        await prismaClient.user.update({
           where: { id: expUser.id },
           data: { status: 'EXPIRED' }
         });
+        anyExpired = true;
         console.log(`[Nyx Traffic Sync] ⏰ User ${expUser.username} date expired! Status set to EXPIRED.`);
+      }
+
+      // Reload Xray config immediately so expired users are evicted from the active client list
+      if (anyExpired && onUserExpired) {
+        console.log('[Nyx Traffic Sync] 🔄 Reloading Xray config to remove expired users...');
+        onUserExpired().catch((err: any) => {
+          console.error('[Nyx Traffic Sync] Failed to reload Xray after user expiry:', err?.message);
+        });
       }
 
     } catch (err: any) {
