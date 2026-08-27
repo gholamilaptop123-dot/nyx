@@ -1409,6 +1409,7 @@ async function start() {
         url.startsWith('/nyx-xhttp') ||
         url.startsWith('/grpc')
       ) {
+        console.log(`[WS Bridge] 🔄 Proxying incoming WebSocket connection: ${url}`);
         const xraySocket = net.connect({ port: 10001, host: '127.0.0.1' }, () => {
           xraySocket.write(
             `${req.method} ${req.url} HTTP/${req.httpVersion}\r\n` +
@@ -1424,10 +1425,11 @@ async function start() {
           socket.pipe(xraySocket);
         });
 
-        xraySocket.on('error', () => {
+        xraySocket.on('error', (err) => {
+          console.error('[WS Bridge] ❌ Error connecting to internal Xray port 10001:', err.message);
           try { socket.destroy(); } catch (e) { }
         });
-        socket.on('error', () => {
+        socket.on('error', (err) => {
           try { xraySocket.destroy(); } catch (e) { }
         });
       } else {

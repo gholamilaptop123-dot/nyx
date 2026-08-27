@@ -233,14 +233,12 @@ export function generateXrayJsonConfig(
 
     if (net === 'ws') {
       streamSettings.wsSettings = {
-        path: '/nyx',
-        headers: { Host: inbound.sni || '' }
+        path: '/nyx'
       };
     } else if (net === 'xhttp' || net === 'splithttp') {
       streamSettings.splithttpSettings = {
         path: '/nyx-xhttp',
-        mode: 'auto',
-        headers: { Host: inbound.sni || '' }
+        mode: 'auto'
       };
     } else if (net === 'grpc') {
       streamSettings.grpcSettings = {
