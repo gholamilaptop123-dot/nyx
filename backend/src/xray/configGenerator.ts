@@ -193,10 +193,14 @@ export function generateXrayJsonConfig(
       };
     }
 
-    // Stream Settings (auto-sanitize incompatible WS+REALITY)
+    // Stream Settings (auto-sanitize WS / SplitHTTP for reverse-proxy & PaaS environments)
     let effectiveSecurity = inbound.security || 'reality';
-    if (effectiveSecurity === 'reality' && (net === 'ws' || net === 'websocket')) {
-      effectiveSecurity = 'none'; // Fallback to none for WS to prevent Xray crash
+    if (net === 'ws' || net === 'websocket' || net === 'xhttp' || net === 'splithttp') {
+      if (effectiveSecurity !== 'reality') {
+        effectiveSecurity = 'none'; // Plaintext for internal listener (edge proxy terminates TLS)
+      } else {
+        effectiveSecurity = 'none'; // Fallback for WS to prevent Xray crash
+      }
     }
 
     const streamSettings: any = {
