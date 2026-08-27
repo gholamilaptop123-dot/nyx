@@ -54,7 +54,7 @@ export async function ensureXrayBinary(): Promise<string> {
   const platform = process.platform === 'win32' ? 'windows-64' : (process.arch === 'arm64' ? 'linux-arm64-v8a' : 'linux-64');
   const assetFilename = `Xray-${platform}.zip`;
 
-  let latestTag = 'v24.11.30'; // Hardcoded safe fallback version
+  let latestTag = 'v25.1.30'; // Hardcoded safe fallback version
   let directAssetUrl = '';
 
   // 3. Try to query GitHub API for exact tag and asset URL
@@ -76,14 +76,14 @@ export async function ensureXrayBinary(): Promise<string> {
 
   // 4. Candidate Download URLs (Direct + Anti-Block Mirrors)
   const candidateUrls: string[] = [];
+  candidateUrls.push(`https://github.com/XTLS/Xray-core/releases/latest/download/${assetFilename}`);
   if (directAssetUrl) {
     candidateUrls.push(directAssetUrl);
   }
   candidateUrls.push(
     `https://github.com/XTLS/Xray-core/releases/download/${latestTag}/${assetFilename}`,
-    `https://ghproxy.net/https://github.com/XTLS/Xray-core/releases/download/${latestTag}/${assetFilename}`,
-    `https://mirror.ghproxy.com/https://github.com/XTLS/Xray-core/releases/download/${latestTag}/${assetFilename}`,
-    `https://github.com/XTLS/Xray-core/releases/latest/download/${assetFilename}`
+    `https://ghproxy.net/https://github.com/XTLS/Xray-core/releases/latest/download/${assetFilename}`,
+    `https://mirror.ghproxy.com/https://github.com/XTLS/Xray-core/releases/latest/download/${assetFilename}`
   );
 
   let downloadedSuccessfully = false;

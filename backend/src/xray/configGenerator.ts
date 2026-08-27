@@ -24,6 +24,31 @@ export interface UserConfig {
   username: string;
   uuid: string;
   email?: string;
+  inboundIds?: string | null;
+}
+
+export function validateInboundCompatibility(inbound: { protocol?: string; network?: string; security?: string }): { valid: boolean; error?: string } {
+  const proto = (inbound.protocol || 'vless').toLowerCase();
+  const net = (inbound.network || 'tcp').toLowerCase();
+  const sec = (inbound.security || 'reality').toLowerCase();
+
+  if (sec === 'reality') {
+    if (net === 'ws' || net === 'websocket') {
+      return {
+        valid: false,
+        error: 'پروتکل REALITY با نوع انتقال WebSocket سازگار نیست. برای REALITY از TCP، gRPC یا SplitHTTP استفاده کنید یا برای WebSocket امنیت TLS/None را انتخاب نمایید.'
+      };
+    }
+  }
+
+  if (proto === 'trojan' && sec === 'none') {
+    return {
+      valid: false,
+      error: 'پروتکل Trojan نیازمند امنیت TLS یا REALITY است و بدون رمزنگاری قابل استفاده نیست.'
+    };
+  }
+
+  return { valid: true };
 }
 
 export function generateX25519Keypair(xrayExecPath?: string): { privateKey: string; publicKey: string } {
@@ -123,9 +148,17 @@ export function generateXrayJsonConfig(
       addedUuids.add(inboundUuid);
     }
 
-    // 2. Add all active user UUIDs
+    // 2. Add active user UUIDs assigned to this inbound
     for (const u of users) {
       if (u.uuid && !addedUuids.has(u.uuid)) {
+        // If user is restricted to specific inbounds, check access
+        if (u.inboundIds && u.inboundIds.trim()) {
+          const allowed = u.inboundIds.split(',').map(s => s.trim());
+          if (!allowed.includes(inbound.id) && !allowed.includes(inbound.uuid || '')) {
+            continue;
+          }
+        }
+
         if (proto === 'trojan') {
           clientList.push({ password: u.uuid, email: u.username });
         } else if (proto === 'vmess') {
@@ -160,13 +193,18 @@ export function generateXrayJsonConfig(
       };
     }
 
-    // Stream Settings
+    // Stream Settings (auto-sanitize incompatible WS+REALITY)
+    let effectiveSecurity = inbound.security || 'reality';
+    if (effectiveSecurity === 'reality' && (net === 'ws' || net === 'websocket')) {
+      effectiveSecurity = 'none'; // Fallback to none for WS to prevent Xray crash
+    }
+
     const streamSettings: any = {
       network: net === 'xhttp' ? 'splithttp' : net,
-      security: inbound.security || 'reality'
+      security: effectiveSecurity
     };
 
-    if (isReality) {
+    if (effectiveSecurity === 'reality') {
       if (!inbound.privateKey) {
         console.warn(`[Nyx Config] ⚠️ Inbound ${inbound.remark} has no privateKey!`);
       }
@@ -182,7 +220,7 @@ export function generateXrayJsonConfig(
         maxTimeDiff: 0,
         shortIds: [inbound.shortId || '6ba7b810']
       };
-    } else if (inbound.security === 'tls') {
+    } else if (effectiveSecurity === 'tls') {
       streamSettings.tlsSettings = {
         serverName: inbound.sni || '',
         alpn: ['http/1.1', 'h2']

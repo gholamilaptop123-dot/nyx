@@ -160,6 +160,12 @@ export class SubscriptionService {
 
     // Preserve user object so each link uses the correct per-user UUID
     const user = (arg4 !== undefined) ? arg1 : null;
+    if (user?.inboundIds && user.inboundIds.trim()) {
+      const allowed = user.inboundIds.split(',').map((s: string) => s.trim());
+      const filtered = inbounds.filter(ib => allowed.includes(ib.id) || allowed.includes(ib.uuid));
+      if (filtered.length > 0) inbounds = filtered;
+    }
+
     const links = inbounds.map(inbound =>
       user
         ? this.generateVlessLink(user, inbound, serverIp, isp)
@@ -177,6 +183,12 @@ export class SubscriptionService {
     let isp = arg4 || (typeof arg3 === 'string' ? arg3 : 'DEFAULT');
     // Capture user for per-user UUID attribution in outbound configs
     const singboxUser = (arg4 !== undefined) ? arg1 : null;
+
+    if (singboxUser?.inboundIds && singboxUser.inboundIds.trim()) {
+      const allowed = singboxUser.inboundIds.split(',').map((s: string) => s.trim());
+      const filtered = inbounds.filter(ib => allowed.includes(ib.id) || allowed.includes(ib.uuid));
+      if (filtered.length > 0) inbounds = filtered;
+    }
 
     const isPaaS = serverIp.includes('.railway.app') ||
                    serverIp.includes('.onrender.com') ||
@@ -274,6 +286,12 @@ export class SubscriptionService {
     let isp = arg4 || (typeof arg3 === 'string' ? arg3 : 'DEFAULT');
     // Capture user for per-user UUID attribution in Clash proxy configs
     const clashUser = (arg4 !== undefined) ? arg1 : null;
+
+    if (clashUser?.inboundIds && clashUser.inboundIds.trim()) {
+      const allowed = clashUser.inboundIds.split(',').map((s: string) => s.trim());
+      const filtered = inbounds.filter(ib => allowed.includes(ib.id) || allowed.includes(ib.uuid));
+      if (filtered.length > 0) inbounds = filtered;
+    }
 
     const isPaaS = serverIp.includes('.railway.app') || serverIp.includes('.onrender.com') || serverIp.includes('.fly.dev') || serverIp.includes('.koyeb.app');
     const sni = isp === 'WHITE_SNI' ? this.WHITE_IRAN_SNIS[0] : (isPaaS ? serverIp : 'yahoo.com');

@@ -12,6 +12,7 @@ model User {
   username     String   @unique
   uuid         String   @unique @default(uuid())
   email        String?
+  inboundIds   String?
   dataLimitGb  Float    @default(0)
   usedDataBytes BigInt  @default(0)
   expireDate   DateTime?

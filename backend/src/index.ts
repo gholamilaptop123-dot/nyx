@@ -7,10 +7,11 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import crypto from 'crypto';
 import { PrismaClient } from '@prisma/client';
 import { ensureXrayBinary } from './xray/downloader';
-import { generateXrayJsonConfig, saveXrayConfig, generateX25519Keypair } from './xray/configGenerator';
+import { generateXrayJsonConfig, saveXrayConfig, generateX25519Keypair, validateInboundCompatibility } from './xray/configGenerator';
 import { SubscriptionService } from './services/subscriptionService';
 import { TunnelManager } from './services/tunnelManager';
 import { XrayStatsService } from './services/xrayStatsService';
@@ -275,7 +276,7 @@ app.get('/api/users', async (req, res) => {
 
 app.post('/api/users', async (req, res) => {
   try {
-    const { username, dataLimitGb, expireDays, maxDevices } = req.body;
+    const { username, dataLimitGb, expireDays, maxDevices, inboundIds } = req.body;
 
     if (!username || username.trim() === '') {
       return res.status(400).json({ error: 'Username is required.' });
@@ -298,6 +299,7 @@ app.post('/api/users', async (req, res) => {
         dataLimitGb: parseFloat(dataLimitGb || 0),
         expireDate,
         maxDevices: parseInt(maxDevices || 2),
+        inboundIds: inboundIds ? (Array.isArray(inboundIds) ? inboundIds.join(',') : String(inboundIds)) : null,
         status: 'ACTIVE'
       }
     });
@@ -315,10 +317,14 @@ app.post('/api/users', async (req, res) => {
 
 app.patch('/api/users/:id', async (req, res) => {
   try {
-    const { status, dataLimitGb, expireDays } = req.body;
+    const { status, dataLimitGb, expireDays, inboundIds, maxDevices } = req.body;
     const updateData: any = {};
     if (status) updateData.status = status;
     if (dataLimitGb !== undefined) updateData.dataLimitGb = parseFloat(dataLimitGb);
+    if (maxDevices !== undefined) updateData.maxDevices = parseInt(maxDevices, 10);
+    if (inboundIds !== undefined) {
+      updateData.inboundIds = inboundIds ? (Array.isArray(inboundIds) ? inboundIds.join(',') : String(inboundIds)) : null;
+    }
     if (expireDays !== undefined) {
       if (Number(expireDays) > 0) {
         const expireDate = new Date();
@@ -401,6 +407,11 @@ app.post('/api/inbounds', async (req, res) => {
       return res.status(400).json({ error: 'Invalid port number (Must be between 1 and 65535).' });
     }
 
+    const validation = validateInboundCompatibility({ protocol, network, security });
+    if (!validation.valid) {
+      return res.status(400).json({ error: validation.error });
+    }
+
     const generatedKeys = generateX25519Keypair(xrayBinaryPath);
     let expireDate: Date | null = null;
     if (expireDays && Number(expireDays) > 0) {
@@ -439,6 +450,19 @@ app.post('/api/inbounds', async (req, res) => {
 app.patch('/api/inbounds/:id', async (req, res) => {
   try {
     const { remark, enabled, sni, enableFragment, fragmentLength, fragmentInterval, customDomain, network, protocol, security, port, dataLimitGb, expireDays, maxDevices } = req.body;
+    
+    // Check compatibility if protocol, network or security are being updated
+    const currentInbound = await prisma.inbound.findUnique({ where: { id: req.params.id } });
+    if (currentInbound) {
+      const checkProto = protocol || currentInbound.protocol;
+      const checkNet = network || currentInbound.network;
+      const checkSec = security || currentInbound.security;
+      const validation = validateInboundCompatibility({ protocol: checkProto, network: checkNet, security: checkSec });
+      if (!validation.valid) {
+        return res.status(400).json({ error: validation.error });
+      }
+    }
+
     const allowedData: any = {};
     if (remark !== undefined) allowedData.remark = remark;
     if (enabled !== undefined) allowedData.enabled = Boolean(enabled);
@@ -1152,8 +1176,37 @@ async function reloadXrayService() {
     } : undefined;
 
     const jsonConfig = generateXrayJsonConfig(formattedInbounds, formattedUsers, warpOptions);
-    const configPath = saveXrayConfig(jsonConfig);
-    console.log(`[Nyx Server] Saved updated Xray configuration to: ${configPath}`);
+    const binDir = path.join(process.cwd(), 'bin');
+    if (!fs.existsSync(binDir)) fs.mkdirSync(binDir, { recursive: true });
+
+    const testConfigPath = path.join(binDir, 'config.test.json');
+    const realConfigPath = path.join(binDir, 'config.json');
+    const backupConfigPath = path.join(binDir, 'config.backup.json');
+
+    // 1. Write candidate config to temporary test file
+    fs.writeFileSync(testConfigPath, JSON.stringify(jsonConfig, null, 2));
+
+    // 2. Perform Atomic Configuration Validation (-test)
+    if (xrayBinaryPath && fs.existsSync(xrayBinaryPath)) {
+      try {
+        const { execSync } = require('child_process');
+        execSync(`"${xrayBinaryPath}" -test -config "${testConfigPath}"`, { stdio: 'pipe' });
+        console.log('[Nyx Server] ✅ Candidate Xray configuration passed atomic validation test (-test)!');
+      } catch (testErr: any) {
+        const testOutput = testErr.stderr?.toString() || testErr.stdout?.toString() || testErr.message;
+        console.error('[Nyx Server] ❌ Candidate Xray configuration failed -test validation!\n', testOutput);
+        throw new Error(`پیکربندی جدید Xray نامعتبر است و رد شد:\n${testOutput}`);
+      }
+    }
+
+    // 3. Promote test config to real config & create backup snapshot
+    if (fs.existsSync(realConfigPath)) {
+      try {
+        fs.copyFileSync(realConfigPath, backupConfigPath);
+      } catch (e) { }
+    }
+    fs.copyFileSync(testConfigPath, realConfigPath);
+    console.log(`[Nyx Server] Saved validated Xray configuration to: ${realConfigPath}`);
 
     // Unblock firewall ports for all active inbounds automatically
     if (process.platform !== 'win32') {
@@ -1184,7 +1237,7 @@ async function reloadXrayService() {
       }
       await new Promise(r => setTimeout(r, 400));
 
-      xrayProcess = execFile(xrayBinaryPath, ['run', '-config', configPath], (err, stdout, stderr) => {
+      xrayProcess = execFile(xrayBinaryPath, ['run', '-config', realConfigPath], (err, stdout, stderr) => {
         if (err && !err.killed) {
           isXrayRunning = false;
           xrayLastError = stderr || err.message;
@@ -1212,11 +1265,29 @@ async function reloadXrayService() {
       }, 1000);
     }
   } catch (error: any) {
-    isXrayRunning = false;
-    xrayLastError = error.message || 'Unknown configuration error';
-    console.error('[Nyx Server] Error reloading Xray configuration:', error);
+    console.error('[Nyx Server] Error reloading Xray configuration:', error.message);
+    throw error;
   }
 }
+
+// 1-Click Rollback Xray Config API Endpoint
+app.post('/api/system/rollback-xray', async (req, res) => {
+  try {
+    const binDir = path.join(process.cwd(), 'bin');
+    const realConfigPath = path.join(binDir, 'config.json');
+    const backupConfigPath = path.join(binDir, 'config.backup.json');
+
+    if (!fs.existsSync(backupConfigPath)) {
+      return res.status(400).json({ error: 'هیچ اسنپ‌شات بکاپی برای بازگردانی وجود ندارد.' });
+    }
+
+    fs.copyFileSync(backupConfigPath, realConfigPath);
+    await reloadXrayService();
+    res.json({ success: true, message: 'پیکربندی Xray با موفقیت به اسنپ‌شات قبلی بازگردانی شد.' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Rollback failed' });
+  }
+});
 
 // Default SPA Fallback
 app.get('*', (req, res) => {

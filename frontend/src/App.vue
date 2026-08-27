@@ -21,7 +21,7 @@
         <div>
           <h1 class="text-lg sm:text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 via-amber-400 to-rose-400 tracking-wide flex items-center gap-2">
             <span>Nyx Panel</span>
-            <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/20 font-mono font-medium hidden sm:inline-block">v2.3</span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/20 font-mono font-medium hidden sm:inline-block">v2.4.2</span>
           </h1>
           <p class="text-[11px] text-gray-400 font-mono">{{ t('panelSub') }}</p>
         </div>
@@ -98,7 +98,7 @@
     <!-- Footer -->
     <footer class="border-t border-white/[0.06] py-4 px-6 text-center text-xs text-gray-400 flex flex-col md:flex-row justify-between items-center gap-3 bg-black/30 backdrop-blur-md relative z-10">
       <div class="flex items-center gap-2">
-        <span class="font-semibold text-gray-300">Nyx Panel v2.3.0</span>
+        <span class="font-semibold text-gray-300">Nyx Panel v2.4.2</span>
         <span class="text-gray-600">|</span>
         <span class="text-gray-400">{{ t('byCynet') }}</span>
       </div>

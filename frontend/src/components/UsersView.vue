@@ -157,6 +157,18 @@
               <option :value="10">10 Devices (Group)</option>
             </select>
           </div>
+
+          <div>
+            <label class="block text-gray-400 mb-1">Inbound Access / تخصیص به اینباندها:</label>
+            <div class="max-h-28 overflow-y-auto space-y-1 p-2 bg-[#06070a] border border-white/10 rounded-xl">
+              <label v-for="ib in inbounds" :key="ib.id" class="flex items-center gap-2 text-gray-300 text-xs cursor-pointer hover:text-white">
+                <input type="checkbox" :value="ib.id" v-model="newUserInbounds" class="rounded accent-cyberYellow" />
+                <span>{{ ib.remark }} (Port {{ ib.port }} - {{ ib.protocol?.toUpperCase() }})</span>
+              </label>
+              <div v-if="inbounds.length === 0" class="text-gray-500 text-xs">All active inbounds (Default)</div>
+            </div>
+            <p class="text-[10px] text-gray-400 mt-1">در صورت خالی گذاشتن، کاربر به تمام اینباندها دسترسی دارد.</p>
+          </div>
         </div>
 
         <div class="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
@@ -205,6 +217,17 @@
               <option value="ACTIVE">🟢 {{ t('activeStatus') }} (ACTIVE)</option>
               <option value="DISABLED">🔴 {{ t('disabledStatus') }} (DISABLED)</option>
             </select>
+          </div>
+
+          <div>
+            <label class="block text-gray-400 mb-1">Inbound Access / تخصیص به اینباندها:</label>
+            <div class="max-h-28 overflow-y-auto space-y-1 p-2 bg-[#06070a] border border-white/10 rounded-xl">
+              <label v-for="ib in inbounds" :key="ib.id" class="flex items-center gap-2 text-gray-300 text-xs cursor-pointer hover:text-white">
+                <input type="checkbox" :value="ib.id" v-model="editUserInbounds" class="rounded accent-cyberYellow" />
+                <span>{{ ib.remark }} (Port {{ ib.port }} - {{ ib.protocol?.toUpperCase() }})</span>
+              </label>
+              <div v-if="inbounds.length === 0" class="text-gray-500 text-xs">All active inbounds (Default)</div>
+            </div>
           </div>
         </div>
 
@@ -393,21 +416,44 @@ const ispOptions = computed(() => [
   { id: 'WHITE_SNI', label: t('operatorWhite'), activeClass: 'bg-cyberGreen text-black font-bold' },
 ]);
 
+const inbounds = ref<any[]>([]);
+const newUserInbounds = ref<string[]>([]);
+const editUserInbounds = ref<string[]>([]);
+
 const props = defineProps<{ toast?: (msg: string, type?: 'success' | 'error' | 'info') => void }>();
 const newUser = ref({ username: '', dataLimitGb: 0, expireDays: 30, maxDevices: 2 });
+
+async function fetchInbounds() {
+  try {
+    const res = await axios.get('/api/inbounds');
+    inbounds.value = res.data.filter((i: any) => i.enabled);
+  } catch (e) {
+    console.error('Failed to fetch inbounds:', e);
+  }
+}
 
 async function fetchUsers() {
   try { const res = await axios.get('/api/users'); users.value = res.data; }
   catch (err) { console.error('Failed to fetch users:', err); }
 }
 
+onMounted(() => {
+  fetchUsers();
+  fetchInbounds();
+});
+
 async function createUser() {
   if (!newUser.value.username) return;
   try {
-    const res = await axios.post('/api/users', newUser.value);
+    const payload = {
+      ...newUser.value,
+      inboundIds: newUserInbounds.value.length > 0 ? newUserInbounds.value.join(',') : null
+    };
+    const res = await axios.post('/api/users', payload);
     showCreateModal.value = false;
     const createdUser = res.data;
     newUser.value = { username: '', dataLimitGb: 0, expireDays: 30, maxDevices: 2 };
+    newUserInbounds.value = [];
     props.toast?.(currentLang.value === 'fa' ? 'کاربر جدید با موفقیت ساخته شد' : 'New user created successfully', 'success');
     await fetchUsers();
     if (createdUser) {
@@ -418,6 +464,7 @@ async function createUser() {
 
 function openEditModal(user: any) {
   editingUser.value = user;
+  editUserInbounds.value = user.inboundIds ? user.inboundIds.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
   editForm.value = {
     dataLimitGb: user.dataLimitGb || 0,
     expireDays: 0,
@@ -429,7 +476,11 @@ function openEditModal(user: any) {
 async function saveUserEdit() {
   if (!editingUser.value) return;
   try {
-    await axios.patch(`/api/users/${editingUser.value.id}`, editForm.value);
+    const payload = {
+      ...editForm.value,
+      inboundIds: editUserInbounds.value.length > 0 ? editUserInbounds.value.join(',') : null
+    };
+    await axios.patch(`/api/users/${editingUser.value.id}`, payload);
     props.toast?.(currentLang.value === 'fa' ? 'مشخصات کاربر با موفقیت به‌روزرسانی گردید' : 'User updated successfully', 'success');
     editingUser.value = null;
     fetchUsers();
