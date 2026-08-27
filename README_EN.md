@@ -8,8 +8,8 @@
 ### Next-Gen Xray-core Management Panel Tailored for High-Restricted Networks
 #### 🔐 Developed by Cynet Security Team
 
-[![Version](https://img.shields.io/badge/version-2.4.0-blueviolet?style=for-the-badge&logo=shield)](https://github.com/thecynetx/nyx)
-[![Xray-core](https://img.shields.io/badge/Xray--core-v24.11.30-blue?style=for-the-badge&logo=xray)](https://github.com/XTLS/Xray-core)
+[![Version](https://img.shields.io/badge/version-2.4.2-blueviolet?style=for-the-badge&logo=shield)](https://github.com/thecynetx/nyx)
+[![Xray-core](https://img.shields.io/badge/Xray--core-v25.1.30-blue?style=for-the-badge&logo=xray)](https://github.com/XTLS/Xray-core)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker)](https://github.com/thecynetx/nyx)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Windows%20%7C%20Docker%20%7C%20Railway-darkgreen?style=for-the-badge)](https://github.com/thecynetx/nyx)
 [![Telegram](https://img.shields.io/badge/Telegram-Cynet_Security-0088cc?style=for-the-badge&logo=telegram)](https://t.me/cynetx)
@@ -39,6 +39,7 @@
   </a>
 </p>
 
+[🛡️ Version 2.4.2](#-whats-new-in-version-242-the-hardening--zero-crash-release) •
 [🔥 Version 2.4 Features](#-whats-new-in-version-240-the-power--customization-update) •
 [📊 Comparison Table](#-feature-comparison-table-nyx-panel-vs-3x-ui--marzban) •
 [💻 Quick Install](#-quick-installation-guide-linux--windows) •
@@ -55,7 +56,27 @@
 
 ---
 
-## 🔥 What's New in Version 2.4.0 (The Power & Customization Update)
+## 🛡️ What's New in Version 2.4.2 (The Hardening & Zero-Crash Release)
+
+> ⭐️ **Special Recognition:** Special thanks to **Amir (Telegram: [@amirnn21](https://t.me/amirnn21))** for comprehensive technical reporting, edge-case log analysis, and architectural recommendations that significantly boosted the panel's resilience and stability.
+
+### ⚡ 1. Atomic Xray Config Testing (`xray -test`) & Instant Snapshot Rollback
+* Eliminates Xray core crashes caused by invalid inbound configurations. Candidate configs are pre-validated before applying; if validation fails, the active config continues running without a single second of service downtime.
+* Automatic configuration snapshots (`config.backup.json`) are preserved before every successful change with instant 1-click rollback.
+
+### 🩺 2. Genuine Socket/Port Health Monitoring
+* The Load Balancer now verifies genuine local TCP socket binding (`127.0.0.1:port`) directly on the Xray process, preventing false "3/3 Healthy" status if Xray ever crashes.
+
+### 🛡️ 3. Compatibility Matrix Validator
+* Proactively prevents incompatible protocol configurations (e.g. WebSocket + REALITY) in both the frontend modal and backend generator.
+
+### 👥 4. Granular User-to-Inbound Assignment (Many-to-Many)
+* Assign specific users to designated inbounds, ensuring subscription links deliver only authorized server nodes.
+
+### 🚀 5. Xray-core Modern Engine Upgrade (v25+)
+* Upgraded to the latest official Xray binary release with full support for modern WebSocket enhancements and high-throughput SplitHTTP/XHTTP transports.
+
+---
 
 <p align="center">
   <img src="media_v24_release.jpg" alt="Nyx Panel v2.4.0 Release Banner" width="100%" />
