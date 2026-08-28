@@ -192,7 +192,7 @@ case "$1" in
       systemctl stop nyx
     else
       pkill -9 -f "node.*dist/index.js" 2>/dev/null || true
-      pkill -9 -f "xray" 2>/dev/null || true
+      pkill -9 -f "xray run" 2>/dev/null || true
       echo "🛑 Nyx Panel stopped."
     fi
     ;;
@@ -266,7 +266,7 @@ echo -e "${YELLOW}🧹 Terminating any stale processes on port ${PANEL_PORT} and
 fuser -k -9 ${PANEL_PORT}/tcp 2>/dev/null || true
 pkill -9 -f "node.*backend" 2>/dev/null || true
 pkill -9 -f "node.*index.js" 2>/dev/null || true
-pkill -9 -f "xray" 2>/dev/null || true
+pkill -9 -f "xray run" 2>/dev/null || true
 if [ "$HAS_SYSTEMD" -eq 1 ]; then
   systemctl stop nginx 2>/dev/null || true
   systemctl disable nginx 2>/dev/null || true

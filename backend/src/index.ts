@@ -304,7 +304,13 @@ app.post('/api/users', async (req, res) => {
       }
     });
 
-    await reloadXrayService();
+    try {
+      await reloadXrayService();
+    } catch (reloadErr: any) {
+      // Rollback: remove the just-created user so the DB stays clean
+      await prisma.user.delete({ where: { id: newUser.id } }).catch(() => {});
+      return res.status(500).json({ error: `کاربر ساخته شد اما پیکربندی Xray ناموفق بود و لغو شد: ${reloadErr.message}` });
+    }
 
     res.status(201).json({
       ...newUser,
@@ -440,7 +446,15 @@ app.post('/api/inbounds', async (req, res) => {
       }
     });
 
-    await reloadXrayService();
+    try {
+      await reloadXrayService();
+    } catch (reloadErr: any) {
+      // Rollback: remove the just-created inbound so the DB stays clean and
+      // the frontend doesn't see a phantom inbound that causes duplicates on retry.
+      await prisma.inbound.delete({ where: { id: newInbound.id } }).catch(() => {});
+      return res.status(500).json({ error: `اینباند ساخته شد اما پیکربندی Xray ناموفق بود و لغو شد: ${reloadErr.message}` });
+    }
+
     res.status(201).json(newInbound);
   } catch (error: any) {
     res.status(500).json({ error: error.message || 'Failed to create inbound' });

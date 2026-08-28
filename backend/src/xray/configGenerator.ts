@@ -129,23 +129,28 @@ export function generateXrayJsonConfig(
     const net = (inbound.network || 'tcp').toLowerCase();
     const clientList: any[] = [];
     const addedUuids = new Set<string>();
+    // Track emails too — Xray requires globally-unique emails within each inbound
+    const addedEmails = new Set<string>();
 
-    // 1. Always add Inbound's own UUID as a client
+    // 1. Always add Inbound's own UUID as a client.
+    //    Use a "~" prefix on the email so it can never clash with a real username.
     const inboundUuid = inbound.uuid || inbound.id;
     if (inboundUuid) {
+      const inboundEmail = `~${inbound.remark}`; // namespace-safe email for inbound's own client
       if (proto === 'trojan') {
-        clientList.push({ password: inboundUuid, email: inbound.remark });
+        clientList.push({ password: inboundUuid, email: inboundEmail });
       } else if (proto === 'vmess') {
-        clientList.push({ id: inboundUuid, alterId: 0, email: inbound.remark });
+        clientList.push({ id: inboundUuid, alterId: 0, email: inboundEmail });
       } else {
         // VLESS
         clientList.push({
           id: inboundUuid,
           ...(isReality && net === 'tcp' ? { flow: 'xtls-rprx-vision' } : {}),
-          email: inbound.remark
+          email: inboundEmail
         });
       }
       addedUuids.add(inboundUuid);
+      addedEmails.add(inboundEmail);
     }
 
     // 2. Add active user UUIDs assigned to this inbound
@@ -158,6 +163,9 @@ export function generateXrayJsonConfig(
             continue;
           }
         }
+
+        // Skip users whose email/username would collide with an already-added entry
+        if (addedEmails.has(u.username)) continue;
 
         if (proto === 'trojan') {
           clientList.push({ password: u.uuid, email: u.username });
@@ -172,6 +180,7 @@ export function generateXrayJsonConfig(
           });
         }
         addedUuids.add(u.uuid);
+        addedEmails.add(u.username);
       }
     }
 
