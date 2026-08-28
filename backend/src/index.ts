@@ -406,7 +406,7 @@ app.get('/api/inbounds', async (req, res) => {
 
 app.post('/api/inbounds', async (req, res) => {
   try {
-    const { remark, protocol, port, network, security, sni, privateKey, publicKey, shortId, enableFragment, fragmentLength, fragmentInterval, customDomain, dataLimitGb, expireDays, maxDevices } = req.body;
+    const { remark, protocol, port, network, security, sni, privateKey, publicKey, shortId, enableFragment, fragmentLength, fragmentInterval, customDomain, dataLimitGb, expireDays, maxDevices, ssPassword, ssCipher } = req.body;
     const parsedPort = parseInt(port);
 
     if (isNaN(parsedPort) || parsedPort < 1 || parsedPort > 65535) {
@@ -442,7 +442,9 @@ app.post('/api/inbounds', async (req, res) => {
         customDomain: customDomain?.trim() || null,
         dataLimitGb: dataLimitGb ? parseFloat(dataLimitGb) : 0,
         expireDate,
-        maxDevices: maxDevices ? parseInt(maxDevices, 10) : 2
+        maxDevices: maxDevices ? parseInt(maxDevices, 10) : 2,
+        ssPassword: ssPassword?.trim() || null,
+        ssCipher: ssCipher?.trim() || 'chacha20-ietf-poly1305'
       }
     });
 
@@ -463,7 +465,7 @@ app.post('/api/inbounds', async (req, res) => {
 
 app.patch('/api/inbounds/:id', async (req, res) => {
   try {
-    const { remark, enabled, sni, enableFragment, fragmentLength, fragmentInterval, customDomain, network, protocol, security, port, dataLimitGb, expireDays, maxDevices } = req.body;
+    const { remark, enabled, sni, enableFragment, fragmentLength, fragmentInterval, customDomain, network, protocol, security, port, dataLimitGb, expireDays, maxDevices, ssPassword, ssCipher } = req.body;
     
     // Check compatibility if protocol, network or security are being updated
     const currentInbound = await prisma.inbound.findUnique({ where: { id: req.params.id } });
@@ -491,6 +493,8 @@ app.patch('/api/inbounds/:id', async (req, res) => {
     if (port !== undefined) allowedData.port = parseInt(port);
     if (dataLimitGb !== undefined) allowedData.dataLimitGb = parseFloat(dataLimitGb);
     if (maxDevices !== undefined) allowedData.maxDevices = parseInt(maxDevices, 10);
+    if (ssPassword !== undefined) allowedData.ssPassword = ssPassword ? ssPassword.trim() : null;
+    if (ssCipher !== undefined) allowedData.ssCipher = ssCipher ? ssCipher.trim() : 'chacha20-ietf-poly1305';
     if (expireDays && Number(expireDays) > 0) {
       const d = new Date();
       d.setDate(d.getDate() + Number(expireDays));
@@ -527,10 +531,11 @@ app.get('/api/inbounds/:id/configs', async (req, res) => {
 
     const hostIp = getPublicHost(req);
     const port = req.socket.localPort || PORT || 3080;
+    const proto = req.secure || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
     const vlessLink = SubscriptionService.generateVlessLink(inbound as any, hostIp);
-    const subUrl = `http://${hostIp}:${port}/api/sub/${inbound.uuid || inbound.id}`;
+    const subUrl = `${proto}://${hostIp}:${port}/api/sub/${inbound.uuid || inbound.id}`;
     const base64Sub = Buffer.from(vlessLink).toString('base64');
-    const userInfoUrl = `http://${hostIp}:${port}/subinfo/${inbound.uuid || inbound.id}`;
+    const userInfoUrl = `${proto}://${hostIp}:${port}/subinfo/${inbound.uuid || inbound.id}`;
 
     res.json({
       inbound,

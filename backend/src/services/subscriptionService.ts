@@ -81,6 +81,14 @@ export class SubscriptionService {
       ? `&fragment=${encodeURIComponent(`${inbound?.fragmentLength || '100-200'},${inbound?.fragmentInterval || '10-20'},tlshello`)}`
       : '';
 
+    // 0. Shadowsocks Protocol
+    if (proto === 'shadowsocks') {
+      const cipher = inbound?.ssCipher || 'chacha20-ietf-poly1305';
+      const password = inbound?.ssPassword || inbound?.uuid || uuid || 'nyx-ss-default';
+      const ssUserInfo = Buffer.from(`${cipher}:${password}`).toString('base64');
+      return `ss://${ssUserInfo}@${effectiveHost}:${port}#${remark}`;
+    }
+
     // 1. WebSocket Transport (WS)
     if (net === 'ws') {
       const wsPath = encodeURIComponent('/nyx');
@@ -232,6 +240,20 @@ export class SubscriptionService {
         };
       }
 
+      if (proto === 'shadowsocks') {
+        const cipher = inbound?.ssCipher || 'chacha20-ietf-poly1305';
+        const password = inbound?.ssPassword || inbound?.uuid || singboxUser?.uuid || 'nyx-ss-default';
+        return {
+          type: "shadowsocks",
+          tag: `Nyx-${inbound?.remark || 'Config'}`,
+          server: effectiveHost,
+          server_port: port,
+          method: cipher,
+          password: password,
+          network: "tcp"
+        };
+      }
+
       return {
         type: proto === 'trojan' ? 'trojan' : (proto === 'vmess' ? 'vmess' : 'vless'),
         tag: `Nyx-${inbound?.remark || 'Config'}`,
@@ -310,6 +332,18 @@ export class SubscriptionService {
       const port = isPaaS ? 443 : (inbound?.port || 443);
       const net = (inbound?.network || 'tcp').toLowerCase();
       const proto = (inbound?.protocol || 'vless').toLowerCase();
+
+      if (proto === 'shadowsocks') {
+        const cipher = inbound?.ssCipher || 'chacha20-ietf-poly1305';
+        const password = inbound?.ssPassword || inbound?.uuid || uuid || 'nyx-ss-default';
+        return `  - name: "${proxyName}"
+    type: ss
+    server: ${effectiveHost}
+    port: ${port}
+    cipher: ${cipher}
+    password: "${password}"
+    udp: true`;
+      }
 
       if (net === 'ws') {
         return `  - name: "${proxyName}"

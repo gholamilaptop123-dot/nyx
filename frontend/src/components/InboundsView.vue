@@ -233,10 +233,11 @@
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-gray-400 mb-1">{{ t('protocolType') }}</label>
-              <select v-model="form.protocol" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none">
+              <select v-model="form.protocol" @change="onProtocolChange" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none">
                 <option value="vless">VLESS (Recommended)</option>
                 <option value="vmess">VMess</option>
                 <option value="trojan">Trojan</option>
+                <option value="shadowsocks">Shadowsocks (SS)</option>
               </select>
             </div>
             <div>
@@ -245,7 +246,29 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-3">
+          <!-- Shadowsocks Credentials (Visible only when protocol is Shadowsocks) -->
+          <div v-if="form.protocol === 'shadowsocks'" class="p-3.5 bg-amber-400/10 border border-amber-400/20 rounded-2xl space-y-2">
+            <span class="font-bold text-amber-300 block text-xs">🔑 Shadowsocks Credentials</span>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[10px] text-gray-400">Cipher / الگوریتم رمزنگاری</label>
+                <select v-model="form.ssCipher" class="w-full bg-black/60 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white outline-none">
+                  <option value="chacha20-ietf-poly1305">chacha20-ietf-poly1305</option>
+                  <option value="aes-128-gcm">aes-128-gcm</option>
+                  <option value="aes-256-gcm">aes-256-gcm</option>
+                  <option value="2022-blake3-aes-128-gcm">2022-blake3-aes-128-gcm</option>
+                  <option value="2022-blake3-aes-256-gcm">2022-blake3-aes-256-gcm</option>
+                  <option value="2022-blake3-chacha20-poly1305">2022-blake3-chacha20-poly1305</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] text-gray-400">Password / رمز عبور</label>
+                <input v-model="form.ssPassword" type="text" placeholder="Auto-generated if empty" dir="ltr" class="w-full bg-black/50 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-mono text-left focus:border-amber-400 outline-none" />
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3" v-if="form.protocol !== 'shadowsocks'">
             <div>
               <label class="block text-gray-400 mb-1">{{ t('transportType') }}</label>
               <select v-model="form.network" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none">
@@ -419,16 +442,39 @@
                 <option value="vless">VLESS</option>
                 <option value="vmess">VMess</option>
                 <option value="trojan">Trojan</option>
+                <option value="shadowsocks">Shadowsocks (SS)</option>
               </select>
             </div>
             <div>
               <label class="block text-gray-400 mb-1">{{ t('transportType') }}</label>
-              <select v-model="editForm.network" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none">
+              <select v-model="editForm.network" :disabled="editForm.protocol === 'shadowsocks'" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none disabled:opacity-40">
                 <option value="tcp">TCP</option>
                 <option value="xhttp">XHTTP (SplitHTTP)</option>
                 <option value="ws">WebSocket (WS)</option>
                 <option value="grpc">gRPC</option>
               </select>
+            </div>
+          </div>
+
+          <!-- Shadowsocks Credentials in Edit Modal -->
+          <div v-if="editForm.protocol === 'shadowsocks'" class="p-3.5 bg-amber-400/10 border border-amber-400/20 rounded-2xl space-y-2">
+            <span class="font-bold text-amber-300 block text-xs">🔑 Shadowsocks Credentials</span>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[10px] text-gray-400">Cipher / الگوریتم رمزنگاری</label>
+                <select v-model="editForm.ssCipher" class="w-full bg-black/60 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white outline-none">
+                  <option value="chacha20-ietf-poly1305">chacha20-ietf-poly1305</option>
+                  <option value="aes-128-gcm">aes-128-gcm</option>
+                  <option value="aes-256-gcm">aes-256-gcm</option>
+                  <option value="2022-blake3-aes-128-gcm">2022-blake3-aes-128-gcm</option>
+                  <option value="2022-blake3-aes-256-gcm">2022-blake3-aes-256-gcm</option>
+                  <option value="2022-blake3-chacha20-poly1305">2022-blake3-chacha20-poly1305</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] text-gray-400">Password / رمز عبور</label>
+                <input v-model="editForm.ssPassword" type="text" placeholder="Inbound password" dir="ltr" class="w-full bg-black/50 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-mono text-left focus:border-amber-400 outline-none" />
+              </div>
             </div>
           </div>
 
@@ -649,7 +695,9 @@ const form = ref({
   fragmentInterval: '10-20',
   dataLimitGb: 0,
   expireDays: 30,
-  maxDevices: 2
+  maxDevices: 2,
+  ssPassword: '',
+  ssCipher: 'chacha20-ietf-poly1305'
 });
 
 const editForm = ref({
@@ -663,8 +711,16 @@ const editForm = ref({
   fragmentInterval: '10-20',
   dataLimitGb: 0,
   expireDays: 0,
-  maxDevices: 2
+  maxDevices: 2,
+  ssPassword: '',
+  ssCipher: 'chacha20-ietf-poly1305'
 });
+
+function onProtocolChange() {
+  if (form.value.protocol === 'shadowsocks') {
+    form.value.security = 'none';
+  }
+}
 
 function handleSniPresetChange() {
   if (selectedSniPreset.value !== 'custom') {
@@ -716,7 +772,9 @@ function openEditModal(inbound: any) {
     fragmentInterval: inbound.fragmentInterval || '10-20',
     dataLimitGb: inbound.dataLimitGb || 0,
     expireDays: 0,
-    maxDevices: inbound.maxDevices || 2
+    maxDevices: inbound.maxDevices || 2,
+    ssPassword: inbound.ssPassword || '',
+    ssCipher: inbound.ssCipher || 'chacha20-ietf-poly1305'
   };
 }
 

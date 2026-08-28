@@ -17,6 +17,8 @@ export interface InboundConfig {
   fragmentLength?: string;
   fragmentInterval?: string;
   customDomain?: string;
+  ssPassword?: string;   // Shadowsocks: shared inbound password
+  ssCipher?: string;     // Shadowsocks: cipher method (default: chacha20-ietf-poly1305)
 }
 
 export interface UserConfig {
@@ -46,6 +48,15 @@ export function validateInboundCompatibility(inbound: { protocol?: string; netwo
       valid: false,
       error: 'پروتکل Trojan نیازمند امنیت TLS یا REALITY است و بدون رمزنگاری قابل استفاده نیست.'
     };
+  }
+
+  if (proto === 'shadowsocks') {
+    if (sec === 'reality') {
+      return {
+        valid: false,
+        error: 'Shadowsocks با REALITY سازگار نیست. برای Shadowsocks از None یا TLS استفاده کنید.'
+      };
+    }
   }
 
   return { valid: true };
@@ -186,7 +197,17 @@ export function generateXrayJsonConfig(
 
     // Settings per protocol
     let protocolSettings: any = {};
-    if (proto === 'trojan') {
+    if (proto === 'shadowsocks') {
+      // Shadowsocks: single shared password for all users of this inbound
+      // Xray uses a single server-side password; clients connect with that password.
+      const cipher = inbound.ssCipher || 'chacha20-ietf-poly1305';
+      const password = inbound.ssPassword || inbound.uuid || inbound.id || 'nyx-ss-default';
+      protocolSettings = {
+        method: cipher,
+        password,
+        network: 'tcp,udp'
+      };
+    } else if (proto === 'trojan') {
       protocolSettings = {
         clients: clientList
       };

@@ -59,6 +59,8 @@ model Inbound {
   expireDate       DateTime?
   maxDevices       Int      @default(2)
   enabled          Boolean  @default(true)
+  ssPassword       String?  // Shadowsocks: shared password for this inbound
+  ssCipher         String?  @default("chacha20-ietf-poly1305") // Shadowsocks cipher method
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 }
