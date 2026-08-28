@@ -1174,7 +1174,9 @@ async function reloadXrayService() {
       enableFragment: i.enableFragment,
       fragmentLength: i.fragmentLength || undefined,
       fragmentInterval: i.fragmentInterval || undefined,
-      customDomain: i.customDomain || undefined
+      customDomain: i.customDomain || undefined,
+      ssPassword: i.ssPassword || undefined,   // Shadowsocks password
+      ssCipher: i.ssCipher || undefined          // Shadowsocks cipher method
     }));
 
     const formattedUsers = users.map(u => ({
