@@ -101,9 +101,9 @@ This major release introduces powerful customization, custom domain & CDN mappin
   * 📡 **Irancell:** `50-150, 5-15` (Effective against aggressive DPI throttling)
   * ⚡ **Intranet / Low Latency:** `10-60, 2-10`
 
-### 🚀 3. Next-Gen `XHTTP (SplitHTTP)`, `gRPC`, and `Trojan` Support
+### 🚀 3. Next-Gen `XHTTP (SplitHTTP)`, `gRPC`, `Shadowsocks`, and `Trojan` Support
 * **XHTTP Transport:** Xray's latest anti-censorship standard specifically engineered for harsh DPI censorship and CDN multiplexing.
-* **Full Protocol Suite:** Comprehensive support for `VLESS`, `VMess`, and `Trojan` across `TCP Reality`, `WebSocket`, `XHTTP`, and `gRPC`.
+* **Full Protocol Suite:** Comprehensive support for `VLESS`, `VMess`, `Trojan`, and `Shadowsocks (AEAD & SS-2022)` across `TCP Reality`, `WebSocket`, `XHTTP`, and `gRPC`.
 
 ### 🎨 4. Subscriber Web Portal Custom Branding (`/subinfo/:uuid`)
 * **Brand Name & Custom Logo:** Set your business name and custom logo URL to give customers a fully branded web portal experience.
@@ -173,9 +173,18 @@ iwr -useb https://raw.githubusercontent.com/thecynetx/nyx/main/install.ps1 | iex
 
 ---
 
-### ☁️ 3. Free Cloud PaaS Deployment (`Railway / Render / Docker`):
+### ☁️ 3. Free Cloud Deployment (`GitHub Codespaces / Railway / Docker`):
 
-If you don't own a VPS, you can host Nyx Panel on free cloud platforms such as **Railway.app**:
+If you don't own a VPS, you can host Nyx Panel completely free of charge on **GitHub Codespaces** or **Railway.app**:
+
+#### ⚡ 1-Click GitHub Codespaces Guide (100% Free):
+1. Log into your GitHub account, click the green **`Code`** button on this repository, choose **`Codespaces`** tab and click **`Create codespace on main`**.
+2. In the bottom **Terminal**, run:
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/thecynetx/nyx/main/install.sh)"
+```
+3. In the **PORTS** tab, right click port **3080** -> **Port Visibility -> Public**.
+4. Click the globe icon to open the panel (User: `admin`, Pass: `admin123`).
 
 #### 🚀 Deploy to Railway in 1 Minute:
 1. Log in to [railway.com](https://railway.com) using your GitHub account.
