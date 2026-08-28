@@ -108,6 +108,11 @@ if [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
 fi
 
 XRAY_TAG="v25.1.30"
+LATEST_TAG=$(curl -sSL -m 5 https://api.github.com/repos/XTLS/Xray-core/releases/latest 2>/dev/null | grep '"tag_name":' | head -n1 | cut -d '"' -f 4)
+if [ -n "$LATEST_TAG" ]; then
+  XRAY_TAG="$LATEST_TAG"
+fi
+
 XRAY_URL="https://github.com/XTLS/Xray-core/releases/download/${XRAY_TAG}/Xray-${XRAY_ARCH}.zip"
 MIRROR_URL="https://ghproxy.net/${XRAY_URL}"
 

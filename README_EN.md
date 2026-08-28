@@ -8,8 +8,8 @@
 ### Next-Gen Xray-core Management Panel Tailored for High-Restricted Networks
 #### 🔐 Developed by Cynet Security Team
 
-[![Version](https://img.shields.io/badge/version-2.4.2-blueviolet?style=for-the-badge&logo=shield)](https://github.com/thecynetx/nyx)
-[![Xray-core](https://img.shields.io/badge/Xray--core-v25.1.30-blue?style=for-the-badge&logo=xray)](https://github.com/XTLS/Xray-core)
+[![Version](https://img.shields.io/badge/version-2.4.4-blueviolet?style=for-the-badge&logo=shield)](https://github.com/thecynetx/nyx)
+[![Xray-core](https://img.shields.io/badge/Xray--core-Latest%20Official-blue?style=for-the-badge&logo=xray)](https://github.com/XTLS/Xray-core)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker)](https://github.com/thecynetx/nyx)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Windows%20%7C%20Docker%20%7C%20Railway-darkgreen?style=for-the-badge)](https://github.com/thecynetx/nyx)
 [![Telegram](https://img.shields.io/badge/Telegram-Cynet_Security-0088cc?style=for-the-badge&logo=telegram)](https://t.me/cynetx)
@@ -39,7 +39,7 @@
   </a>
 </p>
 
-[🛡️ Version 2.4.2](#-whats-new-in-version-242-the-hardening--zero-crash-release) •
+[🛡️ Version 2.4.4 (Zero-Bug Update)](#-whats-new-in-version-244-the-zero-bug--resilience-release) •
 [🔥 Version 2.4 Features](#-whats-new-in-version-240-the-power--customization-update) •
 [📊 Comparison Table](#-feature-comparison-table-nyx-panel-vs-3x-ui--marzban) •
 [💻 Quick Install](#-quick-installation-guide-linux--windows) •
@@ -56,25 +56,31 @@
 
 ---
 
-## 🛡️ What's New in Version 2.4.2 (The Hardening & Zero-Crash Release)
+## 🛡️ What's New in Version 2.4.4 (The Zero-Bug & Resilience Release)
 
 > ⭐️ **Special Recognition:** Special thanks to **Amir (Telegram: [@amirnn21](https://t.me/amirnn21))** for comprehensive technical reporting, edge-case log analysis, and architectural recommendations that significantly boosted the panel's resilience and stability.
 
-### ⚡ 1. Atomic Xray Config Testing (`xray -test`) & Instant Snapshot Rollback
-* Eliminates Xray core crashes caused by invalid inbound configurations. Candidate configs are pre-validated before applying; if validation fails, the active config continues running without a single second of service downtime.
-* Automatic configuration snapshots (`config.backup.json`) are preserved before every successful change with instant 1-click rollback.
+### 🐛 1. Xray Client Email Uniqueness & "User already exists" Fix
+* In Xray-core, client emails within an inbound must be strictly unique. Previously, inbound own clients used `email=remark` which collided with usernames or duplicate remarks.
+* **Fix:** Inbound own clients are now assigned a namespaced `~remark` email with an `addedEmails Set` guard to prevent any duplicate client collision.
 
-### 🩺 2. Genuine Socket/Port Health Monitoring
-* The Load Balancer now verifies genuine local TCP socket binding (`127.0.0.1:port`) directly on the Xray process, preventing false "3/3 Healthy" status if Xray ever crashes.
+### 🛡️ 2. Prevent Duplicate Inbounds/Users via Atomic DB Rollback
+* If `reloadXrayService` fails during creation, the newly created record is immediately deleted (rolled back) from SQLite so user retries never create phantom duplicate inbounds.
 
-### 🛡️ 3. Compatibility Matrix Validator
-* Proactively prevents incompatible protocol configurations (e.g. WebSocket + REALITY) in both the frontend modal and backend generator.
+### 🔒 3. User Inbound Access Control Enforcement
+* Fixed `inboundIds` mapping so granular user access to specific inbounds is strictly enforced inside Xray-core configs.
 
-### 👥 4. Granular User-to-Inbound Assignment (Many-to-Many)
-* Assign specific users to designated inbounds, ensuring subscription links deliver only authorized server nodes.
+### ⚙️ 4. Removed Dangerous Nginx Killing & Targeted Process Management
+* Removed `systemctl stop nginx` on reload, and refined process cleanup using `pkill -9 -f "xray run"` to prevent interference with other server daemons.
 
-### 🚀 5. Xray-core Modern Engine Upgrade (v25+)
-* Upgraded to the latest official Xray binary release with full support for modern WebSocket enhancements and high-throughput SplitHTTP/XHTTP transports.
+### 📊 5. Accurate CPU Metric & Clean Dashboard
+* Normalized CPU load by core count and purged simulated ping/speed stats for accurate telemetry.
+
+### ⚡ 6. Dynamic Xray Engine Downloader in `install.sh`
+* The installer dynamically discovers the latest official Xray release tag from GitHub with an ultra-reliable `v25.1.30` fallback.
+
+### 🚀 7. Instant Expiration Eviction
+* Expired or quota-exceeded users are instantly evicted from Xray-core with an automated reload callback.
 
 ---
 
