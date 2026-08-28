@@ -21,7 +21,7 @@
         <div>
           <h1 class="text-lg sm:text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 via-amber-400 to-rose-400 tracking-wide flex items-center gap-2">
             <span>Nyx Panel</span>
-            <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/20 font-mono font-medium hidden sm:inline-block">v2.4.2</span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/20 font-mono font-medium hidden sm:inline-block">v2.4.4</span>
           </h1>
           <p class="text-[11px] text-gray-400 font-mono">{{ t('panelSub') }}</p>
         </div>

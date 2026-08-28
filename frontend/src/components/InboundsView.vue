@@ -389,9 +389,10 @@
         </div>
 
         <div class="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
-          <button @click="showCreateModal = false" class="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white">{{ t('cancel') }}</button>
-          <button @click="createInbound" class="px-5 py-2 rounded-xl bg-amber-400 text-gray-950 text-xs font-bold shadow-lg shadow-amber-500/20 hover:opacity-90">
-            {{ t('save') }}
+          <button @click="showCreateModal = false" :disabled="isSubmitting" class="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white disabled:opacity-50">{{ t('cancel') }}</button>
+          <button @click="createInbound" :disabled="isSubmitting" class="px-5 py-2 rounded-xl bg-amber-400 text-gray-950 text-xs font-bold shadow-lg shadow-amber-500/20 hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2">
+            <svg v-if="isSubmitting" class="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+            {{ isSubmitting ? (currentLang === 'fa' ? 'در حال ساخت...' : 'Creating...') : t('save') }}
           </button>
         </div>
       </div>
@@ -472,9 +473,10 @@
         </div>
 
         <div class="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
-          <button @click="editingInbound = null" class="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white">{{ t('cancel') }}</button>
-          <button @click="saveInboundEdit" class="px-5 py-2 rounded-xl bg-amber-400 text-gray-950 text-xs font-bold shadow-lg shadow-amber-500/20 hover:opacity-90">
-            {{ t('save') }}
+          <button @click="editingInbound = null" :disabled="isSavingEdit" class="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white disabled:opacity-50">{{ t('cancel') }}</button>
+          <button @click="saveInboundEdit" :disabled="isSavingEdit" class="px-5 py-2 rounded-xl bg-amber-400 text-gray-950 text-xs font-bold shadow-lg shadow-amber-500/20 hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2">
+            <svg v-if="isSavingEdit" class="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+            {{ isSavingEdit ? (currentLang === 'fa' ? 'در حال ذخیره...' : 'Saving...') : t('save') }}
           </button>
         </div>
       </div>
@@ -555,6 +557,8 @@ const selectedInboundForConfig = ref<any>(null);
 const inboundConfigs = ref<any>(null);
 const configLoading = ref(false);
 const selectedSniPreset = ref('yahoo.com');
+const isSubmitting = ref(false); // Prevents double-click duplicate submissions
+const isSavingEdit = ref(false);
 
 // Live SNI Tester & Auto-Failover State
 const activeSniCat = ref('CLOUD');
@@ -683,6 +687,8 @@ async function fetchInbounds() {
 }
 
 async function createInbound() {
+  if (isSubmitting.value) return; // Guard against double-click
+  isSubmitting.value = true;
   try {
     const res = await axios.post('/api/inbounds', form.value);
     showCreateModal.value = false;
@@ -692,6 +698,8 @@ async function createInbound() {
     if (created) openConfigModal(created);
   } catch (err: any) {
     props.toast?.(err?.response?.data?.error || (currentLang.value === 'fa' ? 'خطا در ساخت اینباند' : 'Failed to create inbound'), 'error');
+  } finally {
+    isSubmitting.value = false;
   }
 }
 
@@ -713,7 +721,8 @@ function openEditModal(inbound: any) {
 }
 
 async function saveInboundEdit() {
-  if (!editingInbound.value) return;
+  if (!editingInbound.value || isSavingEdit.value) return;
+  isSavingEdit.value = true;
   try {
     await axios.patch(`/api/inbounds/${editingInbound.value.id}`, editForm.value);
     props.toast?.(currentLang.value === 'fa' ? 'مشخصات اینباند با موفقیت به روز شد' : 'Inbound updated successfully', 'success');
@@ -721,6 +730,8 @@ async function saveInboundEdit() {
     fetchInbounds();
   } catch (err) {
     props.toast?.(currentLang.value === 'fa' ? 'خطا در بروزرسانی اینباند' : 'Failed to update inbound', 'error');
+  } finally {
+    isSavingEdit.value = false;
   }
 }
 
@@ -759,8 +770,9 @@ async function openConfigModal(inbound: any) {
 }
 
 function copyInboundInfoPage(inbound: any) {
+  const proto = window.location.protocol; // respect http vs https
   const host = window.location.host;
-  const link = `http://${host}/subinfo/${inbound.uuid || inbound.id}`;
+  const link = `${proto}//${host}/subinfo/${inbound.uuid || inbound.id}`;
   copyToClipboard(link);
   window.open(link, '_blank');
   props.toast?.(currentLang.value === 'fa' ? 'صفحه وب کانفیگ در تب جدید باز شد و لینک کپی گردید.' : 'Config web page opened and link copied.', 'success');

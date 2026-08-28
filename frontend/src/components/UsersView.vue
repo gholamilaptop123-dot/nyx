@@ -172,9 +172,10 @@
         </div>
 
         <div class="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
-          <button @click="showCreateModal = false" class="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white">{{ t('cancel') }}</button>
-          <button @click="createUser" class="px-5 py-2 rounded-xl bg-cyberYellow text-black text-xs font-bold shadow-lg shadow-cyberYellow/30 hover:opacity-90">
-            {{ t('save') }}
+          <button @click="showCreateModal = false" :disabled="isSubmitting" class="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white disabled:opacity-50">{{ t('cancel') }}</button>
+          <button @click="createUser" :disabled="isSubmitting" class="px-5 py-2 rounded-xl bg-cyberYellow text-black text-xs font-bold shadow-lg shadow-cyberYellow/30 hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2">
+            <svg v-if="isSubmitting" class="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+            {{ isSubmitting ? (currentLang === 'fa' ? 'در حال ساخت...' : 'Creating...') : t('save') }}
           </button>
         </div>
       </div>
@@ -232,9 +233,10 @@
         </div>
 
         <div class="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
-          <button @click="editingUser = null" class="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white">{{ t('cancel') }}</button>
-          <button @click="saveUserEdit" class="px-5 py-2 rounded-xl bg-cyberYellow text-black text-xs font-bold shadow-lg shadow-cyberYellow/30 hover:opacity-90">
-            {{ t('save') }}
+          <button @click="editingUser = null" :disabled="isSavingEdit" class="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white disabled:opacity-50">{{ t('cancel') }}</button>
+          <button @click="saveUserEdit" :disabled="isSavingEdit" class="px-5 py-2 rounded-xl bg-cyberYellow text-black text-xs font-bold shadow-lg shadow-cyberYellow/30 hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2">
+            <svg v-if="isSavingEdit" class="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+            {{ isSavingEdit ? (currentLang === 'fa' ? 'در حال ذخیره...' : 'Saving...') : t('save') }}
           </button>
         </div>
       </div>
@@ -422,6 +424,8 @@ const editUserInbounds = ref<string[]>([]);
 
 const props = defineProps<{ toast?: (msg: string, type?: 'success' | 'error' | 'info') => void }>();
 const newUser = ref({ username: '', dataLimitGb: 0, expireDays: 30, maxDevices: 2 });
+const isSubmitting = ref(false); // Prevents double-click duplicate user creation
+const isSavingEdit = ref(false);
 
 async function fetchInbounds() {
   try {
@@ -443,7 +447,8 @@ onMounted(() => {
 });
 
 async function createUser() {
-  if (!newUser.value.username) return;
+  if (!newUser.value.username || isSubmitting.value) return;
+  isSubmitting.value = true;
   try {
     const payload = {
       ...newUser.value,
@@ -459,7 +464,11 @@ async function createUser() {
     if (createdUser) {
       openConfigModal(createdUser);
     }
-  } catch (err: any) { props.toast?.(err?.response?.data?.error || (currentLang.value === 'fa' ? 'خطا در ساخت کاربر جدید' : 'Failed to create user'), 'error'); }
+  } catch (err: any) {
+    props.toast?.(err?.response?.data?.error || (currentLang.value === 'fa' ? 'خطا در ساخت کاربر جدید' : 'Failed to create user'), 'error');
+  } finally {
+    isSubmitting.value = false;
+  }
 }
 
 function openEditModal(user: any) {
@@ -474,7 +483,8 @@ function openEditModal(user: any) {
 }
 
 async function saveUserEdit() {
-  if (!editingUser.value) return;
+  if (!editingUser.value || isSavingEdit.value) return;
+  isSavingEdit.value = true;
   try {
     const payload = {
       ...editForm.value,
@@ -486,6 +496,8 @@ async function saveUserEdit() {
     fetchUsers();
   } catch (err: any) {
     props.toast?.(currentLang.value === 'fa' ? 'خطا در بروزرسانی کاربر' : 'Failed to update user', 'error');
+  } finally {
+    isSavingEdit.value = false;
   }
 }
 
@@ -526,16 +538,20 @@ function openSubModal(user: any) { selectedUserForSub.value = user; }
 
 function getSubUrl(uuid: string, isp: string) {
   const host = window.location.host;
-  return `http://${host}/api/sub/${uuid}?isp=${isp}`;
+  return `${window.location.protocol}//${host}/api/sub/${uuid}?isp=${isp}`;
 }
 
 function copyUserInfoLink(user: any) {
+  const proto = window.location.protocol;
   const host = window.location.host;
-  const link = `http://${host}/subinfo/${user.uuid}`;
+  const link = `${proto}//${host}/subinfo/${user.uuid}`;
   copyToClipboard(link);
   window.open(link, '_blank');
   props.toast?.(currentLang.value === 'fa' ? 'صفحه وب اختصاصی کاربر باز شد و لینک کپی گردید.' : 'User web portal opened & link copied.', 'success');
 }
 
-onMounted(fetchUsers);
+onMounted(() => {
+  fetchUsers();
+  fetchInbounds();
+});
 </script>
