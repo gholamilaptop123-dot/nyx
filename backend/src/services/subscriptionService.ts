@@ -76,7 +76,10 @@ export class SubscriptionService {
       sni = this.WHITE_IRAN_SNIS[0];
     }
 
-    const sec = (isPaaS || inbound?.security === 'tls') ? 'tls' : (inbound?.security || 'none');
+    const isReality = inbound?.security === 'reality';
+    const pbk = inbound?.publicKey || '';
+    const sid = inbound?.shortId || '6ba7b810';
+    const sec = isReality ? 'reality' : ((isPaaS || inbound?.security === 'tls') ? 'tls' : (inbound?.security || 'none'));
     const fragQuery = (inbound?.enableFragment && !isPaaS)
       ? `&fragment=${encodeURIComponent(`${inbound?.fragmentLength || '100-200'},${inbound?.fragmentInterval || '10-20'},tlshello`)}`
       : '';
@@ -122,31 +125,35 @@ export class SubscriptionService {
 
     // 2. XHTTP / SplitHTTP Transport (Next-Gen Anti-Censorship)
     if (net === 'xhttp' || net === 'splithttp') {
-      const xhttpPath = encodeURIComponent('/nyx-xhttp');
-      const xhttpHost = encodeURIComponent(sni);
+      const xhttpPath = '/nyx-xhttp';
+      const realityParams = isReality ? `&pbk=${pbk}&sid=${sid}&fp=chrome` : '';
+      const tlsParams = (sec === 'tls' && !isReality) ? '&fp=chrome' : '';
 
       if (proto === 'trojan') {
-        return `trojan://${uuid}@${effectiveHost}:${port}?security=${sec}&sni=${sni}&type=xhttp&path=${xhttpPath}&host=${xhttpHost}&mode=auto${fragQuery}#${remark}`;
+        return `trojan://${uuid}@${effectiveHost}:${port}?security=${sec}&sni=${sni}&type=xhttp&path=${encodeURIComponent(xhttpPath)}&host=${encodeURIComponent(sni)}&mode=auto${realityParams}${tlsParams}${fragQuery}#${remark}`;
       }
 
-      return `vless://${uuid}@${effectiveHost}:${port}?encryption=none&type=xhttp&security=${sec}&sni=${sni}&path=${xhttpPath}&host=${xhttpHost}&mode=auto${fragQuery}#${remark}`;
+      return `vless://${uuid}@${effectiveHost}:${port}?encryption=none&type=xhttp&security=${sec}&sni=${sni}&path=${encodeURIComponent(xhttpPath)}&host=${encodeURIComponent(sni)}&mode=auto${realityParams}${tlsParams}${fragQuery}#${remark}`;
     }
 
     // 3. gRPC Transport
     if (net === 'grpc') {
       const serviceName = encodeURIComponent('nyx-grpc');
+      const realityParams = isReality ? `&pbk=${pbk}&sid=${sid}&fp=chrome` : '';
+      const tlsParams = (sec === 'tls' && !isReality) ? '&fp=chrome' : '';
+
       if (proto === 'trojan') {
-        return `trojan://${uuid}@${effectiveHost}:${port}?security=${sec}&sni=${sni}&type=grpc&serviceName=${serviceName}${fragQuery}#${remark}`;
+        return `trojan://${uuid}@${effectiveHost}:${port}?security=${sec}&sni=${sni}&type=grpc&serviceName=${serviceName}${realityParams}${tlsParams}${fragQuery}#${remark}`;
       }
-      return `vless://${uuid}@${effectiveHost}:${port}?encryption=none&type=grpc&security=${sec}&sni=${sni}&serviceName=${serviceName}${fragQuery}#${remark}`;
+      return `vless://${uuid}@${effectiveHost}:${port}?encryption=none&type=grpc&security=${sec}&sni=${sni}&serviceName=${serviceName}${realityParams}${tlsParams}${fragQuery}#${remark}`;
     }
 
-    // 4. VLESS + REALITY
-    if (inbound?.security === 'reality') {
-      const pbk = inbound?.publicKey || '';
-      const sid = inbound?.shortId || '6ba7b810';
+    // 4. VLESS / Trojan + REALITY (TCP)
+    if (isReality) {
       const flow = net === 'tcp' ? 'xtls-rprx-vision' : '';
-
+      if (proto === 'trojan') {
+        return `trojan://${uuid}@${effectiveHost}:${port}?security=reality&pbk=${pbk}&fp=chrome&sni=${sni}&sid=${sid}&headerType=none${fragQuery}#${remark}`;
+      }
       return `vless://${uuid}@${effectiveHost}:${port}?encryption=none&type=${net}&security=reality&pbk=${pbk}&fp=chrome&sni=${sni}&sid=${sid}${flow ? `&flow=${flow}` : ''}&headerType=none${fragQuery}#${remark}`;
     }
 

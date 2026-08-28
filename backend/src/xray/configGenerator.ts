@@ -289,17 +289,17 @@ export function generateXrayJsonConfig(
     }
 
     // Stream Settings:
-    // - WS/XHTTP + REALITY → override to 'none' (REALITY is incompatible with WS)
-    // - WS/XHTTP + TLS    → keep TLS (valid for direct Xray TLS or CDN with TLS passthrough)
-    // - WS/XHTTP + none   → keep none (PaaS/reverse proxy terminates TLS upstream)
+    // - WS + REALITY     → override to 'none' (REALITY is incompatible with standard WebSocket)
+    // - WS + TLS/None    → valid
+    // - XHTTP (SplitHTTP) → supports REALITY, TLS, and None
+    // - gRPC / TCP       → supports REALITY, TLS, and None
     let effectiveSecurity = inbound.security || 'reality';
-    if (net === 'ws' || net === 'websocket' || net === 'xhttp' || net === 'splithttp') {
+    if (net === 'ws' || net === 'websocket') {
       if (effectiveSecurity === 'reality') {
-        // REALITY is never valid for WS/XHTTP — silently downgrade to none
+        // REALITY is not supported on standard WS — downgrade to none
         effectiveSecurity = 'none';
         console.warn(`[Nyx Config] ⚠️ Inbound '${inbound.remark}': REALITY+WS is incompatible — security overridden to none.`);
       }
-      // TLS and none are both valid for WS/XHTTP — leave them as-is
     }
 
     const streamSettings: any = {
