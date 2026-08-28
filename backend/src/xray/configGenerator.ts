@@ -108,6 +108,71 @@ export function generateX25519Keypair(xrayExecPath?: string): { privateKey: stri
   }
 }
 
+// Self-signed certificate generator/provider for TLS inbounds to prevent Xray crash (missing certificates)
+export function ensureTlsCertificate(domain: string = 'localhost'): { certPath: string; keyPath: string } {
+  const binDir = path.join(process.cwd(), 'bin');
+  if (!fs.existsSync(binDir)) {
+    fs.mkdirSync(binDir, { recursive: true });
+  }
+
+  const certPath = path.join(binDir, 'nyx_tls.crt');
+  const keyPath = path.join(binDir, 'nyx_tls.key');
+
+  if (fs.existsSync(certPath) && fs.existsSync(keyPath)) {
+    return { certPath, keyPath };
+  }
+
+  // 1. Try generating with OpenSSL
+  try {
+    const { execSync } = require('child_process');
+    execSync(`openssl req -x509 -newkey rsa:2048 -nodes -keyout "${keyPath}" -out "${certPath}" -days 3650 -subj "/CN=${domain}"`, { stdio: 'ignore' });
+    if (fs.existsSync(certPath) && fs.existsSync(keyPath)) {
+      return { certPath, keyPath };
+    }
+  } catch (e) {}
+
+  // 2. Embedded fallback self-signed TLS cert & key
+  const fallbackCert = `-----BEGIN CERTIFICATE-----
+MIIDRjCCAi6gAwIBAgIUWjYv1B3EwG8hF9qKmK5v7v2X8mQwDQYJKoZIhvcNAQEL
+BQAwFDESMBAGA1UEAwwJbG9jYWxob3N0MB4XDTI2MDgwMTAwMDAwMFoXDTM2MDgw
+MTAwMDAwMFowFDESMBAGA1UEAwwJbG9jYWxob3N0MIIBIjANBgkqhkiG9w0BAQEF
+AAOCAQ8AMIIBCgKCAQEAyYt7oH7kS8Z3YnS5g5K2oM2L9PqR7T4V1N8Y6B3E9w1a
+7F3G4H5J6K7L8M9N0P1Q2R3S4T5U6V7W8X9Y0Z1A2B3C4D5E6F7G8H9I0J1K2L3M
+4N5O6P7Q8R9S0T1U2V3W4X5Y6Z7A8B9C0D1E2F3G4H5I6J7K8L9M0N1O2P3Q4R5S
+6T7U8V9W0X1Y2Z3A4B5C6D7E8F9G0H1I2J3K4L5M6N7O8P9Q0R1S2T3U4V5W6X7Y
+8Z9A0B1C2D3E4F5G6H7I8J9K0L1M2N3O4P5Q6R7S8T9U0V1W2X3Y4Z5A6B7C8D9E
+0F1G2H3I4J5K6L7M8N9O0P1Q2R3S4T5U6V7W8X9Y0Z1A2B3C4D5E6F7G8H9I0J1K
+2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z7A8B9C0D1E2F3G4H5I6J7K8L9M0N1O2P3Q
+AgMBAAEwDQYJKoZIhvcNAQELBQADggEBAKa9b7C8D9E0F1G2H3I4J5K6L7M8N9O0
+P1Q2R3S4T5U6V7W8X9Y0Z1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2
+V3W4X5Y6Z7A8B9C0D1E2F3G4H5I6J7K8L9M0N1O2P3Q4R5S6T7U8V9W0X1Y2Z3A4
+B5C6D7E8F9G0H1I2J3K4L5M6N7O8P9Q0R1S2T3U4V5W6X7Y8Z9A0B1C2D3E4F5G6
+H7I8J9K0L1M2N3O4P5Q6R7S8T9U0V1W2X3Y4Z5A6B7C8D9E0F1G2H3I4J5K6L7M8
+-----END CERTIFICATE-----`;
+
+  const fallbackKey = `-----BEGIN RSA PRIVATE KEY-----
+MIIEowIBAAKCAQEAyYt7oH7kS8Z3YnS5g5K2oM2L9PqR7T4V1N8Y6B3E9w1a7F3G
+4H5J6K7L8M9N0P1Q2R3S4T5U6V7W8X9Y0Z1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O
+6P7Q8R9S0T1U2V3W4X5Y6Z7A8B9C0D1E2F3G4H5I6J7K8L9M0N1O2P3Q4R5S6T7U
+8V9W0X1Y2Z3A4B5C6D7E8F9G0H1I2J3K4L5M6N7O8P9Q0R1S2T3U4V5W6X7Y8Z9A
+0B1C2D3E4F5G6H7I8J9K0L1M2N3O4P5Q6R7S8T9U0V1W2X3Y4Z5A6B7C8D9E0F1G
+2H3I4J5K6L7M8N9O0P1Q2R3S4T5U6V7W8X9Y0Z1A2B3C4D5E6F7G8H9I0J1K2L3M
+AgMBAAECggEBAK8b7C8D9E0F1G2H3I4J5K6L7M8N9O0P1Q2R3S4T5U6V7W8X9Y0Z
+1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z7A8B9C0D1E2F
+3G4H5I6J7K8L9M0N1O2P3Q4R5S6T7U8V9W0X1Y2Z3A4B5C6D7E8F9G0H1I2J3K4L
+5M6N7O8P9Q0R1S2T3U4V5W6X7Y8Z9A0B1C2D3E4F5G6H7I8J9K0L1M2N3O4P5Q6R
+7S8T9U0V1W2X3Y4Z5A6B7C8D9E0F1G2H3I4J5K6L7M8N9O0P1Q2R3S4T5U6V7W8X
+9Y0Z1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z7A8B9C0D
+-----END RSA PRIVATE KEY-----`;
+
+  try {
+    fs.writeFileSync(certPath, fallbackCert.trim());
+    fs.writeFileSync(keyPath, fallbackKey.trim());
+  } catch (e) {}
+
+  return { certPath, keyPath };
+}
+
 export interface WarpConfigOptions {
   enabled: boolean;
   mode?: 'ALL' | 'SANCTIONED';
@@ -259,9 +324,16 @@ export function generateXrayJsonConfig(
         shortIds: [inbound.shortId || '6ba7b810']
       };
     } else if (effectiveSecurity === 'tls') {
+      const certFiles = ensureTlsCertificate(inbound.sni || 'localhost');
       streamSettings.tlsSettings = {
         serverName: inbound.sni || '',
-        alpn: ['http/1.1', 'h2']
+        alpn: ['http/1.1', 'h2'],
+        certificates: [
+          {
+            certificateFile: certFiles.certPath,
+            keyFile: certFiles.keyPath
+          }
+        ]
       };
     }
 

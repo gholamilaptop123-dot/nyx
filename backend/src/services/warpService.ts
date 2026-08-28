@@ -48,65 +48,70 @@ export class WarpService {
     console.log('[WARP Service] Registering new Cloudflare WARP WireGuard account...');
     const keys = generateWgKeypair();
 
-    let warpConfig: WarpAccountConfig;
+    const candidateApiEndpoints = [
+      'https://api.cloudflareclient.com/v0a2158/reg',
+      'https://api.cloudflareclient.com/v0a2405/reg',
+      'https://api.cloudflareclient.com/v0a3160/reg',
+      'https://api.cloudflareclient.com/v0a884/reg'
+    ];
 
-    try {
-      const response = await axios.post(
-        'https://api.cloudflareclient.com/v0a2158/reg',
-        {
-          install_id: '',
-          fcm_token: '',
-          tos: new Date().toISOString(),
-          key: keys.publicKey,
-          type: 'Android',
-          locale: 'en_US'
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'User-Agent': 'okhttp/3.12.1'
+    let lastError: any = null;
+    let registeredData: any = null;
+
+    for (const endpointUrl of candidateApiEndpoints) {
+      try {
+        const response = await axios.post(
+          endpointUrl,
+          {
+            install_id: '',
+            fcm_token: '',
+            tos: new Date().toISOString(),
+            key: keys.publicKey,
+            type: 'Android',
+            locale: 'en_US'
           },
-          timeout: 8000
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              'User-Agent': 'okhttp/3.12.1'
+            },
+            timeout: 10000
+          }
+        );
+
+        if (response.data && response.data.config) {
+          registeredData = response.data.config;
+          console.log(`[WARP Service] ✅ Cloudflare API registration succeeded via: ${endpointUrl}`);
+          break;
         }
-      );
-
-      const data = response.data;
-      if (data && data.config) {
-        const v4 = data.config.interface.addresses.v4 + '/32';
-        const v6 = data.config.interface.addresses.v6 + '/128';
-        const peerPub = data.config.peers[0].public_key;
-        const endpoint = data.config.peers[0].endpoint.v4 || '162.159.192.1:2408';
-
-        warpConfig = {
-          privateKey: keys.privateKey,
-          publicKey: keys.publicKey,
-          ipv4: v4,
-          ipv6: v6,
-          peerPublicKey: peerPub,
-          endpoint: endpoint,
-          enabled: true,
-          mode: 'ALL'
-        };
-
-        console.log(`[WARP Service] ✅ Successfully registered Cloudflare WARP account (Assigned IPv4: ${v4})`);
-      } else {
-        throw new Error('Invalid Cloudflare API response format');
+      } catch (err: any) {
+        lastError = err;
+        console.warn(`[WARP Service] API attempt failed on ${endpointUrl}: ${err.message}`);
       }
-    } catch (err: any) {
-      console.warn('[WARP Service] ⚠️ Cloudflare API registration failed or timed out. Generating local WireGuard WARP profile...', err.message);
-
-      // Local fallback WireGuard profile
-      warpConfig = {
-        privateKey: keys.privateKey,
-        publicKey: keys.publicKey,
-        ipv4: '172.16.0.2/32',
-        ipv6: '2606:4700:110:8f43:86d7:e76a:be77:8a1/128',
-        peerPublicKey: 'bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=',
-        endpoint: '162.159.192.1:2408',
-        enabled: true,
-        mode: 'ALL'
-      };
     }
+
+    if (!registeredData) {
+      console.error('[WARP Service] ❌ All Cloudflare WARP API registration attempts failed!');
+      throw new Error(`ثبت‌نام اکانت WARP در کلودفلر ناموفق بود (احتمالاً به دلیل تحریم یا اختلال شبکه به کلودفلر). جزییات: ${lastError?.message || 'Timeout'}`);
+    }
+
+    const v4 = (registeredData.interface?.addresses?.v4 || '172.16.0.2') + '/32';
+    const v6 = (registeredData.interface?.addresses?.v6 || '2606:4700:110:8f43:86d7:e76a:be77:8a1') + '/128';
+    const peerPub = registeredData.peers?.[0]?.public_key || 'bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=';
+    const endpoint = registeredData.peers?.[0]?.endpoint?.v4 || 'engage.cloudflareclient.com:2408';
+
+    const warpConfig: WarpAccountConfig = {
+      privateKey: keys.privateKey,
+      publicKey: keys.publicKey,
+      ipv4: v4,
+      ipv6: v6,
+      peerPublicKey: peerPub,
+      endpoint: endpoint,
+      enabled: true,
+      mode: 'ALL'
+    };
+
+    console.log(`[WARP Service] ✅ Successfully registered Cloudflare WARP account (Assigned IPv4: ${v4})`);
 
     // Save WARP account details in SystemSetting DB table
     await prisma.systemSetting.upsert({
@@ -140,20 +145,31 @@ export class WarpService {
     mode: 'ALL' | 'SANCTIONED' = 'ALL'
   ): Promise<WarpAccountConfig> {
     let currentConfig = await this.getWarpConfig(prisma);
-    if (!currentConfig) {
+    if (!currentConfig && enabled) {
       currentConfig = await this.registerWarpAccount(prisma);
     }
 
-    currentConfig.enabled = enabled;
-    currentConfig.mode = mode;
+    if (currentConfig) {
+      currentConfig.enabled = enabled;
+      currentConfig.mode = mode;
 
-    await prisma.systemSetting.upsert({
-      where: { key: 'WARP_CONFIG' },
-      update: { value: JSON.stringify(currentConfig) },
-      create: { key: 'WARP_CONFIG', value: JSON.stringify(currentConfig) }
-    });
+      await prisma.systemSetting.upsert({
+        where: { key: 'WARP_CONFIG' },
+        update: { value: JSON.stringify(currentConfig) },
+        create: { key: 'WARP_CONFIG', value: JSON.stringify(currentConfig) }
+      });
+    }
 
     console.log(`[WARP Service] Updated WARP Outbound state: enabled=${enabled}, mode=${mode}`);
-    return currentConfig;
+    return currentConfig || {
+      privateKey: '',
+      publicKey: '',
+      ipv4: '',
+      ipv6: '',
+      peerPublicKey: '',
+      endpoint: '',
+      enabled: false,
+      mode: 'ALL'
+    };
   }
 }
