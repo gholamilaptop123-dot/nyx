@@ -223,14 +223,18 @@ export function generateXrayJsonConfig(
       };
     }
 
-    // Stream Settings (auto-sanitize WS / SplitHTTP for reverse-proxy & PaaS environments)
+    // Stream Settings:
+    // - WS/XHTTP + REALITY → override to 'none' (REALITY is incompatible with WS)
+    // - WS/XHTTP + TLS    → keep TLS (valid for direct Xray TLS or CDN with TLS passthrough)
+    // - WS/XHTTP + none   → keep none (PaaS/reverse proxy terminates TLS upstream)
     let effectiveSecurity = inbound.security || 'reality';
     if (net === 'ws' || net === 'websocket' || net === 'xhttp' || net === 'splithttp') {
-      if (effectiveSecurity !== 'reality') {
-        effectiveSecurity = 'none'; // Plaintext for internal listener (edge proxy terminates TLS)
-      } else {
-        effectiveSecurity = 'none'; // Fallback for WS to prevent Xray crash
+      if (effectiveSecurity === 'reality') {
+        // REALITY is never valid for WS/XHTTP — silently downgrade to none
+        effectiveSecurity = 'none';
+        console.warn(`[Nyx Config] ⚠️ Inbound '${inbound.remark}': REALITY+WS is incompatible — security overridden to none.`);
       }
+      // TLS and none are both valid for WS/XHTTP — leave them as-is
     }
 
     const streamSettings: any = {
@@ -368,16 +372,27 @@ export function generateXrayJsonConfig(
   ];
 
   // If Cloudflare WARP Outbound is enabled, inject WireGuard outbound protocol & routing rules
-  if (warpOptions && warpOptions.enabled && warpOptions.secretKey) {
+  // CRITICAL SAFETY CHECK: Only inject WARP if registration was successful (keys must be non-empty and valid base64).
+  // If registration failed/timed-out, warpOptions.secretKey will be empty → skip silently to prevent Xray crash loops.
+  const isWarpKeyValid = (key?: string): boolean => {
+    if (!key || key.trim().length < 32) return false;
+    try { Buffer.from(key.trim(), 'base64'); return true; } catch { return false; }
+  };
+
+  if (warpOptions && warpOptions.enabled && isWarpKeyValid(warpOptions.secretKey) && isWarpKeyValid(warpOptions.publicKey)) {
     const warpOutbound = {
       protocol: "wireguard",
       settings: {
-        secretKey: warpOptions.secretKey,
-        address: warpOptions.address || ["172.16.0.2/32", "2606:4700:110:8f43:86d7:e76a:be77:8a1/128"],
+        secretKey: warpOptions.secretKey!.trim(),
+        address: (warpOptions.address || []).filter(Boolean).length > 0
+          ? warpOptions.address
+          : ["172.16.0.2/32", "2606:4700:110:8f43:86d7:e76a:be77:8a1/128"],
+        mtu: 1280, // Required for Cloudflare WARP — missing this causes WireGuard handshake failure
         peers: [
           {
-            publicKey: warpOptions.publicKey || "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=",
-            endpoint: warpOptions.endpoint || "162.159.192.1:2408"
+            publicKey: warpOptions.publicKey!.trim(),
+            endpoint: warpOptions.endpoint || "engage.cloudflareclient.com:2408",
+            allowedIPs: ["0.0.0.0/0", "::/0"]
           }
         ]
       },
@@ -389,7 +404,7 @@ export function generateXrayJsonConfig(
       outbounds.unshift(warpOutbound);
       console.log('[Nyx Config] 🌐 Cloudflare WARP activated as PRIMARY outbound (100% traffic routed through WARP)');
     } else {
-      // Add WARP outbound & add specific routing rules for sanctioned services (ChatGPT, Netflix, Spotify)
+      // Add WARP outbound & routing rules for sanctioned services (ChatGPT, Netflix, Spotify)
       outbounds.push(warpOutbound);
       routingRules.push({
         type: "field",
@@ -409,6 +424,9 @@ export function generateXrayJsonConfig(
       });
       console.log('[Nyx Config] 🌐 Cloudflare WARP activated for SANCTIONED & STREAMING services (OpenAI, ChatGPT, Netflix, Spotify)');
     }
+  } else if (warpOptions && warpOptions.enabled) {
+    // WARP is marked enabled but keys are missing/invalid (registration failed)
+    console.warn('[Nyx Config] ⚠️ WARP is enabled but registration keys are missing or invalid. Skipping WARP outbound to prevent Xray crash. Please re-register WARP from the panel.');
   }
 
   const fullConfig = {
