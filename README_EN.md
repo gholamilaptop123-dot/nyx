@@ -82,6 +82,15 @@
 ### 🚀 7. Instant Expiration Eviction
 * Expired or quota-exceeded users are instantly evicted from Xray-core with an automated reload callback.
 
+### 📶 8. Fixed XHTTP (SplitHTTP) Real Delay Ping Test
+* VLESS links generated for XHTTP with REALITY now automatically include full `pbk` (PublicKey), `sid` (ShortId), and fingerprint parameters so client delay tests in v2rayN and v2rayNG return clean, responsive latency (ms).
+
+### 🔐 9. TLS Inbound Crash Prevention via Auto Self-Signed SSL
+* Added automatic `ensureTlsCertificate` module to generate and provision SSL certificates for TLS inbounds, preventing Xray fatal crashes on TLS listeners.
+
+### 🌐 10. Fail-Safe Cloudflare WARP Outbound & Zero-Crash Mesh
+* Hardened WARP account registration across multiple Cloudflare client API endpoints, enforced `mtu: 1280`, and eliminated bogus fallback profiles to prevent routing blackout loops.
+
 ---
 
 <p align="center">
