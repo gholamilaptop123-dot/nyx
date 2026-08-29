@@ -73,6 +73,10 @@ setInterval(autoDetectPublicIp, 300000);
 
 let cachedCustomDomain: string = '';
 let cachedClientPublicIp: string = '';
+let cachedSubscriptionUrl: string = '';
+let cachedSubscriptionHost: string = '';
+let cachedSubscriptionPort: string = '';
+let cachedSubscriptionProto: string = '';
 
 async function loadSystemDomainAndRelaySettings() {
   try {
@@ -92,10 +96,27 @@ async function loadSystemDomainAndRelaySettings() {
     } else {
       cachedClientPublicIp = '';
     }
+
+    const subUrlSetting = await prisma.systemSetting.findUnique({ where: { key: 'SUBSCRIPTION_URL' } });
+    cachedSubscriptionUrl = subUrlSetting?.value?.trim() || process.env.SUBSCRIPTION_URL?.trim() || '';
+
+    const subHostSetting = await prisma.systemSetting.findUnique({ where: { key: 'SUBSCRIPTION_HOST' } });
+    cachedSubscriptionHost = subHostSetting?.value?.trim() || process.env.SUBSCRIPTION_HOST?.trim() || '';
+
+    const subPortSetting = await prisma.systemSetting.findUnique({ where: { key: 'SUBSCRIPTION_PORT' } });
+    cachedSubscriptionPort = subPortSetting?.value?.trim() || process.env.SUBSCRIPTION_PORT?.trim() || '';
+
+    const subProtoSetting = await prisma.systemSetting.findUnique({ where: { key: 'SUBSCRIPTION_PROTO' } });
+    cachedSubscriptionProto = subProtoSetting?.value?.trim() || process.env.SUBSCRIPTION_PROTO?.trim() || '';
   } catch (e) {}
 }
 
-function getPublicHost(req: express.Request): string {
+/**
+ * Returns the destination Host/IP where VPN proxy clients connect for traffic.
+ * In Iran Relay scenarios, this returns the Iran Relay IP/Domain (CLIENT_PUBLIC_IP)
+ * so that all VLESS / Trojan / VMess / Shadowsocks nodes point to the Iran server.
+ */
+function getConfigHost(req: express.Request): string {
   // Priority 0: Client-facing Public IP / Iran Relay IP (For Iran Relay / Kharej Master Tunnel architectures)
   if (cachedClientPublicIp) {
     return cachedClientPublicIp;
@@ -129,6 +150,57 @@ function getPublicHost(req: express.Request): string {
     return cachedPublicIp;
   }
   return reqHost || '127.0.0.1';
+}
+
+export const getPublicHost = getConfigHost;
+
+/**
+ * Returns the full base URL used by client apps (v2rayNG, Sing-Box, Clash) to query, fetch & update subscriptions.
+ * In Iran Relay / Multi-Node scenarios, this allows the subscription endpoint to be completely decoupled
+ * from the VPN config address (e.g. Master IP:3080 or a dedicated Iran sub tunnel port 8080 or a custom sub domain).
+ */
+function getSubscriptionBaseUrl(req: express.Request): string {
+  // 1. Explicit Full Subscription URL Override (e.g. https://sub.mydomain.com or http://62.60.132.228:8080)
+  if (cachedSubscriptionUrl) {
+    return cachedSubscriptionUrl.replace(/\/+$/, '');
+  }
+
+  // 2. Explicit Subscription Host + Port + Protocol
+  if (cachedSubscriptionHost) {
+    const proto = cachedSubscriptionProto || (req.secure || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http');
+    const portPart = cachedSubscriptionPort ? `:${cachedSubscriptionPort}` : '';
+    return `${proto}://${cachedSubscriptionHost}${portPart}`;
+  }
+
+  // 3. PaaS Cloud environment (Railway/Render/Fly.io)
+  const paasDomain = process.env.RAILWAY_PUBLIC_DOMAIN || process.env.RAILWAY_STATIC_URL || process.env.RENDER_EXTERNAL_HOSTNAME || process.env.PUBLIC_DOMAIN || '';
+  if (paasDomain) {
+    return `https://${paasDomain.replace(/^https?:\/\//, '').replace(/\/.*$/, '')}`;
+  }
+
+  // 4. Custom Domain setting (if set and no specific sub host override)
+  const isHttps = req.secure || req.headers['x-forwarded-proto'] === 'https';
+  const defaultProto = isHttps ? 'https' : 'http';
+
+  if (cachedCustomDomain) {
+    const portPart = (PORT && String(PORT) !== '80' && String(PORT) !== '443' && !isHttps) ? `:${PORT}` : '';
+    return `${defaultProto}://${cachedCustomDomain}${portPart}`;
+  }
+
+  // 5. Default: Master Panel Host & Port (Where the panel server actually listens and responds)
+  const fwdHost = (req.headers['x-forwarded-host'] as string) || '';
+  if (fwdHost && !fwdHost.includes('localhost') && !fwdHost.startsWith('127.0.0.1')) {
+    return `${defaultProto}://${fwdHost}`;
+  }
+
+  const reqHost = req.headers.host || '';
+  if (reqHost && !reqHost.includes('localhost') && !reqHost.startsWith('127.0.0.1')) {
+    return `${defaultProto}://${reqHost}`;
+  }
+
+  const masterIp = process.env.SERVER_IP && process.env.SERVER_IP !== '127.0.0.1' ? process.env.SERVER_IP : (cachedPublicIp || '127.0.0.1');
+  const panelPort = PORT ? `:${PORT}` : '';
+  return `${defaultProto}://${masterIp}${panelPort}`;
 }
 
 const ADMIN_USER = process.env.ADMIN_USER || 'admin';
@@ -384,20 +456,19 @@ app.get('/api/users/:id/configs', async (req, res) => {
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const inbounds = await prisma.inbound.findMany({ where: { enabled: true } });
-    const hostIp = getPublicHost(req);
+    const configHost = getConfigHost(req);
+    const subBase = getSubscriptionBaseUrl(req);
     const isp = (req.query.isp as string) || 'DEFAULT';
 
     const vlessLinks = inbounds.map(inbound =>
-      SubscriptionService.generateVlessLink(user as any, inbound as any, hostIp, isp)
+      SubscriptionService.generateVlessLink(user as any, inbound as any, configHost, isp)
     );
-    const base64Sub = SubscriptionService.generateBase64Sub(user as any, inbounds as any[], hostIp, isp);
-    const singboxJson = SubscriptionService.generateSingBoxJson(user as any, inbounds as any[], hostIp, isp);
-    const clashYaml = SubscriptionService.generateClashYaml(user as any, inbounds as any[], hostIp, isp);
-    const subUrl = isPaaS
-      ? `https://${hostIp}/api/sub/${user.uuid}?isp=${isp}`
-      : `http://${hostIp}:${PORT}/api/sub/${user.uuid}?isp=${isp}`;
+    const base64Sub = SubscriptionService.generateBase64Sub(user as any, inbounds as any[], configHost, isp);
+    const singboxJson = SubscriptionService.generateSingBoxJson(user as any, inbounds as any[], configHost, isp);
+    const clashYaml = SubscriptionService.generateClashYaml(user as any, inbounds as any[], configHost, isp);
+    const subUrl = `${subBase}/api/sub/${user.uuid}?isp=${isp}`;
 
-    res.json({ username: user.username, uuid: user.uuid, subUrl, base64Sub, vlessLinks, singboxJson, clashYaml, serverIp: hostIp });
+    res.json({ username: user.username, uuid: user.uuid, subUrl, base64Sub, vlessLinks, singboxJson, clashYaml, serverIp: configHost });
   } catch (error: any) {
     res.status(500).json({ error: error.message || 'Failed to generate configs' });
   }
@@ -638,13 +709,12 @@ app.get('/api/inbounds/:id/configs', async (req, res) => {
       return res.status(404).json({ error: 'Inbound not found.' });
     }
 
-    const hostIp = getPublicHost(req);
-    const port = req.socket.localPort || PORT || 3080;
-    const proto = req.secure || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
-    const vlessLink = SubscriptionService.generateVlessLink(inbound as any, hostIp);
-    const subUrl = `${proto}://${hostIp}:${port}/api/sub/${inbound.uuid || inbound.id}`;
+    const configHost = getConfigHost(req);
+    const subBase = getSubscriptionBaseUrl(req);
+    const vlessLink = SubscriptionService.generateVlessLink(inbound as any, configHost);
+    const subUrl = `${subBase}/api/sub/${inbound.uuid || inbound.id}`;
     const base64Sub = Buffer.from(vlessLink).toString('base64');
-    const userInfoUrl = `${proto}://${hostIp}:${port}/subinfo/${inbound.uuid || inbound.id}`;
+    const userInfoUrl = `${subBase}/subinfo/${inbound.uuid || inbound.id}`;
 
     res.json({
       inbound,
@@ -901,7 +971,7 @@ const handleSubscriptionRequest = async (req: express.Request, res: express.Resp
     const rawUuid = (req.params.uuid || req.query.token || req.query.uuid || '') as string;
     let format = (req.query.format as string) || '';
     const isp = (req.query.isp as string) || 'DEFAULT';
-    const hostIp = getPublicHost(req);
+    const configHost = getConfigHost(req);
 
     // Auto-detect format based on client User-Agent if format query is not explicitly specified
     const userAgent = (req.headers['user-agent'] || '').toLowerCase();
@@ -939,14 +1009,14 @@ const handleSubscriptionRequest = async (req: express.Request, res: express.Resp
 
       if (format === 'singbox') {
         res.setHeader('Content-Type', 'application/json; charset=utf-8');
-        return res.json(SubscriptionService.generateSingBoxJson(user as any, inbounds as any[], hostIp, isp));
+        return res.json(SubscriptionService.generateSingBoxJson(user as any, inbounds as any[], configHost, isp));
       }
       if (format === 'clash') {
         res.setHeader('Content-Type', 'text/yaml; charset=utf-8');
-        return res.send(SubscriptionService.generateClashYaml(user as any, inbounds as any[], hostIp, isp));
+        return res.send(SubscriptionService.generateClashYaml(user as any, inbounds as any[], configHost, isp));
       }
       res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-      return res.send(SubscriptionService.generateBase64Sub(user as any, inbounds as any[], hostIp, isp));
+      return res.send(SubscriptionService.generateBase64Sub(user as any, inbounds as any[], configHost, isp));
     }
 
     // Check if UUID belongs to an Inbound
@@ -958,14 +1028,14 @@ const handleSubscriptionRequest = async (req: express.Request, res: express.Resp
       return res.status(404).send('Inbound subscription not found or disabled');
     }
 
-    const vlessLink = SubscriptionService.generateVlessLink(inbound as any, hostIp, isp);
+    const vlessLink = SubscriptionService.generateVlessLink(inbound as any, configHost, isp);
     if (format === 'singbox') {
       res.setHeader('Content-Type', 'application/json; charset=utf-8');
-      return res.json(SubscriptionService.generateSingBoxJson(inbound as any, [inbound] as any[], hostIp, isp));
+      return res.json(SubscriptionService.generateSingBoxJson(inbound as any, [inbound] as any[], configHost, isp));
     }
     if (format === 'clash') {
       res.setHeader('Content-Type', 'text/yaml; charset=utf-8');
-      return res.send(SubscriptionService.generateClashYaml(inbound as any, [inbound] as any[], hostIp, isp));
+      return res.send(SubscriptionService.generateClashYaml(inbound as any, [inbound] as any[], configHost, isp));
     }
 
     const base64Sub = Buffer.from(vlessLink).toString('base64');
@@ -983,21 +1053,20 @@ app.get('/api/v1/client/subscribe', handleSubscriptionRequest);
 // 5.1 Public User Web Subscription Info API
 app.get('/api/subinfo/:uuid', async (req, res) => {
   try {
-    const hostIp = getPublicHost(req);
+    const configHost = getConfigHost(req);
+    const subBase = getSubscriptionBaseUrl(req);
     const isp = (req.query.isp as string) || 'DEFAULT';
 
     const user = await prisma.user.findUnique({ where: { uuid: req.params.uuid } });
     if (user) {
       const inbounds = await prisma.inbound.findMany({ where: { enabled: true } });
       const vlessLinks = inbounds.map(inbound =>
-        SubscriptionService.generateVlessLink(user as any, inbound as any, hostIp, isp)
+        SubscriptionService.generateVlessLink(user as any, inbound as any, configHost, isp)
       );
-      const base64Sub = SubscriptionService.generateBase64Sub(user as any, inbounds as any[], hostIp, isp);
-      const singboxJson = SubscriptionService.generateSingBoxJson(user as any, inbounds as any[], hostIp, isp);
-      const clashYaml = SubscriptionService.generateClashYaml(user as any, inbounds as any[], hostIp, isp);
-      const subUrl = isPaaS
-        ? `https://${hostIp}/api/sub/${user.uuid}?isp=${isp}`
-        : `http://${hostIp}:${PORT}/api/sub/${user.uuid}?isp=${isp}`;
+      const base64Sub = SubscriptionService.generateBase64Sub(user as any, inbounds as any[], configHost, isp);
+      const singboxJson = SubscriptionService.generateSingBoxJson(user as any, inbounds as any[], configHost, isp);
+      const clashYaml = SubscriptionService.generateClashYaml(user as any, inbounds as any[], configHost, isp);
+      const subUrl = `${subBase}/api/sub/${user.uuid}?isp=${isp}`;
 
       const subBrandName = (await prisma.systemSetting.findUnique({ where: { key: 'SUB_BRAND_NAME' } }))?.value || 'Nyx Panel';
       const subLogoUrl = (await prisma.systemSetting.findUnique({ where: { key: 'SUB_LOGO_URL' } }))?.value || '/logo_trans.png';
@@ -1032,7 +1101,7 @@ app.get('/api/subinfo/:uuid', async (req, res) => {
         vlessLinks,
         singboxJson,
         clashYaml,
-        serverIp: hostIp
+        serverIp: configHost
       });
     }
 
@@ -1044,13 +1113,11 @@ app.get('/api/subinfo/:uuid', async (req, res) => {
       return res.status(404).json({ error: 'Subscription or inbound not found.' });
     }
 
-    const vlessLink = SubscriptionService.generateVlessLink(inbound as any, hostIp, isp);
+    const vlessLink = SubscriptionService.generateVlessLink(inbound as any, configHost, isp);
     const base64Sub = Buffer.from(vlessLink).toString('base64');
-    const singboxJson = SubscriptionService.generateSingBoxJson(inbound as any, [inbound] as any[], hostIp, isp);
-    const clashYaml = SubscriptionService.generateClashYaml(inbound as any, [inbound] as any[], hostIp, isp);
-    const subUrl = isPaaS
-      ? `https://${hostIp}/api/sub/${inbound.uuid || inbound.id}?isp=${isp}`
-      : `http://${hostIp}:${PORT}/api/sub/${inbound.uuid || inbound.id}?isp=${isp}`;
+    const singboxJson = SubscriptionService.generateSingBoxJson(inbound as any, [inbound] as any[], configHost, isp);
+    const clashYaml = SubscriptionService.generateClashYaml(inbound as any, [inbound] as any[], configHost, isp);
+    const subUrl = `${subBase}/api/sub/${inbound.uuid || inbound.id}?isp=${isp}`;
 
     const subBrandName = (await prisma.systemSetting.findUnique({ where: { key: 'SUB_BRAND_NAME' } }))?.value || 'Nyx Panel';
     const subLogoUrl = (await prisma.systemSetting.findUnique({ where: { key: 'SUB_LOGO_URL' } }))?.value || '/logo_trans.png';
@@ -1085,7 +1152,7 @@ app.get('/api/subinfo/:uuid', async (req, res) => {
       vlessLinks: [vlessLink],
       singboxJson,
       clashYaml,
-      serverIp: hostIp
+      serverIp: configHost
     });
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to fetch subscription info' });
@@ -1101,6 +1168,11 @@ app.get('/api/settings', async (req, res) => {
     const relayIpSetting = await prisma.systemSetting.findUnique({ where: { key: 'CLIENT_PUBLIC_IP' } }) ||
                            await prisma.systemSetting.findUnique({ where: { key: 'RELAY_IP' } });
     
+    const subUrlSetting = await prisma.systemSetting.findUnique({ where: { key: 'SUBSCRIPTION_URL' } });
+    const subHostSetting = await prisma.systemSetting.findUnique({ where: { key: 'SUBSCRIPTION_HOST' } });
+    const subPortSetting = await prisma.systemSetting.findUnique({ where: { key: 'SUBSCRIPTION_PORT' } });
+    const subProtoSetting = await prisma.systemSetting.findUnique({ where: { key: 'SUBSCRIPTION_PROTO' } });
+
     // Sub portal branding
     const subBrandNameSetting = await prisma.systemSetting.findUnique({ where: { key: 'SUB_BRAND_NAME' } });
     const subLogoUrlSetting = await prisma.systemSetting.findUnique({ where: { key: 'SUB_LOGO_URL' } });
@@ -1118,6 +1190,11 @@ app.get('/api/settings', async (req, res) => {
     const botEnabled = Boolean(botToken && botToken.trim() !== '');
     const autoFailoverEnabled = autoFailoverSetting?.value === 'true';
 
+    const subUrl = subUrlSetting?.value || '';
+    const subHost = subHostSetting?.value || '';
+    const subPort = subPortSetting?.value || '';
+    const subProto = subProtoSetting?.value || 'http';
+
     res.json({
       botToken,
       adminChatId,
@@ -1125,6 +1202,12 @@ app.get('/api/settings', async (req, res) => {
       customDomain,
       clientPublicIp,
       autoFailoverEnabled,
+      subUrl,
+      subHost,
+      subPort,
+      subProto,
+      masterIp: process.env.SERVER_IP || cachedPublicIp || '127.0.0.1',
+      panelPort: String(PORT || 3080),
       subBrandName: subBrandNameSetting?.value || 'Nyx Panel',
       subLogoUrl: subLogoUrlSetting?.value || '/logo_trans.png',
       subSupportLink: subSupportLinkSetting?.value || '',
@@ -1147,6 +1230,10 @@ app.post('/api/settings', async (req, res) => {
       customDomain,
       clientPublicIp,
       autoFailoverEnabled,
+      subUrl,
+      subHost,
+      subPort,
+      subProto,
       subBrandName,
       subLogoUrl,
       subSupportLink,
@@ -1202,6 +1289,46 @@ app.post('/api/settings', async (req, res) => {
         create: { key: 'CLIENT_PUBLIC_IP', value: cleanRelay }
       });
       cachedClientPublicIp = cleanRelay;
+    }
+
+    if (subUrl !== undefined) {
+      const cleanSubUrl = (subUrl || '').trim();
+      await prisma.systemSetting.upsert({
+        where: { key: 'SUBSCRIPTION_URL' },
+        update: { value: cleanSubUrl },
+        create: { key: 'SUBSCRIPTION_URL', value: cleanSubUrl }
+      });
+      cachedSubscriptionUrl = cleanSubUrl;
+    }
+
+    if (subHost !== undefined) {
+      const cleanSubHost = (subHost || '').trim().replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+      await prisma.systemSetting.upsert({
+        where: { key: 'SUBSCRIPTION_HOST' },
+        update: { value: cleanSubHost },
+        create: { key: 'SUBSCRIPTION_HOST', value: cleanSubHost }
+      });
+      cachedSubscriptionHost = cleanSubHost;
+    }
+
+    if (subPort !== undefined) {
+      const cleanSubPort = (subPort || '').toString().trim();
+      await prisma.systemSetting.upsert({
+        where: { key: 'SUBSCRIPTION_PORT' },
+        update: { value: cleanSubPort },
+        create: { key: 'SUBSCRIPTION_PORT', value: cleanSubPort }
+      });
+      cachedSubscriptionPort = cleanSubPort;
+    }
+
+    if (subProto !== undefined) {
+      const cleanSubProto = (subProto || 'http').trim().toLowerCase();
+      await prisma.systemSetting.upsert({
+        where: { key: 'SUBSCRIPTION_PROTO' },
+        update: { value: cleanSubProto },
+        create: { key: 'SUBSCRIPTION_PROTO', value: cleanSubProto }
+      });
+      cachedSubscriptionProto = cleanSubProto;
     }
 
     if (subBrandName !== undefined) {

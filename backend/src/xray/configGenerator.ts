@@ -377,7 +377,8 @@ export function generateXrayJsonConfig(
       streamSettings,
       sniffing: {
         enabled: true,
-        destOverride: ['http', 'tls', 'quic']
+        destOverride: ['http', 'tls', 'quic'],
+        routeOnly: true // CRITICAL: prevents destination IP mangling on real-time UDP voice/video/WebRTC packets (Clubhouse, Telegram, WhatsApp)
       }
     });
   }
@@ -422,14 +423,19 @@ export function generateXrayJsonConfig(
     },
     sniffing: {
       enabled: true,
-      destOverride: ["http", "tls", "quic"]
+      destOverride: ["http", "tls", "quic"],
+      routeOnly: true
     }
   });
 
   const outbounds: any[] = [
     {
       protocol: "freedom",
-      tag: "direct"
+      tag: "direct",
+      settings: {
+        domainStrategy: "UseIP",
+        userLevel: 0
+      }
     },
     {
       protocol: "blackhole",
@@ -524,8 +530,13 @@ export function generateXrayJsonConfig(
     policy: {
       levels: {
         "0": {
+          handshake: 4,
+          connIdle: 300,
+          uplinkOnly: 2,
+          downlinkOnly: 5,
           statsUserUplink: true,
-          statsUserDownlink: true
+          statsUserDownlink: true,
+          bufferSize: 10240
         }
       },
       system: {

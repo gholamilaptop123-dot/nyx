@@ -135,7 +135,7 @@
       </div>
     </div>
 
-    <!-- Client-Facing Public IP / Iran Relay IP Override Card -->
+    <!-- Client-Facing Public IP / Iran Relay & Subscription Architecture Card -->
     <div class="glass-panel p-5 sm:p-6 rounded-3xl border border-cyan-500/20 bg-gradient-to-r from-black/80 via-cyan-950/15 to-black/80 space-y-5">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.06] pb-4">
         <div class="flex items-center gap-3">
@@ -144,52 +144,94 @@
           </div>
           <div>
             <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
-              <span>{{ currentLang === 'fa' ? 'آدرس سرور ایران / Relay IP اختصاصی' : 'Client-Facing Relay IP / Domain' }}</span>
+              <span>{{ currentLang === 'fa' ? 'معماری تونل ایران-خارج و اندپوینت مستقل سابسکریپشن' : 'Iran Relay & Subscription Endpoint Architecture' }}</span>
               <span class="px-2 py-0.5 rounded-full text-[10px] font-mono" :class="clientPublicIp ? 'bg-cyan-400/20 text-cyan-300 border border-cyan-400/30' : 'bg-white/5 text-gray-400 border border-white/10'">
-                {{ clientPublicIp ? 'RELAY ACTIVE 📡' : 'DISABLED (DIRECT)' }}
+                {{ clientPublicIp ? 'RELAY ACTIVE 📡' : 'DIRECT MODE' }}
               </span>
             </h3>
             <p class="text-xs text-gray-300 mt-0.5 leading-relaxed">
               {{ currentLang === 'fa' 
-                ? 'در سناریوی معماری تونل ایران-خارج (PingTunnel / Gost / Rathole / WireGuard)، با وارد کردن IP یا دامنه سرور ایران در این فیلد، کلیه لینک‌های اتصالی کاربران (VLESS، سابسکریپشن و کلش) با آدرس سرور ایران تولید می‌شوند در حالی که پنل در سرور خارج مستقر است.' 
-                : 'In Iran-Relay tunnel architectures, entering the Iran Relay IP/domain here will point all generated subscription client links to the Iran server while the master panel stays on the Kharej server.' }}
+                ? 'در سناریوی تونل ایران-خارج (PingTunnel / Gost / Rathole)، آدرس سرور پروکسی (Iran Relay IP) از آدرس آپدیت سابسکریپشن تفکیک می‌شود تا نرم‌افزارهای کلاینت (v2rayNG، Sing-Box، Clash) بدون مشکل سابسکریپشن را بروزرسانی نمایند.' 
+                : 'In Iran Relay architectures, the proxy traffic address (Iran Relay IP) is decoupled from the subscription update endpoint so clients can seamlessly update subscriptions.' }}
             </p>
           </div>
         </div>
       </div>
 
-      <div class="space-y-3">
-        <div>
-          <label class="block text-xs font-semibold text-gray-300 mb-1.5">{{ currentLang === 'fa' ? 'IP سرور ایران (یا دامنه واسط Relay)' : 'Iran Relay IP / Hostname' }}</label>
-          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-            <input 
-              v-model="clientPublicIp" 
-              type="text" 
-              placeholder="e.g. 62.60.132.228 or iran.mydomain.com"
-              dir="ltr"
-              class="flex-1 bg-white/[0.03] border border-white/[0.08] rounded-2xl px-4 py-3 text-xs text-white font-mono text-left focus:border-cyan-400/50 outline-none"
-            />
-            <button 
-              @click="saveRelayIp" 
-              :disabled="savingRelay"
-              class="px-5 py-3 rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 text-gray-950 font-bold text-xs shadow-md shadow-cyan-500/20 hover:opacity-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shrink-0"
-            >
-              <RefreshCw v-if="savingRelay" class="w-4 h-4 animate-spin text-gray-950" />
-              <Save v-else class="w-4 h-4 text-gray-950" />
-              <span>{{ currentLang === 'fa' ? 'ذخیره Relay IP' : 'Save Relay IP' }}</span>
-            </button>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- 1. Proxy Traffic Relay Host/IP -->
+        <div class="p-4 rounded-2xl bg-black/40 border border-white/[0.06] space-y-2">
+          <label class="block text-xs font-semibold text-cyan-300">
+            {{ currentLang === 'fa' ? '۱. آدرس سرور ایران برای اتصال پروکسی (VPN Node Host)' : '1. Iran Relay IP / Host for VPN Traffic' }}
+          </label>
+          <p class="text-[11px] text-gray-400">
+            {{ currentLang === 'fa' ? 'آدرس IP سرور ایران که ترافیک تونل به آن ارسال می‌شود (در کانفیگ‌های VLESS/Trojan/Shadowsocks قرار می‌گیرد):' : 'Iran server IP where client proxy traffic connects:' }}
+          </p>
+          <input 
+            v-model="clientPublicIp" 
+            type="text" 
+            placeholder="e.g. 62.60.132.228 or iran.mydomain.com"
+            dir="ltr"
+            class="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-3.5 py-2.5 text-xs text-white font-mono text-left focus:border-cyan-400/50 outline-none"
+          />
+        </div>
+
+        <!-- 2. Subscription Update Host & Port -->
+        <div class="p-4 rounded-2xl bg-black/40 border border-white/[0.06] space-y-2">
+          <label class="block text-xs font-semibold text-cyan-300">
+            {{ currentLang === 'fa' ? '۲. اندپوینت دریافت و آپدیت سابسکریپشن (Subscription Endpoint)' : '2. Client Subscription Endpoint' }}
+          </label>
+          <p class="text-[11px] text-gray-400">
+            {{ currentLang === 'fa' ? 'آدرس و پورتی که کلاینت برای آپدیت ساب با آن ارتباط می‌گیرد (در صورت خالی بودن، از آدرس سرور مستر استفاده می‌شود):' : 'Host and port where client updates subscription:' }}
+          </p>
+          
+          <div class="grid grid-cols-12 gap-2">
+            <div class="col-span-3">
+              <select v-model="subProto" class="w-full bg-[#0b0f17] border border-white/[0.08] rounded-xl px-2 py-2.5 text-xs text-white outline-none">
+                <option value="http">http://</option>
+                <option value="https">https://</option>
+              </select>
+            </div>
+            <div class="col-span-6">
+              <input 
+                v-model="subHost" 
+                type="text" 
+                :placeholder="masterIp || 'Master IP / Domain'"
+                dir="ltr"
+                class="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-2.5 text-xs text-white font-mono text-left focus:border-cyan-400/50 outline-none"
+              />
+            </div>
+            <div class="col-span-3">
+              <input 
+                v-model="subPort" 
+                type="text" 
+                :placeholder="panelPort || '3080'"
+                dir="ltr"
+                class="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-2.5 text-xs text-white font-mono text-left focus:border-cyan-400/50 outline-none"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Subscription URL Preview -->
+      <div class="p-3.5 rounded-2xl bg-cyan-950/20 border border-cyan-400/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div class="space-y-1">
+          <span class="text-gray-400 font-semibold">پیش‌نمایش لینک سابسکریپشن تولیدی (Live Sub URL Preview):</span>
+          <div dir="ltr" class="font-mono text-cyan-300 font-bold text-[11px] break-all">
+            {{ computedSubPreview }}
           </div>
         </div>
 
-        <div v-if="clientPublicIp" class="p-3 rounded-2xl bg-black/40 border border-cyan-400/20 flex items-center justify-between text-xs font-mono">
-          <div class="flex items-center gap-2 text-cyan-300">
-            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-            <span>Client Entry IP: {{ clientPublicIp }}</span>
-          </div>
-          <button @click="clientPublicIp = ''; saveRelayIp()" class="text-gray-400 hover:text-rose-400 text-xs">
-            Reset to Direct IP
-          </button>
-        </div>
+        <button 
+          @click="saveRelayAndSubSettings" 
+          :disabled="savingRelay"
+          class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-gray-950 font-bold text-xs shadow-md shadow-cyan-500/20 hover:opacity-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shrink-0"
+        >
+          <RefreshCw v-if="savingRelay" class="w-4 h-4 animate-spin text-gray-950" />
+          <Save v-else class="w-4 h-4 text-gray-950" />
+          <span>{{ currentLang === 'fa' ? 'ذخیره تنظیمات معماری ساب' : 'Save Architecture Settings' }}</span>
+        </button>
       </div>
     </div>
 
@@ -561,7 +603,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 import { Bot, Send, Info, Shield, Save, RefreshCw, Globe, Zap, Database, Download, Power, Palette, Radio, Lock } from 'lucide-vue-next';
 import { t, currentLang } from '../i18n';
@@ -576,9 +618,23 @@ const savingDomain = ref(false);
 const showToken = ref(false);
 const saving = ref(false);
 
-// Iran Relay IP State
+// Iran Relay & Subscription Endpoint State
 const clientPublicIp = ref('');
+const subUrl = ref('');
+const subHost = ref('');
+const subPort = ref('');
+const subProto = ref('http');
+const masterIp = ref('');
+const panelPort = ref('3080');
 const savingRelay = ref(false);
+
+const computedSubPreview = computed(() => {
+  if (subUrl.value.trim()) return `${subUrl.value.replace(/\/+$/, '')}/api/sub/<UUID>?isp=DEFAULT`;
+  const host = subHost.value.trim() || masterIp.value || window.location.hostname || 'MASTER_IP';
+  const port = subPort.value.trim() ? `:${subPort.value.trim()}` : (panelPort.value ? `:${panelPort.value}` : ':3080');
+  const proto = subProto.value || 'http';
+  return `${proto}://${host}${port}/api/sub/<UUID>?isp=DEFAULT`;
+});
 
 // SSL Certificates Overview State
 const certificates = ref<any[]>([]);
@@ -630,6 +686,13 @@ async function fetchSettings() {
     clientPublicIp.value = res.data.clientPublicIp || '';
     autoFailoverEnabled.value = Boolean(res.data.autoFailoverEnabled);
 
+    subUrl.value = res.data.subUrl || '';
+    subHost.value = res.data.subHost || '';
+    subPort.value = res.data.subPort || '';
+    subProto.value = res.data.subProto || 'http';
+    masterIp.value = res.data.masterIp || '';
+    panelPort.value = res.data.panelPort || '3080';
+
     subBrandName.value = res.data.subBrandName || 'Nyx Panel';
     subLogoUrl.value = res.data.subLogoUrl || '/logo_trans.png';
     subSupportLink.value = res.data.subSupportLink || '';
@@ -648,15 +711,19 @@ async function fetchSettings() {
   }
 }
 
-async function saveRelayIp() {
+async function saveRelayAndSubSettings() {
   savingRelay.value = true;
   try {
     await axios.post('/api/settings', {
-      clientPublicIp: clientPublicIp.value
+      clientPublicIp: clientPublicIp.value,
+      subUrl: subUrl.value,
+      subHost: subHost.value,
+      subPort: subPort.value,
+      subProto: subProto.value
     });
-    props.toast?.(currentLang.value === 'fa' ? 'آدرس Relay IP با موفقیت ذخیره شد.' : 'Relay IP saved successfully.', 'success');
+    props.toast?.(currentLang.value === 'fa' ? 'تنظیمات معماری Relay و اندپوینت سابسکریپشن با موفقیت ذخیره شد.' : 'Relay and Subscription architecture settings saved.', 'success');
   } catch (err: any) {
-    props.toast?.(err?.response?.data?.error || 'Failed to save Relay IP', 'error');
+    props.toast?.(err?.response?.data?.error || 'Failed to save settings', 'error');
   } finally {
     savingRelay.value = false;
   }
