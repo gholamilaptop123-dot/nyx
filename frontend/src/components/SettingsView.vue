@@ -135,6 +135,130 @@
       </div>
     </div>
 
+    <!-- Client-Facing Public IP / Iran Relay IP Override Card -->
+    <div class="glass-panel p-5 sm:p-6 rounded-3xl border border-cyan-500/20 bg-gradient-to-r from-black/80 via-cyan-950/15 to-black/80 space-y-5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.06] pb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-cyan-400/10 text-cyan-400 border border-cyan-400/20 flex items-center justify-center font-bold shrink-0">
+            <Radio class="w-5 h-5" />
+          </div>
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+              <span>{{ currentLang === 'fa' ? 'آدرس سرور ایران / Relay IP اختصاصی' : 'Client-Facing Relay IP / Domain' }}</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-mono" :class="clientPublicIp ? 'bg-cyan-400/20 text-cyan-300 border border-cyan-400/30' : 'bg-white/5 text-gray-400 border border-white/10'">
+                {{ clientPublicIp ? 'RELAY ACTIVE 📡' : 'DISABLED (DIRECT)' }}
+              </span>
+            </h3>
+            <p class="text-xs text-gray-300 mt-0.5 leading-relaxed">
+              {{ currentLang === 'fa' 
+                ? 'در سناریوی معماری تونل ایران-خارج (PingTunnel / Gost / Rathole / WireGuard)، با وارد کردن IP یا دامنه سرور ایران در این فیلد، کلیه لینک‌های اتصالی کاربران (VLESS، سابسکریپشن و کلش) با آدرس سرور ایران تولید می‌شوند در حالی که پنل در سرور خارج مستقر است.' 
+                : 'In Iran-Relay tunnel architectures, entering the Iran Relay IP/domain here will point all generated subscription client links to the Iran server while the master panel stays on the Kharej server.' }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 mb-1.5">{{ currentLang === 'fa' ? 'IP سرور ایران (یا دامنه واسط Relay)' : 'Iran Relay IP / Hostname' }}</label>
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <input 
+              v-model="clientPublicIp" 
+              type="text" 
+              placeholder="e.g. 62.60.132.228 or iran.mydomain.com"
+              dir="ltr"
+              class="flex-1 bg-white/[0.03] border border-white/[0.08] rounded-2xl px-4 py-3 text-xs text-white font-mono text-left focus:border-cyan-400/50 outline-none"
+            />
+            <button 
+              @click="saveRelayIp" 
+              :disabled="savingRelay"
+              class="px-5 py-3 rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 text-gray-950 font-bold text-xs shadow-md shadow-cyan-500/20 hover:opacity-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shrink-0"
+            >
+              <RefreshCw v-if="savingRelay" class="w-4 h-4 animate-spin text-gray-950" />
+              <Save v-else class="w-4 h-4 text-gray-950" />
+              <span>{{ currentLang === 'fa' ? 'ذخیره Relay IP' : 'Save Relay IP' }}</span>
+            </button>
+          </div>
+        </div>
+
+        <div v-if="clientPublicIp" class="p-3 rounded-2xl bg-black/40 border border-cyan-400/20 flex items-center justify-between text-xs font-mono">
+          <div class="flex items-center gap-2 text-cyan-300">
+            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+            <span>Client Entry IP: {{ clientPublicIp }}</span>
+          </div>
+          <button @click="clientPublicIp = ''; saveRelayIp()" class="text-gray-400 hover:text-rose-400 text-xs">
+            Reset to Direct IP
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SSL Certificates Status Overview Card -->
+    <div class="glass-panel p-5 sm:p-6 rounded-3xl border border-purple-500/20 bg-gradient-to-r from-black/80 via-purple-950/15 to-black/80 space-y-5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.06] pb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-purple-400/10 text-purple-400 border border-purple-400/20 flex items-center justify-center font-bold shrink-0">
+            <Lock class="w-5 h-5" />
+          </div>
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+              <span>گواهی‌های امنیتی SSL و تمدید خودکار (Let's Encrypt / Custom)</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono">
+                {{ certificates.length }} Active Certs
+              </span>
+            </h3>
+            <p class="text-xs text-gray-300 mt-0.5 leading-relaxed">
+              لیست گواهی‌های نصب‌شده روی سیستم، وضعیت اعتبار و سرویس تمدید روزانه خودکار دامنه‌ها.
+            </p>
+          </div>
+        </div>
+
+        <button 
+          @click="fetchCertificates" 
+          :disabled="loadingCerts"
+          class="px-4 py-2 rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 font-bold text-xs transition-all flex items-center gap-2"
+        >
+          <RefreshCw :class="['w-3.5 h-3.5', { 'animate-spin': loadingCerts }]" />
+          <span>بروزرسانی وضعیت</span>
+        </button>
+      </div>
+
+      <div v-if="certificates.length > 0" class="overflow-x-auto">
+        <table class="w-full text-xs text-right text-gray-300">
+          <thead class="text-[11px] text-gray-400 border-b border-white/10 font-bold">
+            <tr>
+              <th class="py-2.5 px-3">دامنه (Domain)</th>
+              <th class="py-2.5 px-3">مرجع صادرکننده</th>
+              <th class="py-2.5 px-3">انقضا</th>
+              <th class="py-2.5 px-3">تمدید خودکار</th>
+              <th class="py-2.5 px-3">وضعیت</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/5 font-mono">
+            <tr v-for="cert in certificates" :key="cert.id" class="hover:bg-white/[0.02]">
+              <td class="py-2.5 px-3 text-white font-bold">{{ cert.domain }}</td>
+              <td class="py-2.5 px-3 text-purple-300">{{ cert.issuer }}</td>
+              <td class="py-2.5 px-3 text-gray-300">{{ cert.expireDate ? new Date(cert.expireDate).toLocaleDateString() : 'N/A' }}</td>
+              <td class="py-2.5 px-3">
+                <span :class="cert.autoRenew ? 'text-emerald-400 font-bold' : 'text-gray-500'">
+                  {{ cert.autoRenew ? '✅ فعال (هر ۲۴ ساعت)' : 'غیرفعال' }}
+                </span>
+              </td>
+              <td class="py-2.5 px-3">
+                <span class="px-2 py-0.5 rounded-full text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  معتبر (Valid)
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div v-else class="p-4 rounded-2xl bg-black/40 border border-white/5 text-center text-xs text-gray-400">
+        هنوز گواهی اختصاصی Let's Encrypt دریافت نشده است. می‌توانید در صفحه Inbounds روی هر اینباند دکمه <b class="text-purple-300">🔒 SSL Cert</b> را بزنید.
+      </div>
+    </div>
+
     <!-- Smart Auto-Failover SNI Control Card -->
     <div class="glass-panel p-5 sm:p-6 rounded-3xl border border-emerald-500/20 bg-gradient-to-r from-black/80 via-emerald-950/15 to-black/80 space-y-5">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.06] pb-4">
@@ -439,7 +563,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import { Bot, Send, Info, Shield, Save, RefreshCw, Globe, Zap, Database, Download, Power, Palette } from 'lucide-vue-next';
+import { Bot, Send, Info, Shield, Save, RefreshCw, Globe, Zap, Database, Download, Power, Palette, Radio, Lock } from 'lucide-vue-next';
 import { t, currentLang } from '../i18n';
 
 const props = defineProps<{ toast?: (msg: string, type?: 'success' | 'error' | 'info') => void }>();
@@ -451,6 +575,14 @@ const customDomain = ref('');
 const savingDomain = ref(false);
 const showToken = ref(false);
 const saving = ref(false);
+
+// Iran Relay IP State
+const clientPublicIp = ref('');
+const savingRelay = ref(false);
+
+// SSL Certificates Overview State
+const certificates = ref<any[]>([]);
+const loadingCerts = ref(false);
 
 // Auto-Failover State
 const autoFailoverEnabled = ref(false);
@@ -476,6 +608,18 @@ const warpRegistering = ref(false);
 const backupDownloading = ref(false);
 const telegramBackupSending = ref(false);
 
+async function fetchCertificates() {
+  loadingCerts.value = true;
+  try {
+    const res = await axios.get('/api/ssl/certificates');
+    certificates.value = res.data || [];
+  } catch (err) {
+    console.error('Failed to load certificates:', err);
+  } finally {
+    loadingCerts.value = false;
+  }
+}
+
 async function fetchSettings() {
   try {
     const res = await axios.get('/api/settings');
@@ -483,6 +627,7 @@ async function fetchSettings() {
     adminChatId.value = res.data.adminChatId || '';
     botEnabled.value = res.data.botEnabled || false;
     customDomain.value = res.data.customDomain || '';
+    clientPublicIp.value = res.data.clientPublicIp || '';
     autoFailoverEnabled.value = Boolean(res.data.autoFailoverEnabled);
 
     subBrandName.value = res.data.subBrandName || 'Nyx Panel';
@@ -496,8 +641,24 @@ async function fetchSettings() {
     warpConfig.value = warpRes.data;
     warpEnabled.value = warpRes.data?.enabled || false;
     warpMode.value = warpRes.data?.mode || 'ALL';
+
+    await fetchCertificates();
   } catch (err) {
     console.error('Failed to fetch settings:', err);
+  }
+}
+
+async function saveRelayIp() {
+  savingRelay.value = true;
+  try {
+    await axios.post('/api/settings', {
+      clientPublicIp: clientPublicIp.value
+    });
+    props.toast?.(currentLang.value === 'fa' ? 'آدرس Relay IP با موفقیت ذخیره شد.' : 'Relay IP saved successfully.', 'success');
+  } catch (err: any) {
+    props.toast?.(err?.response?.data?.error || 'Failed to save Relay IP', 'error');
+  } finally {
+    savingRelay.value = false;
   }
 }
 

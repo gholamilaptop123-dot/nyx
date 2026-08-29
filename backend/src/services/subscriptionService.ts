@@ -79,6 +79,7 @@ export class SubscriptionService {
     const isReality = inbound?.security === 'reality';
     const pbk = inbound?.publicKey || '';
     const sid = inbound?.shortId || '6ba7b810';
+    const fp = inbound?.fingerprint || 'chrome';
     const sec = isReality ? 'reality' : ((isPaaS || inbound?.security === 'tls') ? 'tls' : (inbound?.security || 'none'));
     const fragQuery = (inbound?.enableFragment && !isPaaS)
       ? `&fragment=${encodeURIComponent(`${inbound?.fragmentLength || '100-200'},${inbound?.fragmentInterval || '10-20'},tlshello`)}`
@@ -96,6 +97,7 @@ export class SubscriptionService {
     if (net === 'ws') {
       const wsPath = encodeURIComponent('/nyx');
       const wsHost = encodeURIComponent(sni);
+      const tlsQuery = sec === 'tls' ? `&fp=${fp}` : '';
 
       if (proto === 'vmess') {
         const vmessObj = {
@@ -111,23 +113,24 @@ export class SubscriptionService {
           host: sni,
           path: "/nyx",
           tls: sec === 'tls' ? "tls" : "",
-          sni: sni
+          sni: sni,
+          fp: fp
         };
         return `vmess://${Buffer.from(JSON.stringify(vmessObj)).toString('base64')}`;
       }
 
       if (proto === 'trojan') {
-        return `trojan://${uuid}@${effectiveHost}:${port}?security=${sec}&sni=${sni}&type=ws&path=${wsPath}&host=${wsHost}${fragQuery}#${remark}`;
+        return `trojan://${uuid}@${effectiveHost}:${port}?security=${sec}&sni=${sni}&type=ws&path=${wsPath}&host=${wsHost}${tlsQuery}${fragQuery}#${remark}`;
       }
 
-      return `vless://${uuid}@${effectiveHost}:${port}?encryption=none&type=ws&security=${sec}&sni=${sni}&path=${wsPath}&host=${wsHost}${fragQuery}#${remark}`;
+      return `vless://${uuid}@${effectiveHost}:${port}?encryption=none&type=ws&security=${sec}&sni=${sni}&path=${wsPath}&host=${wsHost}${tlsQuery}${fragQuery}#${remark}`;
     }
 
     // 2. XHTTP / SplitHTTP Transport (Next-Gen Anti-Censorship)
     if (net === 'xhttp' || net === 'splithttp') {
       const xhttpPath = '/nyx-xhttp';
-      const realityParams = isReality ? `&pbk=${pbk}&sid=${sid}&fp=chrome` : '';
-      const tlsParams = (sec === 'tls' && !isReality) ? '&fp=chrome' : '';
+      const realityParams = isReality ? `&pbk=${pbk}&sid=${sid}&fp=${fp}` : '';
+      const tlsParams = (sec === 'tls' && !isReality) ? `&fp=${fp}` : '';
 
       if (proto === 'trojan') {
         return `trojan://${uuid}@${effectiveHost}:${port}?security=${sec}&sni=${sni}&type=xhttp&path=${encodeURIComponent(xhttpPath)}&host=${encodeURIComponent(sni)}&mode=auto${realityParams}${tlsParams}${fragQuery}#${remark}`;
@@ -139,8 +142,8 @@ export class SubscriptionService {
     // 3. gRPC Transport
     if (net === 'grpc') {
       const serviceName = encodeURIComponent('nyx-grpc');
-      const realityParams = isReality ? `&pbk=${pbk}&sid=${sid}&fp=chrome` : '';
-      const tlsParams = (sec === 'tls' && !isReality) ? '&fp=chrome' : '';
+      const realityParams = isReality ? `&pbk=${pbk}&sid=${sid}&fp=${fp}` : '';
+      const tlsParams = (sec === 'tls' && !isReality) ? `&fp=${fp}` : '';
 
       if (proto === 'trojan') {
         return `trojan://${uuid}@${effectiveHost}:${port}?security=${sec}&sni=${sni}&type=grpc&serviceName=${serviceName}${realityParams}${tlsParams}${fragQuery}#${remark}`;
@@ -152,17 +155,19 @@ export class SubscriptionService {
     if (isReality) {
       const flow = net === 'tcp' ? 'xtls-rprx-vision' : '';
       if (proto === 'trojan') {
-        return `trojan://${uuid}@${effectiveHost}:${port}?security=reality&pbk=${pbk}&fp=chrome&sni=${sni}&sid=${sid}&headerType=none${fragQuery}#${remark}`;
+        return `trojan://${uuid}@${effectiveHost}:${port}?security=reality&pbk=${pbk}&fp=${fp}&sni=${sni}&sid=${sid}&headerType=none${fragQuery}#${remark}`;
       }
-      return `vless://${uuid}@${effectiveHost}:${port}?encryption=none&type=${net}&security=reality&pbk=${pbk}&fp=chrome&sni=${sni}&sid=${sid}${flow ? `&flow=${flow}` : ''}&headerType=none${fragQuery}#${remark}`;
+      return `vless://${uuid}@${effectiveHost}:${port}?encryption=none&type=${net}&security=reality&pbk=${pbk}&fp=${fp}&sni=${sni}&sid=${sid}${flow ? `&flow=${flow}` : ''}&headerType=none${fragQuery}#${remark}`;
     }
 
     // 5. Standard TCP / TLS
     if (proto === 'trojan') {
-      return `trojan://${uuid}@${effectiveHost}:${port}?security=${sec}&sni=${sni}&headerType=none${fragQuery}#${remark}`;
+      const tlsQuery = sec === 'tls' ? `&fp=${fp}` : '';
+      return `trojan://${uuid}@${effectiveHost}:${port}?security=${sec}&sni=${sni}${tlsQuery}&headerType=none${fragQuery}#${remark}`;
     }
 
-    return `vless://${uuid}@${effectiveHost}:${port}?encryption=none&type=${net}&security=${sec}&sni=${sni}&headerType=none${fragQuery}#${remark}`;
+    const tlsQuery = sec === 'tls' ? `&fp=${fp}` : '';
+    return `vless://${uuid}@${effectiveHost}:${port}?encryption=none&type=${net}&security=${sec}&sni=${sni}${tlsQuery}&headerType=none${fragQuery}#${remark}`;
   }
 
   /**
@@ -271,7 +276,7 @@ export class SubscriptionService {
         tls: {
           enabled: isTls,
           server_name: inbound?.sni || sni,
-          utls: { enabled: true, fingerprint: "chrome" },
+          utls: { enabled: true, fingerprint: inbound?.fingerprint || "chrome" },
           reality: {
             enabled: isReality,
             public_key: inbound?.publicKey || "",
@@ -339,6 +344,7 @@ export class SubscriptionService {
       const port = isPaaS ? 443 : (inbound?.port || 443);
       const net = (inbound?.network || 'tcp').toLowerCase();
       const proto = (inbound?.protocol || 'vless').toLowerCase();
+      const fp = inbound?.fingerprint || 'chrome';
 
       if (proto === 'shadowsocks') {
         const cipher = inbound?.ssCipher || 'chacha20-ietf-poly1305';
@@ -366,7 +372,7 @@ export class SubscriptionService {
       path: "/nyx"
       headers:
         Host: ${inbound?.sni || sni}
-    client-fingerprint: chrome`;
+    client-fingerprint: ${fp}`;
       }
 
       if (net === 'grpc') {
@@ -381,7 +387,7 @@ export class SubscriptionService {
     servername: ${inbound?.sni || sni}
     grpc-opts:
       grpc-service-name: "nyx-grpc"
-    client-fingerprint: chrome`;
+    client-fingerprint: ${fp}`;
       }
 
       if (inbound?.security === 'reality') {
@@ -398,7 +404,7 @@ export class SubscriptionService {
     reality-opts:
       public-key: ${inbound?.publicKey || ''}
       short-id: ${inbound?.shortId || '6ba7b810'}
-    client-fingerprint: chrome`;
+    client-fingerprint: ${fp}`;
       }
 
       return `  - name: "${proxyName}"
@@ -409,6 +415,7 @@ export class SubscriptionService {
     network: ${net}
     tls: ${inbound?.security === 'tls'}
     udp: true
+    client-fingerprint: ${fp}
     servername: ${inbound?.sni || sni}`;
     });
 

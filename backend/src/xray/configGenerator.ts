@@ -17,6 +17,9 @@ export interface InboundConfig {
   fragmentLength?: string;
   fragmentInterval?: string;
   customDomain?: string;
+  fingerprint?: string;  // uTLS fingerprint (chrome, firefox, safari, ios, android, edge, random, randomized)
+  certPath?: string;      // custom SSL Certificate file path
+  keyPath?: string;       // custom SSL Private Key file path
   ssPassword?: string;   // Shadowsocks: shared inbound password
   ssCipher?: string;     // Shadowsocks: cipher method (default: chacha20-ietf-poly1305)
 }
@@ -324,14 +327,22 @@ export function generateXrayJsonConfig(
         shortIds: [inbound.shortId || '6ba7b810']
       };
     } else if (effectiveSecurity === 'tls') {
-      const certFiles = ensureTlsCertificate(inbound.sni || 'localhost');
+      let resolvedCertPath = inbound.certPath;
+      let resolvedKeyPath = inbound.keyPath;
+
+      if (!resolvedCertPath || !resolvedKeyPath || !fs.existsSync(resolvedCertPath) || !fs.existsSync(resolvedKeyPath)) {
+        const certFiles = ensureTlsCertificate(inbound.sni || inbound.customDomain || 'localhost');
+        resolvedCertPath = certFiles.certPath;
+        resolvedKeyPath = certFiles.keyPath;
+      }
+
       streamSettings.tlsSettings = {
         serverName: inbound.sni || '',
         alpn: ['http/1.1', 'h2'],
         certificates: [
           {
-            certificateFile: certFiles.certPath,
-            keyFile: certFiles.keyPath
+            certificateFile: resolvedCertPath,
+            keyFile: resolvedKeyPath
           }
         ]
       };

@@ -22,6 +22,7 @@ import { BackupService } from './services/backupService';
 import { multiPathEngine } from './services/multiPathService';
 import { panicModeManager } from './services/panicModeService';
 import { loadBalancer } from './services/loadBalancerService';
+import { SslService } from './services/sslService';
 import { execFile, ChildProcess } from 'child_process';
 import http from 'http';
 import net from 'net';
@@ -71,29 +72,47 @@ autoDetectPublicIp();
 setInterval(autoDetectPublicIp, 300000);
 
 let cachedCustomDomain: string = '';
+let cachedClientPublicIp: string = '';
 
-async function loadCustomDomainSetting() {
+async function loadSystemDomainAndRelaySettings() {
   try {
     const s = await prisma.systemSetting.findUnique({ where: { key: 'CUSTOM_DOMAIN' } });
     if (s && s.value.trim()) {
       cachedCustomDomain = s.value.trim().replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+    } else {
+      cachedCustomDomain = '';
+    }
+
+    const relay = await prisma.systemSetting.findUnique({ where: { key: 'CLIENT_PUBLIC_IP' } }) ||
+                  await prisma.systemSetting.findUnique({ where: { key: 'RELAY_IP' } });
+    if (relay && relay.value.trim()) {
+      cachedClientPublicIp = relay.value.trim().replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+    } else if (process.env.CLIENT_PUBLIC_IP || process.env.RELAY_IP) {
+      cachedClientPublicIp = (process.env.CLIENT_PUBLIC_IP || process.env.RELAY_IP || '').trim();
+    } else {
+      cachedClientPublicIp = '';
     }
   } catch (e) {}
 }
 
 function getPublicHost(req: express.Request): string {
-  // Priority 0: Custom Domain configured in panel settings
+  // Priority 0: Client-facing Public IP / Iran Relay IP (For Iran Relay / Kharej Master Tunnel architectures)
+  if (cachedClientPublicIp) {
+    return cachedClientPublicIp;
+  }
+
+  // Priority 1: Custom Domain configured in panel settings
   if (cachedCustomDomain) {
     return cachedCustomDomain;
   }
 
-  // Priority 1: Cloud/Railway/PaaS environment variables
+  // Priority 2: Cloud/Railway/PaaS environment variables
   const paasDomain = process.env.RAILWAY_PUBLIC_DOMAIN || process.env.RAILWAY_STATIC_URL || process.env.RENDER_EXTERNAL_HOSTNAME || process.env.PUBLIC_DOMAIN || '';
   if (paasDomain) {
     return paasDomain.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
   }
 
-  // Priority 2: X-Forwarded-Host Header from PaaS reverse proxy
+  // Priority 3: X-Forwarded-Host Header from PaaS reverse proxy
   const fwdHost = (req.headers['x-forwarded-host'] as string) || '';
   if (fwdHost && !fwdHost.includes('localhost') && !fwdHost.startsWith('127.0.0.1')) {
     return fwdHost.split(':')[0];
@@ -406,7 +425,7 @@ app.get('/api/inbounds', async (req, res) => {
 
 app.post('/api/inbounds', async (req, res) => {
   try {
-    const { remark, protocol, port, network, security, sni, privateKey, publicKey, shortId, enableFragment, fragmentLength, fragmentInterval, customDomain, dataLimitGb, expireDays, maxDevices, ssPassword, ssCipher } = req.body;
+    const { remark, protocol, port, network, security, sni, privateKey, publicKey, shortId, enableFragment, fragmentLength, fragmentInterval, customDomain, dataLimitGb, expireDays, maxDevices, ssPassword, ssCipher, fingerprint, certPath, keyPath } = req.body;
     const parsedPort = parseInt(port);
 
     if (isNaN(parsedPort) || parsedPort < 1 || parsedPort > 65535) {
@@ -444,15 +463,17 @@ app.post('/api/inbounds', async (req, res) => {
         expireDate,
         maxDevices: maxDevices ? parseInt(maxDevices, 10) : 2,
         ssPassword: ssPassword?.trim() || null,
-        ssCipher: ssCipher?.trim() || 'chacha20-ietf-poly1305'
+        ssCipher: ssCipher?.trim() || 'chacha20-ietf-poly1305',
+        fingerprint: fingerprint?.trim() || 'chrome',
+        certPath: certPath?.trim() || null,
+        keyPath: keyPath?.trim() || null
       }
     });
 
     try {
       await reloadXrayService();
     } catch (reloadErr: any) {
-      // Rollback: remove the just-created inbound so the DB stays clean and
-      // the frontend doesn't see a phantom inbound that causes duplicates on retry.
+      // Rollback: remove the just-created inbound so the DB stays clean
       await prisma.inbound.delete({ where: { id: newInbound.id } }).catch(() => {});
       return res.status(500).json({ error: `اینباند ساخته شد اما پیکربندی Xray ناموفق بود و لغو شد: ${reloadErr.message}` });
     }
@@ -465,7 +486,7 @@ app.post('/api/inbounds', async (req, res) => {
 
 app.patch('/api/inbounds/:id', async (req, res) => {
   try {
-    const { remark, enabled, sni, enableFragment, fragmentLength, fragmentInterval, customDomain, network, protocol, security, port, dataLimitGb, expireDays, maxDevices, ssPassword, ssCipher } = req.body;
+    const { remark, enabled, sni, enableFragment, fragmentLength, fragmentInterval, customDomain, network, protocol, security, port, dataLimitGb, expireDays, maxDevices, ssPassword, ssCipher, fingerprint, certPath, keyPath } = req.body;
     
     // Check compatibility if protocol, network or security are being updated
     const currentInbound = await prisma.inbound.findUnique({ where: { id: req.params.id } });
@@ -495,10 +516,17 @@ app.patch('/api/inbounds/:id', async (req, res) => {
     if (maxDevices !== undefined) allowedData.maxDevices = parseInt(maxDevices, 10);
     if (ssPassword !== undefined) allowedData.ssPassword = ssPassword ? ssPassword.trim() : null;
     if (ssCipher !== undefined) allowedData.ssCipher = ssCipher ? ssCipher.trim() : 'chacha20-ietf-poly1305';
-    if (expireDays && Number(expireDays) > 0) {
-      const d = new Date();
-      d.setDate(d.getDate() + Number(expireDays));
-      allowedData.expireDate = d;
+    if (fingerprint !== undefined) allowedData.fingerprint = fingerprint ? fingerprint.trim() : 'chrome';
+    if (certPath !== undefined) allowedData.certPath = certPath ? certPath.trim() : null;
+    if (keyPath !== undefined) allowedData.keyPath = keyPath ? keyPath.trim() : null;
+    if (expireDays !== undefined) {
+      if (Number(expireDays) > 0) {
+        const d = new Date();
+        d.setDate(d.getDate() + Number(expireDays));
+        allowedData.expireDate = d;
+      } else {
+        allowedData.expireDate = null;
+      }
     }
 
     const updated = await prisma.inbound.update({ where: { id: req.params.id }, data: allowedData });
@@ -516,6 +544,87 @@ app.delete('/api/inbounds/:id', async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete inbound' });
+  }
+});
+
+// --- SSL CERTIFICATE MANAGEMENT APIS ---
+app.get('/api/ssl/certificates', async (req, res) => {
+  try {
+    const certs = await SslService.listCertificates(prisma);
+    res.json(certs);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Failed to list certificates' });
+  }
+});
+
+app.post('/api/ssl/check-dns', async (req, res) => {
+  try {
+    const { domain } = req.body;
+    if (!domain || !domain.trim()) {
+      return res.status(400).json({ error: 'Domain is required' });
+    }
+    const hostIp = cachedPublicIp || process.env.SERVER_IP || '127.0.0.1';
+    const result = await SslService.checkDomainDns(domain, hostIp);
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'DNS check failed' });
+  }
+});
+
+app.post('/api/ssl/request', async (req, res) => {
+  try {
+    const { domain, email, attachInboundId } = req.body;
+    if (!domain || !domain.trim()) {
+      return res.status(400).json({ error: 'Domain is required' });
+    }
+    const hostIp = cachedPublicIp || process.env.SERVER_IP || '127.0.0.1';
+    const certInfo = await SslService.requestLetsEncrypt(prisma, domain, hostIp, email);
+
+    if (attachInboundId) {
+      await prisma.inbound.update({
+        where: { id: attachInboundId },
+        data: {
+          certPath: certInfo.certPath,
+          keyPath: certInfo.keyPath,
+          certIssuer: certInfo.issuer,
+          certExpireDate: certInfo.expireDate,
+          customDomain: certInfo.domain
+        }
+      });
+    }
+
+    await reloadXrayService();
+    res.json({ success: true, certificate: certInfo });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'SSL issuance failed' });
+  }
+});
+
+app.post('/api/ssl/save-custom', async (req, res) => {
+  try {
+    const { domain, certPem, keyPem, attachInboundId } = req.body;
+    if (!domain || !certPem || !keyPem) {
+      return res.status(400).json({ error: 'Domain, certificate and private key are required.' });
+    }
+    const certInfo = await SslService.saveCertificate(prisma, domain, certPem, keyPem);
+
+    if (attachInboundId) {
+      await prisma.inbound.update({
+        where: { id: attachInboundId },
+        data: {
+          certPath: certInfo.certPath,
+          keyPath: certInfo.keyPath,
+          certIssuer: certInfo.issuer,
+          certExpireDate: certInfo.expireDate,
+          customDomain: certInfo.domain
+        }
+      });
+    }
+
+    await reloadXrayService();
+    res.json({ success: true, certificate: certInfo });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Failed to save certificate' });
   }
 });
 
@@ -989,6 +1098,8 @@ app.get('/api/settings', async (req, res) => {
     const botTokenSetting = await prisma.systemSetting.findUnique({ where: { key: 'BOT_TOKEN' } });
     const adminChatIdSetting = await prisma.systemSetting.findUnique({ where: { key: 'ADMIN_CHAT_ID' } });
     const customDomainSetting = await prisma.systemSetting.findUnique({ where: { key: 'CUSTOM_DOMAIN' } });
+    const relayIpSetting = await prisma.systemSetting.findUnique({ where: { key: 'CLIENT_PUBLIC_IP' } }) ||
+                           await prisma.systemSetting.findUnique({ where: { key: 'RELAY_IP' } });
     
     // Sub portal branding
     const subBrandNameSetting = await prisma.systemSetting.findUnique({ where: { key: 'SUB_BRAND_NAME' } });
@@ -1003,6 +1114,7 @@ app.get('/api/settings', async (req, res) => {
     const botToken = botTokenSetting?.value || process.env.BOT_TOKEN || '';
     const adminChatId = adminChatIdSetting?.value || process.env.ADMIN_CHAT_ID || '';
     const customDomain = customDomainSetting?.value || '';
+    const clientPublicIp = relayIpSetting?.value || process.env.CLIENT_PUBLIC_IP || process.env.RELAY_IP || '';
     const botEnabled = Boolean(botToken && botToken.trim() !== '');
     const autoFailoverEnabled = autoFailoverSetting?.value === 'true';
 
@@ -1011,6 +1123,7 @@ app.get('/api/settings', async (req, res) => {
       adminChatId,
       botEnabled,
       customDomain,
+      clientPublicIp,
       autoFailoverEnabled,
       subBrandName: subBrandNameSetting?.value || 'Nyx Panel',
       subLogoUrl: subLogoUrlSetting?.value || '/logo_trans.png',
@@ -1019,7 +1132,7 @@ app.get('/api/settings', async (req, res) => {
       subAnnouncement: subAnnouncementSetting?.value || '',
       subThemeColor: subThemeColorSetting?.value || 'amber',
       subShowApps: subShowAppsSetting?.value !== 'false',
-      serverIp: customDomain || SERVER_IP
+      serverIp: clientPublicIp || customDomain || cachedPublicIp || SERVER_IP
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch system settings' });
@@ -1032,6 +1145,7 @@ app.post('/api/settings', async (req, res) => {
       botToken,
       adminChatId,
       customDomain,
+      clientPublicIp,
       autoFailoverEnabled,
       subBrandName,
       subLogoUrl,
@@ -1078,6 +1192,16 @@ app.post('/api/settings', async (req, res) => {
         create: { key: 'CUSTOM_DOMAIN', value: cleanDomain }
       });
       cachedCustomDomain = cleanDomain;
+    }
+
+    if (clientPublicIp !== undefined) {
+      const cleanRelay = (clientPublicIp || '').trim().replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+      await prisma.systemSetting.upsert({
+        where: { key: 'CLIENT_PUBLIC_IP' },
+        update: { value: cleanRelay },
+        create: { key: 'CLIENT_PUBLIC_IP', value: cleanRelay }
+      });
+      cachedClientPublicIp = cleanRelay;
     }
 
     if (subBrandName !== undefined) {
@@ -1175,6 +1299,9 @@ async function reloadXrayService() {
       fragmentLength: i.fragmentLength || undefined,
       fragmentInterval: i.fragmentInterval || undefined,
       customDomain: i.customDomain || undefined,
+      fingerprint: i.fingerprint || 'chrome',
+      certPath: i.certPath || undefined,
+      keyPath: i.keyPath || undefined,
       ssPassword: i.ssPassword || undefined,   // Shadowsocks password
       ssCipher: i.ssCipher || undefined          // Shadowsocks cipher method
     }));
@@ -1332,7 +1459,7 @@ app.get('*', (req, res) => {
 async function start() {
   try {
     xrayBinaryPath = await ensureXrayBinary();
-    await loadCustomDomainSetting();
+    await loadSystemDomainAndRelaySettings();
 
     // Seed default inbound if none exists
     const inboundCount = await prisma.inbound.count();
@@ -1388,6 +1515,9 @@ async function start() {
 
     // Start Daily Automated Telegram Backup daemon (runs every 24 hours)
     BackupService.startBackupDaemon(prisma, 86400000);
+
+    // Start Daily Automated SSL Certificate Renewal daemon (runs every 24 hours)
+    SslService.startAutoRenewDaemon(prisma, reloadXrayService, 86400000);
 
     // ── Quantum MultiPath Engine — monitors 4 connection paths every 15s ──────
     const getSniDomain = async () => {

@@ -160,6 +160,12 @@
             <span class="px-2.5 py-1 rounded-xl bg-amber-400/10 border border-amber-400/20 text-amber-300 font-semibold">
               {{ (inbound.network || 'tcp').toUpperCase() }}
             </span>
+            <span class="px-2.5 py-1 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 font-semibold" title="uTLS Fingerprint">
+              🎯 {{ inbound.fingerprint || 'chrome' }}
+            </span>
+            <span v-if="inbound.security === 'tls'" class="px-2.5 py-1 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-300 font-semibold flex items-center gap-1">
+              🔒 {{ inbound.certIssuer || 'SSL (Auto)' }}
+            </span>
             <span v-if="inbound.customDomain" class="px-2.5 py-1 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-semibold">
               🌐 {{ inbound.customDomain }}
             </span>
@@ -201,6 +207,9 @@
           <button @click="copyInboundInfoPage(inbound)" class="py-2 px-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 hover:bg-emerald-500/20 text-xs font-bold flex items-center justify-center gap-1 transition-all" title="User Info Web Page">
             <ExternalLink class="w-3.5 h-3.5" />
             Web Portal
+          </button>
+          <button @click="openSslModal(inbound)" class="p-2 rounded-xl bg-purple-500/10 text-purple-300 hover:bg-purple-500/20 border border-purple-500/20 transition-all" title="Manage SSL Certificate / مدیریت گواهی SSL">
+            <Lock class="w-4 h-4" />
           </button>
           <button @click="openEditModal(inbound)" class="p-2 rounded-xl bg-white/[0.04] text-gray-300 hover:text-white border border-white/[0.06] transition-all" title="Edit Inbound">
             <Edit3 class="w-4 h-4" />
@@ -286,6 +295,21 @@
                 <option value="none">None</option>
               </select>
             </div>
+          </div>
+
+          <!-- uTLS Fingerprint Selection -->
+          <div v-if="form.protocol !== 'shadowsocks'">
+            <label class="block text-gray-400 mb-1">uTLS Client Fingerprint / اثر انگشت کلاینت</label>
+            <select v-model="form.fingerprint" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none">
+              <option value="chrome">Chrome (Google - پیش‌فرض و پیشنهادی)</option>
+              <option value="firefox">Firefox (Mozilla)</option>
+              <option value="safari">Safari (Apple macOS/iOS)</option>
+              <option value="ios">iOS (Apple iPhone)</option>
+              <option value="android">Android (Google)</option>
+              <option value="edge">Edge (Microsoft)</option>
+              <option value="random">Random (تصادفی)</option>
+              <option value="randomized">Randomized (الگوریتم تصادفی پیشرفته)</option>
+            </select>
           </div>
 
           <div>
@@ -423,37 +447,66 @@
 
     <!-- Edit Inbound Modal -->
     <div v-if="editingInbound" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
-      <div class="glass-panel max-w-md w-full rounded-3xl p-6 border border-amber-400/40 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="glass-panel max-w-lg w-full rounded-3xl p-6 border border-amber-400/40 space-y-4 max-h-[90vh] overflow-y-auto">
         <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
           <Edit3 class="w-5 h-5 text-amber-400" />
           <span>{{ t('edit') }}: {{ editingInbound.remark }}</span>
         </h3>
 
         <div class="space-y-3 text-xs">
-          <div>
-            <label class="block text-gray-400 mb-1">Inbound Title</label>
-            <input v-model="editForm.remark" type="text" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:border-amber-400 outline-none" />
-          </div>
-
           <div class="grid grid-cols-2 gap-3">
             <div>
+              <label class="block text-gray-400 mb-1">Inbound Title</label>
+              <input v-model="editForm.remark" type="text" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:border-amber-400 outline-none" />
+            </div>
+            <div>
+              <label class="block text-gray-400 mb-1">Port</label>
+              <input v-model.number="editForm.port" type="number" dir="ltr" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-amber-400 outline-none" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-3" v-if="editForm.protocol !== 'shadowsocks'">
+            <div>
               <label class="block text-gray-400 mb-1">{{ t('protocolType') }}</label>
-              <select v-model="editForm.protocol" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none">
+              <select v-model="editForm.protocol" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none">
                 <option value="vless">VLESS</option>
                 <option value="vmess">VMess</option>
                 <option value="trojan">Trojan</option>
-                <option value="shadowsocks">Shadowsocks (SS)</option>
+                <option value="shadowsocks">Shadowsocks</option>
               </select>
             </div>
             <div>
               <label class="block text-gray-400 mb-1">{{ t('transportType') }}</label>
-              <select v-model="editForm.network" :disabled="editForm.protocol === 'shadowsocks'" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none disabled:opacity-40">
+              <select v-model="editForm.network" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none">
                 <option value="tcp">TCP</option>
-                <option value="xhttp">XHTTP (SplitHTTP)</option>
-                <option value="ws">WebSocket (WS)</option>
+                <option value="xhttp">XHTTP</option>
+                <option value="ws">WS</option>
                 <option value="grpc">gRPC</option>
               </select>
             </div>
+            <div>
+              <label class="block text-gray-400 mb-1">Security</label>
+              <select v-model="editForm.security" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none">
+                <option value="reality">REALITY</option>
+                <option value="tls">TLS</option>
+                <option value="none">None</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- uTLS Fingerprint in Edit Modal -->
+          <div v-if="editForm.protocol !== 'shadowsocks'">
+            <label class="block text-gray-400 mb-1">uTLS Client Fingerprint / اثر انگشت کلاینت</label>
+            <select v-model="editForm.fingerprint" class="w-full bg-[#06070a] border border-white/10 rounded-xl px-4 py-2 text-sm text-white outline-none">
+              <option value="chrome">Chrome (Google - پیش‌فرض و پیشنهادی)</option>
+              <option value="firefox">Firefox (Mozilla)</option>
+              <option value="safari">Safari (Apple macOS/iOS)</option>
+              <option value="ios">iOS (Apple iPhone)</option>
+              <option value="android">Android (Google)</option>
+              <option value="edge">Edge (Microsoft)</option>
+              <option value="random">Random (تصادفی)</option>
+              <option value="randomized">Randomized (الگوریتم تصادفی پیشرفته)</option>
+            </select>
           </div>
 
           <!-- Shadowsocks Credentials in Edit Modal -->
@@ -488,20 +541,55 @@
             <input v-model="editForm.sni" type="text" dir="ltr" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono text-left focus:border-amber-400 outline-none" />
           </div>
 
-          <!-- Fragment Settings Edit -->
+          <!-- Fragment Settings Edit with Presets -->
           <div class="p-3 bg-amber-400/10 border border-amber-400/20 rounded-2xl space-y-2">
             <div class="flex items-center justify-between">
               <span class="font-bold text-white text-xs">{{ t('fragmentSettings') }}</span>
               <input type="checkbox" v-model="editForm.enableFragment" class="w-4 h-4 accent-amber-400" />
             </div>
-            <div v-if="editForm.enableFragment" class="grid grid-cols-2 gap-2">
-              <div>
-                <label class="block text-[10px] text-gray-400">{{ t('fragmentLengthLabel') }}</label>
-                <input v-model="editForm.fragmentLength" type="text" dir="ltr" class="w-full bg-black/50 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-mono text-left focus:border-amber-400 outline-none" />
+
+            <div v-if="editForm.enableFragment" class="space-y-2 pt-1 border-t border-white/10">
+              <label class="block text-[11px] text-gray-300">Preset Template / پریست سریع:</label>
+              <div class="grid grid-cols-2 gap-2">
+                <button 
+                  type="button" 
+                  @click="editForm.fragmentLength = '100-200'; editForm.fragmentInterval = '10-20'" 
+                  class="p-2 rounded-xl bg-black/40 border border-white/10 hover:border-amber-400/40 text-[11px] text-left text-gray-300"
+                >
+                  {{ t('fragmentPresetMci') }}
+                </button>
+                <button 
+                  type="button" 
+                  @click="editForm.fragmentLength = '50-150'; editForm.fragmentInterval = '5-15'" 
+                  class="p-2 rounded-xl bg-black/40 border border-white/10 hover:border-amber-400/40 text-[11px] text-left text-gray-300"
+                >
+                  {{ t('fragmentPresetIrancell') }}
+                </button>
+                <button 
+                  type="button" 
+                  @click="editForm.fragmentLength = '10-60'; editForm.fragmentInterval = '2-10'" 
+                  class="p-2 rounded-xl bg-black/40 border border-white/10 hover:border-amber-400/40 text-[11px] text-left text-gray-300"
+                >
+                  {{ t('fragmentPresetIntranet') }}
+                </button>
+                <button 
+                  type="button" 
+                  @click="editForm.fragmentLength = '100-200'; editForm.fragmentInterval = '10-20'" 
+                  class="p-2 rounded-xl bg-black/40 border border-white/10 hover:border-amber-400/40 text-[11px] text-left text-gray-300"
+                >
+                  {{ t('fragmentPresetCustom') }}
+                </button>
               </div>
-              <div>
-                <label class="block text-[10px] text-gray-400">{{ t('fragmentIntervalLabel') }}</label>
-                <input v-model="editForm.fragmentInterval" type="text" dir="ltr" class="w-full bg-black/50 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-mono text-left focus:border-amber-400 outline-none" />
+
+              <div class="grid grid-cols-2 gap-2 pt-1">
+                <div>
+                  <label class="block text-[10px] text-gray-400">{{ t('fragmentLengthLabel') }}</label>
+                  <input v-model="editForm.fragmentLength" type="text" dir="ltr" class="w-full bg-black/50 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-mono text-left focus:border-amber-400 outline-none" />
+                </div>
+                <div>
+                  <label class="block text-[10px] text-gray-400">{{ t('fragmentIntervalLabel') }}</label>
+                  <input v-model="editForm.fragmentInterval" type="text" dir="ltr" class="w-full bg-black/50 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-mono text-left focus:border-amber-400 outline-none" />
+                </div>
               </div>
             </div>
           </div>
@@ -524,6 +612,110 @@
             <svg v-if="isSavingEdit" class="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
             {{ isSavingEdit ? (currentLang === 'fa' ? 'در حال ذخیره...' : 'Saving...') : t('save') }}
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SSL Certificate Management Modal -->
+    <div v-if="showSslModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
+      <div class="glass-panel max-w-xl w-full rounded-3xl p-6 border border-purple-500/40 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div class="flex items-center justify-between border-b border-white/10 pb-3">
+          <h3 class="text-base sm:text-lg font-extrabold text-white flex items-center gap-2">
+            <Lock class="w-5 h-5 text-purple-400" />
+            <span>مدیریت گواهی SSL و Let's Encrypt</span>
+          </h3>
+          <button @click="showSslModal = false" class="text-gray-400 hover:text-white text-xl">✕</button>
+        </div>
+
+        <div class="space-y-4 text-xs">
+          <!-- Target Domain & DNS Check -->
+          <div>
+            <label class="block text-gray-300 font-semibold mb-1">دامنه اختصاصی جهت دریافت گواهی SSL:</label>
+            <div class="flex items-center gap-2">
+              <input 
+                v-model="sslTargetDomain" 
+                type="text" 
+                placeholder="vpn.mydomain.com" 
+                dir="ltr"
+                class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white font-mono text-left focus:border-purple-400 outline-none"
+              />
+              <button 
+                @click="checkDomainDns" 
+                :disabled="isCheckingDns || !sslTargetDomain" 
+                class="px-4 py-2.5 rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 font-bold transition-all disabled:opacity-50 flex items-center gap-1.5 shrink-0"
+              >
+                <RefreshCw v-if="isCheckingDns" class="w-3.5 h-3.5 animate-spin" />
+                <span>بررسی DNS</span>
+              </button>
+            </div>
+            <p v-if="dnsCheckStatus" :class="['text-[11px] mt-1.5 p-2 rounded-xl border font-mono', dnsCheckStatus.isMatched ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-300' : 'bg-amber-500/10 border-amber-500/25 text-amber-300']">
+              {{ dnsCheckStatus.message }}
+            </p>
+          </div>
+
+          <!-- Issuance Mode Tabs -->
+          <div class="flex items-center p-1 bg-black/50 border border-white/10 rounded-xl">
+            <button 
+              @click="sslMode = 'LETSENCRYPT'" 
+              :class="['flex-1 py-2 text-xs font-bold rounded-lg transition-all', sslMode === 'LETSENCRYPT' ? 'bg-purple-500 text-white shadow' : 'text-gray-400 hover:text-white']"
+            >
+              🔒 دریافت خودکار Let's Encrypt (ACME)
+            </button>
+            <button 
+              @click="sslMode = 'CUSTOM'" 
+              :class="['flex-1 py-2 text-xs font-bold rounded-lg transition-all', sslMode === 'CUSTOM' ? 'bg-purple-500 text-white shadow' : 'text-gray-400 hover:text-white']"
+            >
+              ✏️ نصب دستی گواهی (Custom PEM)
+            </button>
+          </div>
+
+          <!-- Mode 1: Let's Encrypt Request -->
+          <div v-if="sslMode === 'LETSENCRYPT'" class="p-4 bg-purple-500/10 border border-purple-500/20 rounded-2xl space-y-3">
+            <p class="text-gray-300 text-[11px] leading-relaxed">
+              با کلیک روی دکمه زیر، گواهی رسمی و رایگان SSL از مرجع <b>Let's Encrypt</b> دریافت شده و به صورت خودکار به اینباند متصل می‌گردد. همچنین فرآیند تمدید (Renewal) هر ۲۴ ساعت خودکار انجام خواهد شد.
+            </p>
+            <button 
+              @click="requestLetsEncryptSsl" 
+              :disabled="isIssuingSsl || !sslTargetDomain" 
+              class="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold text-xs shadow-lg shadow-purple-500/20 hover:opacity-95 disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              <RefreshCw v-if="isIssuingSsl" class="w-4 h-4 animate-spin text-white" />
+              <Lock v-else class="w-4 h-4 text-white" />
+              <span>{{ isIssuingSsl ? 'در حال صدور گواهی Let\'s Encrypt...' : 'دریافت و نصب ۱-کلیک گواهی SSL' }}</span>
+            </button>
+          </div>
+
+          <!-- Mode 2: Custom Certificate Upload -->
+          <div v-if="sslMode === 'CUSTOM'" class="space-y-3">
+            <div>
+              <label class="block text-gray-400 mb-1">محتوای Certificate (Fullchain PEM):</label>
+              <textarea 
+                v-model="customCertPem" 
+                placeholder="-----BEGIN CERTIFICATE-----&#10;...&#10;-----END CERTIFICATE-----" 
+                rows="4" 
+                dir="ltr"
+                class="w-full bg-black/60 border border-white/10 rounded-xl p-3 text-[10px] text-white font-mono outline-none focus:border-purple-400"
+              ></textarea>
+            </div>
+            <div>
+              <label class="block text-gray-400 mb-1">محتوای Private Key (Key PEM):</label>
+              <textarea 
+                v-model="customKeyPem" 
+                placeholder="-----BEGIN RSA PRIVATE KEY-----&#10;...&#10;-----END RSA PRIVATE KEY-----" 
+                rows="3" 
+                dir="ltr"
+                class="w-full bg-black/60 border border-white/10 rounded-xl p-3 text-[10px] text-white font-mono outline-none focus:border-purple-400"
+              ></textarea>
+            </div>
+            <button 
+              @click="saveCustomSsl" 
+              :disabled="isIssuingSsl || !sslTargetDomain || !customCertPem || !customKeyPem" 
+              class="w-full py-2.5 rounded-xl bg-purple-500 text-white font-bold text-xs hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              <Save class="w-4 h-4" />
+              <span>ذخیره و اتصال به اینباند</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -590,7 +782,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
-import { Plus, Trash2, Download, Network, Edit3, ExternalLink, Activity, Play, RefreshCw, AlertTriangle, ShieldAlert, Zap, Info, Search } from 'lucide-vue-next';
+import { Plus, Trash2, Download, Network, Edit3, ExternalLink, Activity, Play, RefreshCw, AlertTriangle, ShieldAlert, Zap, Info, Search, Lock, Save } from 'lucide-vue-next';
 import QrcodeVue from 'qrcode.vue';
 import { copyToClipboard } from '../utils/clipboard';
 import { t, currentLang } from '../i18n';
@@ -612,6 +804,17 @@ const testDomainInput = ref('arvancloud.ir');
 const testingSni = ref(false);
 const sniTestResult = ref<any>(null);
 const failoverTriggering = ref(false);
+
+// SSL Certificate Management State
+const showSslModal = ref(false);
+const sslTargetInbound = ref<any>(null);
+const sslTargetDomain = ref('');
+const sslMode = ref<'LETSENCRYPT' | 'CUSTOM'>('LETSENCRYPT');
+const customCertPem = ref('');
+const customKeyPem = ref('');
+const isCheckingDns = ref(false);
+const dnsCheckStatus = ref<any>(null);
+const isIssuingSsl = ref(false);
 
 const filteredInbounds = computed(() => {
   const q = inboundSearch.value.trim().toLowerCase();
@@ -688,6 +891,7 @@ const form = ref({
   protocol: 'vless',
   network: 'tcp',
   security: 'reality',
+  fingerprint: 'chrome',
   sni: 'yahoo.com',
   customDomain: '',
   enableFragment: true,
@@ -702,8 +906,11 @@ const form = ref({
 
 const editForm = ref({
   remark: '',
+  port: 443,
   protocol: 'vless',
   network: 'tcp',
+  security: 'reality',
+  fingerprint: 'chrome',
   sni: 'yahoo.com',
   customDomain: '',
   enableFragment: true,
@@ -763,8 +970,11 @@ function openEditModal(inbound: any) {
   editingInbound.value = inbound;
   editForm.value = {
     remark: inbound.remark,
+    port: inbound.port || 443,
     protocol: inbound.protocol || 'vless',
     network: inbound.network || 'tcp',
+    security: inbound.security || 'reality',
+    fingerprint: inbound.fingerprint || 'chrome',
     sni: inbound.sni || 'yahoo.com',
     customDomain: inbound.customDomain || '',
     enableFragment: inbound.enableFragment !== undefined ? inbound.enableFragment : true,
@@ -786,8 +996,8 @@ async function saveInboundEdit() {
     props.toast?.(currentLang.value === 'fa' ? 'مشخصات اینباند با موفقیت به روز شد' : 'Inbound updated successfully', 'success');
     editingInbound.value = null;
     fetchInbounds();
-  } catch (err) {
-    props.toast?.(currentLang.value === 'fa' ? 'خطا در بروزرسانی اینباند' : 'Failed to update inbound', 'error');
+  } catch (err: any) {
+    props.toast?.(err?.response?.data?.error || (currentLang.value === 'fa' ? 'خطا در بروزرسانی اینباند' : 'Failed to update inbound'), 'error');
   } finally {
     isSavingEdit.value = false;
   }
@@ -810,6 +1020,71 @@ async function deleteInbound(id: string) {
     fetchInbounds();
   } catch (err) {
     props.toast?.(currentLang.value === 'fa' ? 'خطا در حذف اینباند' : 'Failed to delete inbound', 'error');
+  }
+}
+
+// SSL Modal Actions
+function openSslModal(inbound: any) {
+  sslTargetInbound.value = inbound;
+  sslTargetDomain.value = inbound.customDomain || (inbound.sni && !inbound.sni.includes('banksepah') && !inbound.sni.includes('shaparak') && !inbound.sni.includes('yahoo.com') && !inbound.sni.includes('google') ? inbound.sni : '');
+  dnsCheckStatus.value = null;
+  customCertPem.value = '';
+  customKeyPem.value = '';
+  showSslModal.value = true;
+}
+
+async function checkDomainDns() {
+  if (!sslTargetDomain.value) return;
+  isCheckingDns.value = true;
+  dnsCheckStatus.value = null;
+  try {
+    const res = await axios.post('/api/ssl/check-dns', { domain: sslTargetDomain.value.trim() });
+    dnsCheckStatus.value = res.data;
+  } catch (err: any) {
+    dnsCheckStatus.value = {
+      isMatched: false,
+      message: err?.response?.data?.error || 'بررسی DNS ناموفق بود.'
+    };
+  } finally {
+    isCheckingDns.value = false;
+  }
+}
+
+async function requestLetsEncryptSsl() {
+  if (!sslTargetDomain.value) return;
+  isIssuingSsl.value = true;
+  try {
+    const res = await axios.post('/api/ssl/request', {
+      domain: sslTargetDomain.value.trim(),
+      attachInboundId: sslTargetInbound.value?.id
+    });
+    props.toast?.('گواهی Let\'s Encrypt با موفقیت صادر و به اینباند متصل شد!', 'success');
+    showSslModal.value = false;
+    await fetchInbounds();
+  } catch (err: any) {
+    props.toast?.(err?.response?.data?.error || 'صدور گواهی Let\'s Encrypt با خطا مواجه شد.', 'error');
+  } finally {
+    isIssuingSsl.value = false;
+  }
+}
+
+async function saveCustomSsl() {
+  if (!sslTargetDomain.value || !customCertPem.value || !customKeyPem.value) return;
+  isIssuingSsl.value = true;
+  try {
+    await axios.post('/api/ssl/save-custom', {
+      domain: sslTargetDomain.value.trim(),
+      certPem: customCertPem.value,
+      keyPem: customKeyPem.value,
+      attachInboundId: sslTargetInbound.value?.id
+    });
+    props.toast?.('گواهی سفارشی با موفقیت ذخیره و به اینباند متصل شد!', 'success');
+    showSslModal.value = false;
+    await fetchInbounds();
+  } catch (err: any) {
+    props.toast?.(err?.response?.data?.error || 'خطا در ذخیره گواهی سفارشی', 'error');
+  } finally {
+    isIssuingSsl.value = false;
   }
 }
 

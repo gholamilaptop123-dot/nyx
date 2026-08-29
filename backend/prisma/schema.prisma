@@ -58,11 +58,30 @@ model Inbound {
   usedDataBytes    BigInt   @default(0)
   expireDate       DateTime?
   maxDevices       Int      @default(2)
-  enabled          Boolean  @default(true)
-  ssPassword       String?  // Shadowsocks: shared password for this inbound
-  ssCipher         String?  @default("chacha20-ietf-poly1305") // Shadowsocks cipher method
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  enabled          Boolean   @default(true)
+  fingerprint      String?   @default("chrome") // uTLS Fingerprint (chrome, firefox, safari, ios, android, edge, random, randomized)
+  certPath         String?   // Path to custom SSL Certificate
+  keyPath          String?   // Path to custom SSL Private Key
+  certIssuer       String?   // Let's Encrypt, Self-Signed, Custom
+  certExpireDate   DateTime? // Certificate expiration date
+  ssPassword       String?   // Shadowsocks: shared password for this inbound
+  ssCipher         String?   @default("chacha20-ietf-poly1305") // Shadowsocks cipher method
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model Certificate {
+  id         String    @id @default(uuid())
+  domain     String    @unique
+  certPath   String
+  keyPath    String
+  issuer     String    @default("Let's Encrypt")
+  expireDate DateTime?
+  autoRenew  Boolean   @default(true)
+  status     String    @default("VALID") // VALID, EXPIRING_SOON, EXPIRED, FAILED
+  lastError  String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 }
 
 model SystemSetting {
