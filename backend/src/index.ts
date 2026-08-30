@@ -26,6 +26,7 @@ import { SslService } from './services/sslService';
 import { execFile, ChildProcess } from 'child_process';
 import http from 'http';
 import net from 'net';
+import dns from 'dns/promises';
 import tls from 'tls';
 import os from 'os';
 import axios from 'axios';
@@ -204,16 +205,48 @@ function getSubscriptionBaseUrl(req: express.Request): string {
 }
 
 const ADMIN_USER = process.env.ADMIN_USER || 'admin';
-const ADMIN_PASS = process.env.ADMIN_PASS || 'nyx2026!';
-const activeTokens = new Set<string>();
+const ADMIN_PASS = process.env.ADMIN_PASS || '';
+
+// Security: never fall back to a known/default administrator password.
+if (!ADMIN_PASS || ADMIN_PASS.length < 16) {
+  throw new Error('ADMIN_PASS must be configured and at least 16 characters long.');
+}
+
+// Short-lived in-memory admin sessions. Restarting the process also revokes all sessions.
+const activeTokens = new Map<string, number>();
+const SESSION_TTL_MS = 15 * 60 * 1000;
+
+// Login brute-force protection. This is intentionally in-memory and complements an
+// upstream reverse-proxy rate limiter for production deployments.
+const loginAttempts = new Map<string, { count: number; resetAt: number }>();
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const MAX_LOGIN_ATTEMPTS = 5;
 
 let xrayBinaryPath: string = '';
 let xrayProcess: ChildProcess | null = null;
 let isXrayRunning: boolean = false;
 let xrayLastError: string = '';
 
-app.use(cors());
-app.use(express.json());
+// Security headers without adding a runtime dependency. The frontend remains same-origin;
+// CORS can be explicitly enabled for a trusted external frontend with CORS_ORIGIN.
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
+  next();
+});
+
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || false,
+  credentials: false,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Authorization', 'Content-Type']
+}));
+app.use(express.json({ limit: '100kb' }));
 
 // Fix BigInt JSON serialization in Express (prevents "Do not know how to serialize a BigInt")
 (BigInt.prototype as any).toJSON = function () {
@@ -245,8 +278,7 @@ const requireAuth = (req: express.Request, res: express.Response, next: express.
     req.path === '/api/multipath/status' ||
     req.path.startsWith('/api/sub/') ||
     req.path.startsWith('/api/subinfo/') ||
-    req.path === '/api/auth/login' ||
-    req.path === '/api/sni/test'
+    req.path === '/api/auth/login'
   ) {
     return next();
   }
@@ -254,10 +286,18 @@ const requireAuth = (req: express.Request, res: express.Response, next: express.
   const authHeader = req.headers.authorization;
   const token = authHeader && authHeader.split(' ')[1];
 
-  if (!token || !activeTokens.has(token)) {
+  if (!token) {
     return res.status(401).json({ error: 'Unauthorized: Please log in first.' });
   }
 
+  const expiresAt = activeTokens.get(token);
+  if (!expiresAt || expiresAt <= Date.now()) {
+    activeTokens.delete(token);
+    return res.status(401).json({ error: 'Session expired. Please log in again.' });
+  }
+
+  // Sliding expiration: active administrators receive another short session window.
+  activeTokens.set(token, Date.now() + SESSION_TTL_MS);
   next();
 };
 
@@ -265,13 +305,35 @@ app.use(requireAuth);
 
 // --- AUTH ENDPOINTS ---
 app.post('/api/auth/login', (req, res) => {
-  const { username, password } = req.body;
+  const { username, password } = req.body || {};
+  const ip = req.ip || 'unknown';
+  const now = Date.now();
+  const attempt = loginAttempts.get(ip);
 
-  if (username === ADMIN_USER && password === ADMIN_PASS) {
-    const token = crypto.randomBytes(32).toString('hex');
-    activeTokens.add(token);
-    return res.json({ success: true, token, username });
+  if (attempt && attempt.resetAt > now && attempt.count >= MAX_LOGIN_ATTEMPTS) {
+    const retryAfter = Math.max(1, Math.ceil((attempt.resetAt - now) / 1000));
+    res.setHeader('Retry-After', String(retryAfter));
+    return res.status(429).json({ error: 'Too many login attempts. Try again later.' });
   }
+
+  const suppliedPassword = typeof password === 'string' ? password : '';
+  const expectedPassword = Buffer.from(ADMIN_PASS, 'utf8');
+  const suppliedPasswordBuffer = Buffer.from(suppliedPassword, 'utf8');
+  const passwordMatches = suppliedPasswordBuffer.length === expectedPassword.length &&
+    crypto.timingSafeEqual(suppliedPasswordBuffer, expectedPassword);
+  const usernameMatches = typeof username === 'string' && username === ADMIN_USER;
+
+  if (usernameMatches && passwordMatches) {
+    loginAttempts.delete(ip);
+    const token = crypto.randomBytes(32).toString('hex');
+    activeTokens.set(token, Date.now() + SESSION_TTL_MS);
+    return res.json({ success: true, token, username: ADMIN_USER, expiresIn: SESSION_TTL_MS / 1000 });
+  }
+
+  const nextAttempt = attempt && attempt.resetAt > now
+    ? { count: attempt.count + 1, resetAt: attempt.resetAt }
+    : { count: 1, resetAt: now + LOGIN_WINDOW_MS };
+  loginAttempts.set(ip, nextAttempt);
 
   return res.status(401).json({ error: 'Invalid username or password.' });
 });
@@ -286,6 +348,17 @@ app.post('/api/auth/logout', (req, res) => {
   if (token) activeTokens.delete(token);
   res.json({ success: true });
 });
+
+// Periodically remove expired sessions and stale login counters.
+setInterval(() => {
+  const now = Date.now();
+  for (const [token, expiresAt] of activeTokens.entries()) {
+    if (expiresAt <= now) activeTokens.delete(token);
+  }
+  for (const [ip, attempt] of loginAttempts.entries()) {
+    if (attempt.resetAt <= now) loginAttempts.delete(ip);
+  }
+}, 5 * 60 * 1000).unref();
 
 // --- HEALTH ENDPOINTS (FOR RAILWAY / PAAS MONITORING) ---
 app.get(['/health', '/api/health', '/api/multipath/health'], (req, res) => {
@@ -730,16 +803,62 @@ app.get('/api/inbounds/:id/configs', async (req, res) => {
 
 // Real SNI Connection Tester Endpoint
 app.get('/api/sni/test', async (req, res) => {
-  const domain = (req.query.domain as string || 'yahoo.com').trim().toLowerCase();
+  const domain = (req.query.domain as string || '').trim().toLowerCase().replace(/\.$/, '');
+
+  // This endpoint is admin-only (it is deliberately NOT in requireAuth's public list).
+  // Reject IP literals and local/internal names to prevent SSRF against private networks.
+  if (!domain || domain.length > 253 ||
+      !/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)*[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(domain) ||
+      domain === 'localhost' || domain.endsWith('.localhost') || domain.endsWith('.local') ||
+      domain.endsWith('.internal') || domain === 'metadata.google.internal') {
+    return res.status(400).json({ error: 'Invalid or restricted domain.' });
+  }
+
   const startTime = Date.now();
 
+  const isPrivateOrReservedIp = (address: string): boolean => {
+    if (net.isIPv4(address)) {
+      const parts = address.split('.').map(Number);
+      const [a, b] = parts;
+      return a === 10 || a === 127 || a === 0 ||
+        (a === 169 && b === 254) ||
+        (a === 172 && b >= 16 && b <= 31) ||
+        (a === 192 && b === 168) ||
+        (a === 100 && b >= 64 && b <= 127) ||
+        (a === 198 && (b === 18 || b === 19)) ||
+        (a === 192 && b === 0) ||
+        (a === 198 && b === 51) ||
+        (a === 203 && b === 0);
+    }
+    const normalized = address.toLowerCase();
+    return normalized === '::1' || normalized === '::' ||
+      normalized.startsWith('fc') || normalized.startsWith('fd') ||
+      normalized.startsWith('fe80:') || normalized.startsWith('ff') ||
+      normalized.startsWith('::ffff:10.') || normalized.startsWith('::ffff:192.168.') ||
+      normalized.startsWith('::ffff:172.16.') || normalized.startsWith('::ffff:172.17.') ||
+      normalized.startsWith('::ffff:172.18.') || normalized.startsWith('::ffff:172.19.') ||
+      normalized.startsWith('::ffff:172.2') || normalized.startsWith('::ffff:172.30.') ||
+      normalized.startsWith('::ffff:172.31.') || normalized.startsWith('::ffff:127.') ||
+      normalized.startsWith('::ffff:169.254.');
+  };
+
   try {
+    const addresses = await dns.lookup(domain, { all: true, verbatim: true });
+    const publicAddress = addresses.find(({ address }) => !isPrivateOrReservedIp(address));
+    if (!publicAddress) {
+      return res.status(400).json({ error: 'Domain resolves to a private or reserved address.' });
+    }
+
     const socket = tls.connect({
       host: domain,
       port: 443,
       servername: domain,
       timeout: 4000,
-      rejectUnauthorized: false
+      rejectUnauthorized: false,
+      // Pin the DNS result we just validated to reduce DNS-rebinding risk.
+      lookup: (_hostname, _options, callback) => {
+        callback(null, publicAddress.address, net.isIP(publicAddress.address));
+      }
     }, () => {
       const latency = Date.now() - startTime;
       const cert = socket.getPeerCertificate();
@@ -748,185 +867,20 @@ app.get('/api/sni/test', async (req, res) => {
         success: true,
         domain,
         latencyMs: latency,
-        issuer: cert.issuer?.O || cert.issuer?.CN || 'Valid',
+        issuer: cert.issuer?.O || cert.issuer?.CN || 'Unknown',
         message: `Connection Successful (Latency: ${latency} ms)`
-      });
-    });
-
-    socket.on('error', (err) => {
-      socket.destroy();
-      res.json({
-        success: false,
-        domain,
-        latencyMs: Date.now() - startTime,
-        error: err.message,
-        message: 'TLS Handshake Error (Possible Blocking or Filtering)'
       });
     });
 
     socket.on('timeout', () => {
       socket.destroy();
-      res.json({
-        success: false,
-        domain,
-        latencyMs: 4000,
-        error: 'Timeout',
-        message: 'Response Timeout (No packet received within 4 seconds)'
-      });
+      if (!res.headersSent) res.status(504).json({ success: false, error: 'Connection timed out.' });
     });
-  } catch (err: any) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-// Auto-Failover SNI Endpoints
-app.get('/api/sni/auto-failover/status', (req, res) => {
-  res.json(autoFailoverService.getStatus());
-});
-
-app.post('/api/sni/auto-failover/trigger', async (req, res) => {
-  try {
-    const result = await autoFailoverService.checkAndFailoverInbounds(prisma, reloadXrayService);
-    res.json({ success: true, ...result });
-  } catch (err: any) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-// ── Quantum MultiPath Engine Endpoints ──────────────────────────────────────
-
-// GET current network health snapshot (all 4 paths)
-app.get('/api/multipath/status', (req, res) => {
-  res.json(multiPathEngine.getSnapshot());
-});
-
-// POST trigger an immediate full path check
-app.post('/api/multipath/check', async (req, res) => {
-  try {
-    const snapshot = await multiPathEngine.checkAllPaths();
-    res.json(snapshot);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message || 'MultiPath check failed' });
-  }
-});
-
-// GET inbound health scores from load balancer
-app.get('/api/loadbalancer/health', (req, res) => {
-  res.json({
-    inbounds: loadBalancer.getAllHealth(),
-    sortedIds: loadBalancer.getSortedIds()
-  });
-});
-
-// GET panic mode status and history
-app.get('/api/panic/status', (req, res) => {
-  res.json(panicModeManager.getStatus());
-});
-
-// Cloudflare WARP Outbound Endpoints
-app.get('/api/warp/status', async (req, res) => {
-  try {
-    const warpConfig = await WarpService.getWarpConfig(prisma);
-    res.json(warpConfig || { enabled: false, mode: 'ALL' });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.post('/api/warp/toggle', async (req, res) => {
-  try {
-    const { enabled, mode } = req.body;
-    const updatedConfig = await WarpService.updateWarpStatus(prisma, Boolean(enabled), mode || 'ALL');
-    await reloadXrayService();
-    res.json({ success: true, config: updatedConfig });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.post('/api/warp/register', async (req, res) => {
-  try {
-    const newConfig = await WarpService.registerWarpAccount(prisma);
-    await reloadXrayService();
-    res.json({ success: true, config: newConfig });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Database Backup & Restore Endpoints
-app.get('/api/backup/download', async (req, res) => {
-  try {
-    const backup = await BackupService.createBackup(prisma);
-    res.download(backup.filePath, backup.fileName);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.post('/api/backup/telegram-now', async (req, res) => {
-  try {
-    const backup = await BackupService.sendBackupToTelegram(prisma);
-    res.json({ success: true, backup });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// System Control & Maintenance APIs
-app.post('/api/system/restart', (req, res) => {
-  res.json({ success: true, message: 'Nyx Panel service is restarting...' });
-  setTimeout(() => {
-    console.log('[Nyx Server] 🔄 System restart requested via Web UI. Restarting process...');
-    if (process.platform !== 'win32') {
-      execFile('systemctl', ['restart', 'nyx'], (err) => {
-        if (err) {
-          process.exit(0);
-        }
-      });
-    } else {
-      process.exit(0);
-    }
-  }, 1000);
-});
-
-app.post('/api/system/reload-xray', async (req, res) => {
-  try {
-    await reloadXrayService();
-    res.json({ success: true, message: 'Xray core reloaded successfully.' });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// 5. Multi-Node & Tunnel Generator APIs
-app.get('/api/nodes', async (req, res) => {
-  try {
-    const nodes = await prisma.node.findMany();
-    res.json(nodes);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to list nodes' });
-  }
-});
-
-app.post('/api/nodes', async (req, res) => {
-  try {
-    const { name, type, ip, apiPort, isMaster, tunnelType, tunnelPort, tunnelSecret } = req.body;
-    const node = await prisma.node.create({
-      data: {
-        name,
-        type: type || 'KHAREJ',
-        ip,
-        apiPort: parseInt(apiPort || 10085),
-        isMaster: Boolean(isMaster),
-        tunnelType: tunnelType || 'NONE',
-        tunnelPort: tunnelPort ? parseInt(tunnelPort) : null,
-        tunnelSecret: tunnelSecret || null
-      }
+    socket.on('error', (error) => {
+      if (!res.headersSent) res.status(502).json({ success: false, error: 'Connection failed.' });
     });
-    res.status(201).json(node);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to create node' });
+    if (!res.headersSent) res.status(400).json({ success: false, error: 'Unable to resolve or connect to domain.' });
   }
 });
 
@@ -948,7 +902,7 @@ app.post('/api/nodes/tunnel-script', async (req, res) => {
       kharejIp: kharejIp || hostIp,
       tunnelPort: parseInt(tunnelPort || 8443),
       targetInboundPort: parseInt(targetInboundPort || 443),
-      secret: secret || 'NyxSecret123',
+      secret: secret || crypto.randomBytes(24).toString('hex'),
       tunnelType: tunnelType || 'GOST',
       whiteDnsServer,
       whiteDomain,
@@ -1195,8 +1149,11 @@ app.get('/api/settings', async (req, res) => {
     const subPort = subPortSetting?.value || '';
     const subProto = subProtoSetting?.value || 'http';
 
+    // Never return the Telegram bot token to the browser/API client.
+    // The UI can use botTokenConfigured and a masked value to display state.
     res.json({
-      botToken,
+      botToken: botEnabled ? '********' : '',
+      botTokenConfigured: botEnabled,
       adminChatId,
       botEnabled,
       customDomain,
@@ -1251,7 +1208,7 @@ app.post('/api/settings', async (req, res) => {
       });
     }
 
-    if (botToken !== undefined) {
+    if (botToken !== undefined && botToken !== '********') {
       const cleanToken = (botToken || '').trim();
       await prisma.systemSetting.upsert({
         where: { key: 'BOT_TOKEN' },
