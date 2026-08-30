@@ -1,13 +1,18 @@
 #!/bin/sh
-set -e
+set -eu
 
 echo "===================================================="
-echo "🚀 [Nyx Panel] Starting in Cloud Container (PaaS)..."
+echo "Nyx Panel starting..."
 echo "===================================================="
 
-# Auto-migrate database schema on startup
 cd /app/backend
-npx prisma db push --skip-generate || true
 
-# Start Node.js API + Xray manager + Web UI
+# Database migration is intentionally non-fatal so the application can
+# start when the database is temporarily unavailable.
+if [ -x "./node_modules/.bin/prisma" ]; then
+  ./node_modules/.bin/prisma db push --skip-generate || {
+    echo "Warning: Prisma database sync failed; continuing startup." >&2
+  }
+fi
+
 exec node dist/index.js
