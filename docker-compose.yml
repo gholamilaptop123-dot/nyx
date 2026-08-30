@@ -1,27 +1,41 @@
-version: '3.8'
-
 services:
   nyx-panel:
     build:
       context: .
       dockerfile: Dockerfile
-    image: nyx-panel:latest
+    image: nyx-panel:security-hardened
     container_name: nyx-panel
     restart: unless-stopped
+
+    # Bind the panel only to localhost.
+    # Put a properly configured HTTPS reverse proxy in front of it if remote access is needed.
     ports:
-      - "3000:3000"
-      - "443:443"
-      - "8443:8443"
-      - "10085:10085"
+      - "127.0.0.1:3000:3000"
+
     volumes:
       - nyx_data:/data
+
     environment:
-      - NODE_ENV=production
-      - PORT=3000
-      - ADMIN_USER=admin
-      - ADMIN_PASS=nyx2026!
-      - DATA_DIR=/data
-      - DATABASE_URL=file:/data/nyx.db
+      NODE_ENV: production
+      PORT: "3000"
+      ADMIN_USER: "${ADMIN_USER:?Set ADMIN_USER in the environment}"
+      ADMIN_PASS: "${ADMIN_PASS:?Set ADMIN_PASS in the environment}"
+      DATA_DIR: /data
+      DATABASE_URL: file:/data/nyx.db
+
+    # Drop unnecessary Linux capabilities and prevent privilege escalation.
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+    # Run as a non-root UID/GID when the image supports it.
+    # If the current Dockerfile does not create this user, we will fix Dockerfile next.
+    user: "10001:10001"
+
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=64m
 
 volumes:
   nyx_data:
